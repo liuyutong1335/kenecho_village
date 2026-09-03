@@ -1360,6 +1360,7 @@
       return el("section", { class: "panel conv-panel", "aria-labelledby": "questTitle" }, [
         el("h1", { id: "questTitle", text: "今日の会話クエスト：" + sc.title }),
         el("p", { class: "field-hint", text: status.done ? "今日のきずな度は更新済みです。再プレイでは更新されません。" : "今日のクエストです。きずな度が更新されます。" }),
+        el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--ghost btn--sm", text: "会話練習モードへ", onclick: renderPracticeScreen })]),
         el("div", { class: "conv-bg bg-" + sc.background, "aria-hidden": "true" }),
         el("div", { class: "conv-stage", "aria-label": "会話のようす" }, [
           el("div", { class: "conv-char conv-char--user", "aria-label": "あなた" }, [el("div", { class: "conv-avatar conv-avatar--user", "aria-hidden": "true" }), el("span", { class: "nameplate", text: "あなた" })]),
@@ -1429,6 +1430,166 @@
     }
   }
 
+  /* ==================================================================== */
+  /* 会話練習モード（M10・きずな度は変化しない）                             */
+  /* ==================================================================== */
+
+  function renderPracticeScreen() {
+    const root = refs.appRoot;
+    const DB = globalThis.KE_DB;
+    const CONV = globalThis.KE_CONVERSATION;
+    const SPR = globalThis.KE_SPRITE;
+    const st = { phase: "select", scene: null, idx: 0, goodCount: 0, bonusRound: null, bonusPlayed: false, last: null };
+    clear(root);
+    const db = DB.get();
+
+    if (!CONV.isConversationUnlocked(db)) {
+      root.append(el("section", { class: "panel" }, [
+        el("h1", { text: "会話練習モード" }),
+        el("p", { class: "field-hint", text: "ペットの種類が公開されるまで、NPCは登場しません。" }),
+        el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--primary", text: "ペット小屋へ", onclick: function () { if (globalThis.KE_APP) globalThis.KE_APP.navigate("pet"); } })])
+      ]));
+      return;
+    }
+    drawSelect();
+
+    function setScene(scene) {
+      st.scene = scene;
+      st.idx = 0;
+      st.goodCount = 0;
+      st.bonusRound = null;
+      st.bonusPlayed = false;
+      st.last = null;
+      drawPlay();
+    }
+
+    function effectiveRounds() {
+      return CONV.practiceRounds(st.scene).concat(st.bonusRound ? [st.bonusRound] : []);
+    }
+
+    function drawSelect() {
+      clear(root);
+      const scenes = CONV.getScenes();
+      const panel = el("section", { class: "panel", "aria-labelledby": "practiceTitle" }, [
+        el("h1", { id: "practiceTitle", text: "会話練習モード" }),
+        el("p", { class: "field-hint", text: "シーンを選ぶか、ランダムで始められます。基本4ターン。きずな度は増減しません（何度でも練習できます）。" }),
+        el("div", { class: "form-actions" }, [
+          el("button", { type: "button", class: "btn btn--primary", text: "ランダムに始める", onclick: function () {
+            const list = CONV.getScenes();
+            setScene(list[U.randInt(0, list.length - 1)]);
+          } }),
+          el("button", { type: "button", class: "btn btn--ghost", text: "会話クエストへ戻る", onclick: function () { if (globalThis.KE_APP) globalThis.KE_APP.navigate("quest"); } })
+        ])
+      ]);
+      const grid = el("div", { class: "species-grid" });
+      scenes.forEach(function (s) {
+        const npc = CONV.getNpcById(s.npcId);
+        grid.append(el("button", { type: "button", class: "species-card", onclick: function () { setScene(s); } }, [
+          el("span", { class: "species-name", text: s.title }),
+          el("span", { class: "species-coach", text: (C.SCENE_CATEGORIES[s.category] || s.category) + "／" + (npc ? npc.displayName : "") }),
+          el("span", { class: "field-hint", text: "背景：" + (C.SCENE_BACKGROUNDS[s.background] || s.background) })
+        ]));
+      });
+      panel.append(grid);
+      root.append(panel);
+    }
+
+    function drawPlay() {
+      clear(root);
+      const sc = st.scene;
+      const npc = CONV.getNpcById(sc.npcId) || { displayName: sc.npcId };
+      const rounds = effectiveRounds();
+      const finished = st.idx >= rounds.length;
+
+      if (finished) {
+        root.append(el("section", { class: "panel", "aria-labelledby": "practiceTitle" }, [
+          el("h1", { id: "practiceTitle", text: "練習おつかれさまでした！" }),
+          el("p", { class: "lead", text: "「会話が続きやすい」を「" + st.goodCount + "回」選びました。" }),
+          el("p", { class: "field-hint", text: "ボーナスタンの有無：" + (st.bonusPlayed ? "あり（条件成立）" : "条件は good を2回以上") }),
+          el("p", { class: "field-hint", text: "この練習では、きずな度や健康EXPは変化しません。" }),
+          el("div", { class: "form-actions" }, [
+            el("button", { type: "button", class: "btn btn--primary", text: "もう一度", onclick: function () { setScene(st.scene); } }),
+            el("button", { type: "button", class: "btn btn--ghost", text: "シーンを選び直す", onclick: drawSelect }),
+            el("button", { type: "button", class: "btn btn--ghost", text: "会話クエストへ", onclick: function () { if (globalThis.KE_APP) globalThis.KE_APP.navigate("quest"); } })
+          ])
+        ]));
+        return;
+      }
+
+      const round = rounds[st.idx];
+      const isBonusTurn = st.bonusRound && st.idx >= CONV.practiceRounds(sc).length;
+      const panel = el("section", { class: "panel conv-panel", "aria-labelledby": "practiceTitle" }, [
+        el("h1", { id: "practiceTitle", text: "会話練習：" + sc.title + "（" + (st.idx + 1) + " / " + rounds.length + "ターン" + (isBonusTurn ? "・ボーナス" : "") + "）" }),
+        el("div", { class: "conv-bg bg-" + sc.background, "aria-hidden": "true" }),
+        el("div", { class: "conv-stage", "aria-label": "会話のようす" }, [
+          el("div", { class: "conv-char conv-char--user", "aria-label": "あなた" }, [el("div", { class: "conv-avatar conv-avatar--user", "aria-hidden": "true" }), el("span", { class: "nameplate", text: "あなた" })]),
+          el("div", { class: "conv-char conv-char--pet", "aria-label": db.currentPet.name }, [SPR.canvasTag(SPR.renderPet(speciesColorOf(db), 3), db.currentPet.name, "sprite-canvas conv-avatar"), el("span", { class: "nameplate", text: db.currentPet.name })]),
+          el("div", { class: "conv-char conv-char--npc", "aria-label": npc.displayName }, [SPR.canvasTag(SPR.renderSilhouette("#5a554e", 3), npc.displayName, "sprite-canvas conv-avatar"), el("span", { class: "nameplate", text: npc.displayName })])
+        ]),
+        el("p", { class: "conv-context", text: st.idx === 0 ? sc.context : "会話は続いています…" }),
+        el("div", { class: "conv-box", "aria-live": "polite" }, [
+          el("span", { class: "nameplate", text: npc.displayName }),
+          el("p", { class: "conv-bubble", text: round.npcLine })
+        ]),
+        st.last ? buildPracticeResult(round, npc) : buildPracticeChoices(round)
+      ]);
+      root.append(panel);
+    }
+
+    function buildPracticeChoices(round) {
+      const wrap = el("div", { class: "conv-choices" }, [el("p", { class: "field-hint", text: "返答を選んでください（分類は表示しません）。" })]);
+      round.answers.forEach(function (a, i) {
+        wrap.append(el("button", { type: "button", class: "btn btn--primary conv-choice", text: a.text, onclick: function () {
+          const ev = CONV.evaluatePracticeAnswer(st.scene, st.idx, i);
+          if (!ev.ok) { showErrorNotice("回答を評価できませんでした。"); return; }
+          if (ev.meta.type === "good") st.goodCount += 1;
+          st.last = ev;
+          drawPlay();
+        } }));
+      });
+      return wrap;
+    }
+
+    function buildPracticeResult(round, npc) {
+      const ev = st.last;
+      const pet = db.currentPet;
+      const advice = globalThis.KE_DIALOGUE.pick({
+        petType: pet.speciesId || null,
+        coachType: pet.speciesId ? (globalThis.KE_PETS.find((p) => p.id === pet.speciesId) || {}).coachType : null,
+        stage: pet.stage, condition: globalThis.KE_PET.getCondition(db),
+        answerType: ev.meta.type, sceneTag: st.scene.category, purpose: "feedback", recentIds: []
+      });
+      return el("div", { class: "conv-flow" }, [
+        el("div", { class: "conv-box" }, [
+          el("span", { class: "nameplate", text: npc.displayName }),
+          el("p", { class: "conv-bubble", text: ev.answer.npcReply })
+        ]),
+        el("div", { class: "card result-card" }, [
+          el("h3", { text: "解説（分類を公開）" }),
+          el("p", { text: ev.meta.label + "：" + ev.meta.explanation }),
+          el("p", { class: "field-hint", text: ev.meta.nextHint || "" })
+        ]),
+        el("div", { class: "card result-card result-advice" }, [
+          el("h3", { text: pet.name + " のアドバイス" }),
+          el("p", { text: advice.text })
+        ]),
+        el("div", { class: "form-actions" }, [
+          el("button", { type: "button", class: "btn btn--primary", text: "次の返答へ", onclick: function () {
+            const base = CONV.practiceRounds(st.scene);
+            st.idx += 1;
+            // 4ターン終了時にボーナス条件成立ならボーナスタンを1回追加
+            if (!st.bonusPlayed && st.idx >= base.length && CONV.isBonusEligible(st.goodCount)) {
+              st.bonusPlayed = true;
+              st.bonusRound = CONV.makeBonusRound();
+            }
+            st.last = null;
+            drawPlay();
+          } })
+        ])
+      ]);
+    }
+  }
+
   /** インストール：DOM 参照の確保とトップバー操作の結線 */
   function install(onNavigate) {
     refs.appRoot = document.getElementById("app-root");
@@ -1456,6 +1617,7 @@
     renderRecordScreen: renderRecordScreen,
     renderPetScreen: renderPetScreen,
     renderQuestScreen: renderQuestScreen,
+    renderPracticeScreen: renderPracticeScreen,
     install: install
   };
 

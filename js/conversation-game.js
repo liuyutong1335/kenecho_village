@@ -137,6 +137,46 @@
     return { type: answer.type, label: meta.label || answer.type, delta: meta.delta != null ? meta.delta : 0, explanation: answer.explanation, nextHint: answer.nextHint };
   }
 
+  /* ------------------------------------------------------------------ */
+  /* 会話練習モード（きずな度は変化させない）                              */
+  /* ------------------------------------------------------------------ */
+
+  /** 練習の基本4ターン */
+  function practiceRounds(scene) {
+    return scene.rounds.slice(0, 4);
+  }
+
+  /** ボーナスタン成立条件：4ターン中「会話が続きやすい」を2回以上 */
+  function isBonusEligible(goodCount) {
+    return goodCount >= 2;
+  }
+
+  /** ボーナスターンのまとめの会話（シーンに付属しない共通の締め） */
+  function makeBonusRound() {
+    return {
+      npcLine: "今日はいろいろ話せて楽しかったよ。またいつでも話そうね。",
+      npcExpression: "happy",
+      answers: [
+        { text: "こちらこそ、また話そうね！", type: "good", npcReply: "うん、約束！ 楽しみにしてる。", npcExpression: "happy", explanation: "別れ際に次を約束すると、関係は続いていく。", nextHint: "実際にまた会うと、練習が実りになる。", weight: 10 },
+        { text: "はい、ありがとうございました。", type: "short", npcReply: "うん、またね。", npcExpression: "neutral", explanation: "礼儀正しい短い締め。失礼はない。", nextHint: "一言、気持ちを添えると温かい。", weight: 10 },
+        { text: "（うまく言えず、ぼんやりしてしまう）", type: "bad", npcReply: "…？ どうしたの？ また今度ね。", npcExpression: "troubled", explanation: "無言の締めは、相手に戸惑いを残す。", nextHint: "短くても返事をすることが大切。", weight: 10 }
+      ]
+    };
+  }
+
+  /**
+   * 練習の1タンを評価する。データは一切変更しない。
+   * fullRounds: 基本4ターン＋（ボーナス成立時）ボーナスターンを連結した配列
+   */
+  function evaluatePracticeAnswer(scene, roundIndex, answerIndex) {
+    const base = practiceRounds(scene);
+    const round = roundIndex < base.length ? base[roundIndex] : makeBonusRound();
+    const answer = round.answers[answerIndex];
+    if (!answer) return { ok: false };
+    const meta = getAnswerMeta(null, answer);
+    return { ok: true, answer: answer, meta: meta, roundNpcLine: round.npcLine, isBonus: roundIndex >= base.length };
+  }
+
   const KE_CONVERSATION = {
     getScenes,
     getSceneById,
@@ -147,7 +187,11 @@
     getQuestStatus,
     completeDailyQuest,
     getAnswerMeta,
-    buildSpeechContext
+    buildSpeechContext,
+    practiceRounds,
+    isBonusEligible,
+    makeBonusRound,
+    evaluatePracticeAnswer
   };
 
   if (globalThis) globalThis.KE_CONVERSATION = KE_CONVERSATION;
