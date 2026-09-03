@@ -67,6 +67,18 @@
       UI.renderQuestScreen();
       return;
     }
+    if (target === "notebook") {
+      UI.renderNotebookScreen();
+      return;
+    }
+    if (target === "memories") {
+      UI.renderMemoriesScreen();
+      return;
+    }
+    if (target === "encyclopedia") {
+      UI.renderEncyclopediaScreen();
+      return;
+    }
     if (target === "home" || BUILT_SCREENS[target]) {
       UI.renderHome(DB.get());
       return;

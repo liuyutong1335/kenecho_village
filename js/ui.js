@@ -1177,6 +1177,7 @@
             statBox("ペットきずな度", String(pet.petBond)),
             statBox("記録日数", String(pet.recordedDays))
           ]),
+          buildDepartureAction(),
           el("div", { class: "form-actions" }, [exitButton])
         ])
       ])
@@ -1590,6 +1591,193 @@
     }
   }
 
+  /* ==================================================================== */
+  /* M12: 交流ノート・図鑑・思い出・旅立ち・次世代                           */
+  /* ==================================================================== */
+
+  function buildDepartureAction() {
+    const db = globalThis.KE_DB.get();
+    const pet = db.currentPet;
+    const PET = globalThis.KE_PET;
+    const today = U.todayStr();
+    if (!pet || !PET.checkDepartureReady(pet, today, pet.petBond)) return null;
+    return el("div", { class: "departure-area" }, [
+      el("p", { class: "field-hint", text: "旅立ちの準備ができたようです…。思い出をつくって、新しい卵を迎えられます。" }),
+      el("button", { type: "button", class: "btn btn--danger", text: "旅立ちの準備をする", onclick: function () {
+        confirmDialog("旅立ちの確認", pet.name + " との思い出を残し、新しい卵を迎えます。よろしいですか？", function () {
+          const r = PET.completeDeparture(db);
+          if (!r.ok) { showErrorNotice(r.message || "旅立ちを実行できませんでした。"); return; }
+          if (!globalThis.KE_DB.save()) showErrorNotice("保存に失敗しました。");
+          else showNotice("思い出ができました。新しい世代を迎えましょう。");
+          renderNextGenerationScreen();
+        }, "旅立たせる");
+      } })
+    ]);
+  }
+
+  /** 次世代：新しい卵の名前と決定方式を決める */
+  function renderNextGenerationScreen() {
+    const root = refs.appRoot;
+    clear(root);
+    const db = globalThis.KE_DB.get();
+    const PET = globalThis.KE_PET;
+    const SPR = globalThis.KE_SPRITE;
+    const name = el("input", { type: "text", maxlength: "12", placeholder: "新しいペットの名前" });
+    const err = el("p", { class: "field-error" });
+    const modeState = { value: "choose" };
+    const radios = Object.keys({ choose: "自分で選ぶ", random: "おまかせ" }).map(function (k) {
+      const inp = el("input", { type: "radio", name: "gen_mode", value: k, checked: k === modeState.value, onchange: function () { modeState.value = k; } });
+      return el("label", { class: "radio-row" }, [inp, el("span", { class: "radio-label", text: k === "choose" ? "自分で選ぶ（孵化時に6種類から）" : "おまかせ（孵化時にランダム決定）" })]);
+    });
+    const panel = el("section", { class: "panel", "aria-labelledby": "nextGenTitle" }, [
+      el("h1", { id: "nextGenTitle", text: "新しい世代を迎えます" }),
+      el("p", { class: "field-hint", text: "前の世代は思い出になりました。新しい卵の名前と、種類の決め方を設定しましょう。種類はまだ決まりません。" }),
+      el("div", { class: "pet-stage" }, [SPR.canvasTag(SPR.renderEgg(5), "新しい卵", "sprite-canvas")]),
+      el("div", { class: "field" }, [el("label", { for: "next_name", text: "新しいペットの名前" }), name]),
+      el("div", { class: "radio-group" }, radios),
+      err,
+      el("div", { class: "form-actions" }, [
+        el("button", { type: "button", class: "btn btn--ghost", text: "思い出を見る", onclick: renderMemoriesScreen }),
+        el("button", { type: "button", class: "btn btn--confirm", text: "新しい卵をはじめよう", onclick: function () {
+          const petName = String(name.value || "").trim();
+          if (!petName) { err.textContent = "ペットの名前を入力してください。"; return; }
+          if (petName.length > 12) { err.textContent = "ペットの名前は12文字以内で入力してください。"; return; }
+          const r = PET.startNextGeneration(db, petName, modeState.value);
+          if (!r.ok) { err.textContent = r.message || "次世代を始められませんでした。"; return; }
+          if (!globalThis.KE_DB.save()) showErrorNotice("保存に失敗しました。");
+          showNotice("新しい卵をお迎えしました！");
+          if (globalThis.KE_APP) globalThis.KE_APP.navigate("pet");
+        } })
+      ])
+    ]);
+    root.append(panel);
+  }
+
+  /** 交流ノート（NPC一覧＋詳細） */
+  function renderNotebookScreen() {
+    const root = refs.appRoot;
+    clear(root);
+    const db = globalThis.KE_DB.get();
+    const REL = globalThis.KE_RELATIONSHIP;
+    const SPR = globalThis.KE_SPRITE;
+    const npcs = globalThis.KE_NPCS || [];
+    const panel = el("section", { class: "panel", "aria-labelledby": "bookTitle" }, [
+      el("h1", { id: "bookTitle", text: "交流ノート（住民手帳）" }),
+      el("p", { class: "field-hint", text: "村のNPCとの関係を確認できます。出会った人は顔と情報が載ります。" })
+    ]);
+    const grid = el("div", { class: "species-grid" });
+    npcs.forEach(function (npc) {
+      const met = REL.isNpcDiscovered(db, npc.id);
+      const state = met ? REL.getNpcState(db, npc.id) : null;
+      const cardBody = met ? [
+        SPR.canvasTag(SPR.renderSilhouette("#5a554e", 4), npc.displayName, "sprite-canvas"),
+        el("span", { class: "species-name", text: npc.displayName }),
+        el("span", { class: "species-coach", text: npc.role }),
+        el("span", { class: "field-hint", text: "きずな度 " + state.bond + "（" + REL.getNpcBondLevelLabel(db, npc.id) + "）" }),
+        el("span", { class: "field-hint", text: "会話 " + (state.conversations || 0) + " 回／最終 " + (state.lastTalkedAt || "なし") })
+      ] : [
+        SPR.canvasTag(SPR.renderSilhouette("#5a554e", 4), "未遭遇の住人", "sprite-canvas"),
+        el("span", { class: "species-name", text: "？？？" }),
+        el("span", { class: "field-hint", text: "まだ出会っていません" })
+      ];
+      grid.append(el("button", { type: "button", class: "species-card", onclick: function () {
+        if (met) renderNpcDetailModal(npc); else showNotice("まだ出会っていないため、詳しい情報は分かりません。");
+      } }, cardBody));
+    });
+    panel.append(grid);
+    root.append(panel);
+  }
+
+  function renderNpcDetailModal(npc) {
+    const REL = globalThis.KE_RELATIONSHIP;
+    const db = globalThis.KE_DB.get();
+    const state = REL.getNpcState(db, npc.id);
+    const level = REL.getNpcBondLevelLabel(db, npc.id);
+    const overlay = el("div", { class: "overlay", role: "dialog", "aria-modal": "true", "aria-label": npc.displayName });
+    overlay.append(el("div", { class: "dialog dialog--wide" }, [
+      el("h2", { class: "dialog-title", text: npc.displayName + "（" + npc.role + "）" }),
+      el("p", { text: "自己紹介：" + npc.intro }),
+      el("p", { class: "field-hint", text: "出会った場所：" + npc.metPlace }),
+      el("div", { class: "stat-row" }, [
+        statBox("きずな度", String(state.bond)),
+        statBox("関係段階", level || "—"),
+        statBox("会話回数", String(state.conversations || 0)),
+        statBox("最終会話日", state.lastTalkedAt || "—")
+      ]),
+      el("p", { class: "field-hint", text: "次の会話のヒント：" + npc.nextHint }),
+      el("div", { class: "form-actions" }, [
+        el("button", { type: "button", class: "btn btn--ghost", text: "会話クエストへ", onclick: function () {
+          overlay.remove();
+          if (globalThis.KE_APP) globalThis.KE_APP.navigate("quest");
+        } }),
+        el("button", { type: "button", class: "btn btn--primary", text: "閉じる", onclick: function () { overlay.remove(); } })
+      ])
+    ]));
+    overlay.addEventListener("keydown", function (ev) { if (ev.key === "Escape") overlay.remove(); });
+    refs.modalRoot.append(overlay);
+  }
+
+  /** ペット図鑑 */
+  function renderEncyclopediaScreen() {
+    const root = refs.appRoot;
+    clear(root);
+    const db = globalThis.KE_DB.get();
+    const PET = globalThis.KE_PET;
+    const SPR = globalThis.KE_SPRITE;
+    const species = globalThis.KE_PETS || [];
+    const panel = el("section", { class: "panel", "aria-labelledby": "encyTitle" }, [
+      el("h1", { id: "encyTitle", text: "村の生き物図鑑" }),
+      el("p", { class: "field-hint", text: "種類が決まったペットだけが図鑑に登録されます。初めて見つけた日を記録します。" })
+    ]);
+    const grid = el("div", { class: "species-grid" });
+    species.forEach(function (sp) {
+      const found = db.petEncyclopedia && db.petEncyclopedia[sp.id] && db.petEncyclopedia[sp.id].discovered;
+      const body = found ? [
+        SPR.canvasTag(SPR.renderPet(sp.color, 4), sp.name, "sprite-canvas"),
+        el("span", { class: "species-name", text: sp.name }),
+        el("span", { class: "species-coach", text: sp.coachTypeLabel }),
+        el("span", { class: "field-hint", text: "発見：" + (db.petEncyclopedia[sp.id].discoveredAt || "—") })
+      ] : [
+        SPR.canvasTag(SPR.renderSilhouette(sp.color, 4), "未発見の生き物", "sprite-canvas"),
+        el("span", { class: "species-name", text: "？？？" }),
+        el("span", { class: "field-hint", text: "まだ図鑑に載っていません" })
+      ];
+      grid.append(el("div", { class: "species-card", "aria-hidden": !found }, body));
+    });
+    panel.append(grid);
+    root.append(panel);
+  }
+
+  /** 思い出（世代のアルバム） */
+  function renderMemoriesScreen() {
+    const root = refs.appRoot;
+    clear(root);
+    const db = globalThis.KE_DB.get();
+    const PET = globalThis.KE_PET;
+    const memories = (db.petMemories || []).slice().reverse();
+    const panel = el("section", { class: "panel", "aria-labelledby": "memTitle" }, [
+      el("h1", { id: "memTitle", text: "思い出（古いアルバム）" }),
+      el("p", { class: "field-hint", text: "旅立ったペットたちの記録です。" })
+    ]);
+    if (memories.length === 0) {
+      panel.append(el("p", { class: "lead", text: "まだ思い出はありません。ペットとの時間を重ねると、ここに記録が残ります。" }));
+    }
+    memories.forEach(function (m) {
+      const sp = m.speciesId ? PET.getSpeciesById(m.speciesId) : null;
+      const mainNpc = m.mainNpcId ? (globalThis.KE_NPCS || []).find(function (n) { return n.id === m.mainNpcId; }) : null;
+      panel.append(el("article", { class: "card memory-card" }, [
+        el("h2", { text: m.name + (sp ? "（" + sp.name + "）" : "（種類不明）") + "　" + m.generationId }),
+        el("ul", { class: "list" }, [
+          el("li", { text: "誕生：" + m.birthDate + " ／ 孵化：" + (m.hatchedAt || "—") + " ／ 旅立ち：" + m.departedAt }),
+          el("li", { text: "一緒に過ごした日数：" + m.daysTogether + "日 ／ 最終成長段階：" + PET.getStageLabel(m.finalStage) }),
+          el("li", { text: "健康記録日数：" + m.healthRecordDays + "日 ／ 会話クエスト完了日数：" + m.questDays + "日" }),
+          el("li", { text: "最終きずな度：" + m.finalBond + (mainNpc ? " ／ よく話したNPC：" + mainNpc.displayName : "") })
+        ])
+      ]));
+    });
+    root.append(panel);
+  }
+
   /** インストール：DOM 参照の確保とトップバー操作の結線 */
   function install(onNavigate) {
     refs.appRoot = document.getElementById("app-root");
@@ -1618,6 +1806,10 @@
     renderPetScreen: renderPetScreen,
     renderQuestScreen: renderQuestScreen,
     renderPracticeScreen: renderPracticeScreen,
+    renderNotebookScreen: renderNotebookScreen,
+    renderEncyclopediaScreen: renderEncyclopediaScreen,
+    renderMemoriesScreen: renderMemoriesScreen,
+    renderNextGenerationScreen: renderNextGenerationScreen,
     install: install
   };
 

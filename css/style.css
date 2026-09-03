@@ -381,6 +381,10 @@ input:focus, select:focus, button:focus-visible {
 .result-bond { font-weight: bold; color: var(--grass-dark); }
 .result-advice { border-left: 6px solid var(--sun); }
 
+/* ===== 思い出・旅立ち ===== */
+.departure-area { margin-top: 10px; border-top: 2px dashed var(--orange-warn); padding-top: 8px; }
+.memory-card { margin-top: 14px; }
+
 /* ===== トースト ===== */
 .modal-root { position: fixed; inset: 0; pointer-events: none; z-index: 900; display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: 12px; }
 .toast {

@@ -135,6 +135,62 @@
     return mem.length > 0 ? mem[mem.length - 1].speciesId : null;
   }
 
+  /** 現在の世代の思い出レコードを組み立てる */
+  function buildPetMemory(db) {
+    const pet = db.currentPet;
+    const today = U.todayStr();
+    const days = pet.hatchedAt ? U.daysBetween(pet.hatchedAt, today) : 0;
+    let mainNpcId = null;
+    let maxBond = -1;
+    const npcs = (db.relationships && db.relationships.npcs) || {};
+    Object.keys(npcs).forEach(function (id) {
+      const b = npcs[id].bond;
+      if (typeof b === "number" && b > maxBond) { maxBond = b; mainNpcId = id; }
+    });
+    return {
+      generationId: pet.generationId,
+      name: pet.name,
+      speciesId: pet.speciesRevealed ? pet.speciesId : null,
+      birthDate: pet.birthDate,
+      hatchedAt: pet.hatchedAt,
+      departedAt: today,
+      daysTogether: days,
+      finalStage: pet.stage,
+      healthRecordDays: pet.recordedDays,
+      questDays: pet.questDays,
+      finalBond: pet.petBond,
+      mainNpcId: mainNpcId
+    };
+  }
+
+  /** 旅立ち：現在のペットを思い出へ保存する */
+  function completeDeparture(db) {
+    const pet = db.currentPet;
+    if (!pet) return { ok: false, reason: "no_pet", message: "ペットがいません。" };
+    if (pet.stage === "egg" || !pet.speciesRevealed) {
+      return { ok: false, reason: "not_ready", message: "旅立つ準備ができていません。" };
+    }
+    const already = (db.petMemories || []).some(function (m) { return m.generationId === pet.generationId; });
+    if (already) return { ok: false, reason: "already_departed", message: "この世代は旅立ち済みです。" };
+    const memory = buildPetMemory(db);
+    if (!db.petMemories) db.petMemories = [];
+    db.petMemories.push(memory);
+    return { ok: true, memory: memory };
+  }
+
+  /** 次世代の新しい卵を開始する（呼び出し前に completeDeparture 済みであること） */
+  function startNextGeneration(db, name, selectionMode) {
+    const genNo = (db.petMemories || []).length + 1;
+    const nextGenId = "gen_" + String(genNo).padStart(3, "0");
+    const pet = createEgg(nextGenId, name, selectionMode);
+    db.currentPet = pet;
+    if (!db.relationships) db.relationships = { pet: {}, npcs: {} };
+    if (!db.relationships.pet) db.relationships.pet = {};
+    db.relationships.pet[nextGenId] = { bond: pet.petBond, questsCompleted: 0 };
+    if (db.conversation) db.conversation.dailyQuestCompleted = false;
+    return { ok: true, pet: pet, generationId: nextGenId };
+  }
+
   /** 孵化で選べる候補一覧（次世代は直前世代と同種を除外） */
   function getHatchCandidates(db) {
     return getSelectableSpecies(getPreviousSpeciesId(db));
@@ -190,6 +246,12 @@
     getHatchCandidates: getHatchCandidates,
     applyHatch: applyHatch,
     revealRandomSpecies: revealRandomSpecies,
+
+    // 思い出・旅立ち・次世代（M12）
+    buildPetMemory: buildPetMemory,
+    completeDeparture: completeDeparture,
+    startNextGeneration: startNextGeneration,
+
     CONDITION_META: CONDITION_META
   };
 
