@@ -1292,7 +1292,7 @@
       el("div", { class: "pet-stage" }, [SPR.canvasTag(SPR.renderPet(sp.color, 6), pet.name + "（" + sp.name + "）", "sprite-canvas")]),
       el("p", { class: "lead", text: pet.name + " は「" + sp.name + "」でした！" }),
       el("p", { class: "field-hint", text: "コーチタイプ：" + sp.coachTypeLabel + " ／ " + sp.summary }),
-      el("p", { class: "field-hint", text: (firstDiscover ? "図鑑に新しく登録されました。" : "図鑑の登録が更新されました。") + " これでコーチ台詞を使えるようになります。" }),
+      el("p", { class: "field-hint", text: (firstDiscover ? "図鑑に新しく登録されました。" : "図鑑の登録が更新されました。") + " これで、ペットのコーチ台詞を使えるようになります。" }),
       el("div", { class: "card" }, [
         el("h2", { text: "最初のNPCと出会った" }),
         el("p", { text: "…村の入り口で女性が手を振っていた。どうやら" + (npcSato ? npcSato.displayName : "佐藤さん") + "という名前らしい。" }),
@@ -1306,6 +1306,127 @@
       ])
     ]);
     root.append(panel);
+  }
+
+  /* ==================================================================== */
+  /* 今日の会話クエスト（M9）                                               */
+  /* ==================================================================== */
+
+  function speciesColorOf(db) {
+    const pet = db.currentPet;
+    if (pet && pet.speciesId) {
+      const sp = globalThis.KE_PET.getSpeciesById(pet.speciesId);
+      if (sp) return sp.color;
+    }
+    return "#7FA650";
+  }
+
+  function renderQuestScreen() {
+    const root = refs.appRoot;
+    const DB = globalThis.KE_DB;
+    const CONV = globalThis.KE_CONVERSATION;
+    const PET = globalThis.KE_PET;
+    const SPR = globalThis.KE_SPRITE;
+    clear(root);
+    const db = DB.get();
+    const today = U.todayStr();
+
+    if (!CONV.isConversationUnlocked(db)) {
+      root.append(el("section", { class: "panel", "aria-labelledby": "questTitle" }, [
+        el("h1", { id: "questTitle", text: "会話クエスト" }),
+        el("p", { class: "field-hint", text: "ペットの種類が公開されるまで、NPCは村に姿を現しません。まずペット小屋から「外へ出る」を選んでください。" }),
+        el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--primary", text: "ペット小屋へ", onclick: function () { if (globalThis.KE_APP) globalThis.KE_APP.navigate("pet"); } })])
+      ]));
+      return;
+    }
+    const scene = CONV.pickQuestScene(db);
+    if (!scene) {
+      root.append(el("section", { class: "panel" }, [
+        el("h1", { text: "会話クエスト" }),
+        el("p", { class: "field-hint", text: "話しかけられるNPCがまだいません。ペット小屋から外に出て、NPCと出会ってください。" })
+      ]));
+      return;
+    }
+    draw(scene, null);
+
+    function draw(sc, result) {
+      clear(root);
+      root.append(buildFrame(sc, result));
+    }
+
+    function buildFrame(sc, result) {
+      const npc = CONV.getNpcById(sc.npcId) || { displayName: sc.npcId };
+      const status = CONV.getQuestStatus(db, today);
+      return el("section", { class: "panel conv-panel", "aria-labelledby": "questTitle" }, [
+        el("h1", { id: "questTitle", text: "今日の会話クエスト：" + sc.title }),
+        el("p", { class: "field-hint", text: status.done ? "今日のきずな度は更新済みです。再プレイでは更新されません。" : "今日のクエストです。きずな度が更新されます。" }),
+        el("div", { class: "conv-bg bg-" + sc.background, "aria-hidden": "true" }),
+        el("div", { class: "conv-stage", "aria-label": "会話のようす" }, [
+          el("div", { class: "conv-char conv-char--user", "aria-label": "あなた" }, [el("div", { class: "conv-avatar conv-avatar--user", "aria-hidden": "true" }), el("span", { class: "nameplate", text: "あなた" })]),
+          el("div", { class: "conv-char conv-char--pet", "aria-label": db.currentPet.name }, [
+            SPR.canvasTag(SPR.renderPet(speciesColorOf(db), 3), db.currentPet.name + "（一緒にいる）", "sprite-canvas conv-avatar"),
+            el("span", { class: "nameplate", text: db.currentPet.name })
+          ]),
+          el("div", { class: "conv-char conv-char--npc", "aria-label": npc.displayName }, [
+            SPR.canvasTag(SPR.renderSilhouette("#5a554e", 3), npc.displayName, "sprite-canvas conv-avatar"),
+            el("span", { class: "nameplate", text: npc.displayName })
+          ])
+        ]),
+        el("p", { class: "conv-context", text: sc.context }),
+        result ? buildResult(sc, npc, result) : buildQuestion(sc)
+      ]);
+    }
+
+    function buildQuestion(sc) {
+      const round = sc.rounds[0];
+      const box = el("div", { class: "conv-box", "aria-live": "polite" }, [
+        el("span", { class: "nameplate", text: CONV.getNpcById(sc.npcId).displayName }),
+        el("p", { class: "conv-bubble", text: round.npcLine })
+      ]);
+      const choices = el("div", { class: "conv-choices" }, [el("p", { class: "field-hint", text: "あなたの返答を選んでください（分類は表示しません）。" })]);
+      round.answers.forEach(function (a, i) {
+        choices.append(el("button", { type: "button", class: "btn btn--primary conv-choice", text: a.text, onclick: function () {
+          const r = CONV.completeDailyQuest(DB.get(), sc.id, i, today);
+          if (!r.ok) { showErrorNotice(r.message || "クエストを完了できませんでした。"); return; }
+          if (r.updates.applied && !DB.save()) showErrorNotice("保存に失敗しました。");
+          else if (!r.updates.applied) DB.save();
+          draw(sc, r);
+        } }));
+      });
+      return el("div", { class: "conv-flow" }, [box, choices]);
+    }
+
+    function buildResult(sc, npc, r) {
+      const meta = CONV.getAnswerMeta(db, r.answer);
+      const box = el("div", { class: "conv-box conv-result", "aria-live": "polite" }, [
+        el("span", { class: "nameplate", text: npc.displayName }),
+        el("p", { class: "conv-bubble", text: r.answer.npcReply }),
+        el("div", { class: "card result-card" }, [
+          el("h3", { text: "解説（ここで分類を公開します）" }),
+          el("p", { text: meta.label + "：" + meta.explanation }),
+          el("p", { class: "field-hint", text: meta.nextHint || "" }),
+          el("h3", { text: "きずな度の変化" }),
+          r.updates.applied
+            ? el("p", { class: "result-bond", text: "NPC（" + bondLine(r.updates.npc) + "）／ペット（" + bondLine(r.updates.pet) + "）" })
+            : el("p", { class: "field-hint", text: "今日はすでに更新済みのため、きずな度は変わりません。" })
+        ]),
+        el("div", { class: "card result-card result-advice" }, [
+          el("h3", { text: db.currentPet.name + " のアドバイス" }),
+          el("p", { text: r.advice.text || "" })
+        ])
+      ]);
+      const actions = el("div", { class: "form-actions" }, [
+        el("button", { type: "button", class: "btn btn--ghost", text: "もう一度プレイ", onclick: function () {
+          draw(CONV.pickQuestScene(DB.get()) || sc, null);
+        } }),
+        el("button", { type: "button", class: "btn btn--primary", text: "ペット小屋へ戻る", onclick: function () { if (globalThis.KE_APP) globalThis.KE_APP.navigate("pet"); } })
+      ]);
+      return el("div", { class: "conv-flow" }, [box, actions]);
+    }
+
+    function bondLine(u) {
+      return u ? u.before + " → " + u.after + "（" + (u.delta >= 0 ? "+" : "") + u.delta + "）" : "変化なし";
+    }
   }
 
   /** インストール：DOM 参照の確保とトップバー操作の結線 */
@@ -1334,6 +1455,7 @@
     renderPlaceholder: renderPlaceholder,
     renderRecordScreen: renderRecordScreen,
     renderPetScreen: renderPetScreen,
+    renderQuestScreen: renderQuestScreen,
     install: install
   };
 

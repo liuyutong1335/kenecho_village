@@ -121,6 +121,11 @@
     return b == null ? null : R.levelLabel(b);
   }
 
+  /** きずな度の数値 → 関係段階キー */
+  function getRelationshipLevelKey(bond) {
+    return R.levelKey(bond);
+  }
+
   const KE_RELATIONSHIP = {
     getRelationships,
     isNpcDiscovered,
@@ -134,7 +139,8 @@
     getTotalBondByValues,
     recordHistory,
     getDiscoveredNpcIds,
-    getNpcBondLevelLabel
+    getNpcBondLevelLabel,
+    getRelationshipLevelKey
   };
 
   if (globalThis) globalThis.KE_RELATIONSHIP = KE_RELATIONSHIP;

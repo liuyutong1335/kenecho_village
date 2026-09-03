@@ -63,6 +63,10 @@
       UI.renderPetScreen();
       return;
     }
+    if (target === "quest") {
+      UI.renderQuestScreen();
+      return;
+    }
     if (target === "home" || BUILT_SCREENS[target]) {
       UI.renderHome(DB.get());
       return;
