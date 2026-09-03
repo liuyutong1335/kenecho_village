@@ -13,7 +13,8 @@
     happy: { label: "ご機嫌", desc: "いい記録が続いています。" },
     normal: { label: "ふつう", desc: "いつもどおりの様子です。" },
     lonely: { label: "少し寂しそう", desc: "今日は記録がまだありません。" },
-    sleepy: { label: "眠そう", desc: "睡眠が短いようです。" }
+    sleepy: { label: "眠そう", desc: "睡眠が短いようです。" },
+    sick: C.SICK.meta
   };
 
   /** 新しい世代の卵を生成する（種類非公開） */
@@ -96,13 +97,31 @@
 
   /**
    * 健康状態（ペットの表情・待機動作・台詞の前置きに影響。会話評価には影響しない）。
-   * 眠そう（睡眠時間が目標の半分未満）を最優先。
+   * 優先順位: 病気（大きな負担）> 眠そう > perfect > happy > lonely > normal。
+   * 病気（sick）は、睡眠が目標の約1/4未満、または摂取が目標+1000kcal超の日。
+   * ただし「外に出て遊んだ」（外出・会話で回復）当日は病気扱いにしない。
    */
   function getCondition(db, ref) {
     const H2 = globalThis.KE_HEALTH;
     const today = ref || U.todayStr();
     const goals = H2.getHealthGoals(db);
     const sleep = H2.getSleepOnDate(db, today);
+    const meals = H2.getMealTotals(db, today);
+
+    // 外出で回復した当日は、病気・眠そう（不調）にならない（記録はそのまま活きる）
+    const recovered = !!(db.settings && db.settings.recoveredAt === today);
+    if (recovered) {
+      const s2 = H2.getDailyScores(db, today);
+      const v2 = [s2.meal, s2.exercise, s2.sleep];
+      if (s2.hasAny && v2.every(function (v) { return v === 2; })) return "perfect";
+      if (s2.hasAny && v2.some(function (v) { return v === 2; })) return "happy";
+      if (!s2.hasAny) return "lonely";
+      return "normal";
+    }
+    // 明確な過剰摂取（目標+1000kcal超）→ 体調不良
+    const tooCalorie = meals.count > 0 && meals.kcal >= goals.calorieLimitKcal + C.SICK.CALORIE_OVER_KCAL;
+    if (tooCalorie) return "sick";
+    // 睡眠不足は「眠そう」で表現（既存仕様を維持）
     if (sleep && sleep.hours != null && sleep.hours < goals.sleepHours * 0.5) return "sleepy";
     const s = H2.getDailyScores(db, today);
     const vals = [s.meal, s.exercise, s.sleep];
@@ -110,6 +129,14 @@
     if (s.hasAny && vals.some(function (v) { return v === 2; })) return "happy";
     if (!s.hasAny) return "lonely";
     return "normal";
+  }
+
+  /** 外出（会話クエスト・練習）した日に回復済みとして記録する */
+  function markRecovered(db, ref) {
+    const today = ref || U.todayStr();
+    if (!db.settings) db.settings = {};
+    db.settings.recoveredAt = today;
+    return today;
   }
 
   function getConditionMeta(condition) {
@@ -240,6 +267,7 @@
     checkDepartureReady: checkDepartureReady,
     getCondition: getCondition,
     getConditionMeta: getConditionMeta,
+    markRecovered: markRecovered,
     getSpeciesById: getSpeciesById,
     getSelectableSpecies: getSelectableSpecies,
     getPreviousSpeciesId: getPreviousSpeciesId,

@@ -46,6 +46,29 @@
       sleepHours: 7           // 1日の睡眠時間目標 (h)
     },
 
+    /** ---- 健康目標タイプ（初期設定で選択、推薦値を算出）----
+     * calorieDelta: BMRに対する摂取カロリー比（1.0 = 維持）
+     * proteinPerKg: 蛋白質 = 体重kg × 係数
+     * exerciseMinutes / sleepHours: タイプごとの推奨目標
+     */
+    HEALTH_GOAL_TYPES: {
+      lose: { label: "減量", calorieRatio: 0.9, proteinPerKg: 1.6, exerciseMinutes: 45, sleepHours: 8, desc: "少し控えめな摂取と運動で、ゆるやかな減量をめざします" },
+      gain: { label: "増量（体づくり）", calorieRatio: 1.1, proteinPerKg: 1.7, exerciseMinutes: 40, sleepHours: 8, desc: "エネルギーとたんぱく質をしっかりとり、からだづくりを応援します" },
+      maintain: { label: "健康維持", calorieRatio: 1.0, proteinPerKg: 1.2, exerciseMinutes: 30, sleepHours: 7, desc: "無理のない範囲で、毎日の健康をキープします" }
+    },
+    /** 目標タイプ未選択時の既定 */
+    DEFAULT_GOAL_TYPE: "maintain",
+
+    /** ---- 状態「病気」（明らかに目標から外れた日のペナルティ）---- */
+    SICK: {
+      // 睡眠時間が目標のこの割合未満 → 重大な睡眠不足（※既存「眠そう」判定より深刻）
+      SLEEP_RATIO_SICK: 0.25,
+      // 摂取カロリーが目標以上にこの量（kcal）超えたら → 重度の過剰摂取
+      CALORIE_OVER_KCAL: 1000,
+      // 状態名・説明
+      meta: { label: "体調不良", desc: "今日は大きな負担がありました。" }
+    },
+
     /** ---- きずな度 ---- */
     BOND: {
       NPC_INITIAL: 40,   // NPCきずな度 初期値

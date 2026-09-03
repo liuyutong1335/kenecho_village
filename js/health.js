@@ -491,17 +491,41 @@
   /* 健康目標                                                            */
   /* ------------------------------------------------------------------ */
 
-  /** 保存値と初期値を合成した目標を返す。蛋白質は基準（体重×係数）で自動設定 */
+  /**
+   * 目標タイプ別の推薦目標を算出する（初期設定・未カスタマイズ時の提示用）。
+   * profile（体重・身長・年齢・性別）とタイプの係数から、
+   * 摂取カロリー（BMR×比）・蛋白質（体重×係数）・運動・睡眠を返す。
+   */
+  function recommendGoals(db, goalType) {
+    const profile = (db && db.profile) || {};
+    const type = C.HEALTH_GOAL_TYPES[goalType] || C.HEALTH_GOAL_TYPES[C.DEFAULT_GOAL_TYPE];
+    const weight = getWeightForCalculation(db);
+    const bmr = calcBMR(weight, profile.heightCm, profile.age, profile.gender);
+    const calorieLimitKcal = bmr != null ? Math.round(bmr * type.calorieRatio) : C.HEALTH_GOAL_DEFAULTS.calorieLimitKcal;
+    return {
+      goalType: type === C.HEALTH_GOAL_TYPES[goalType] ? goalType : C.DEFAULT_GOAL_TYPE,
+      bmr: bmr != null ? bmr : null,
+      calorieLimitKcal: calorieLimitKcal,
+      proteinGoalG: Math.round(weight * type.proteinPerKg),
+      exerciseMinutes: type.exerciseMinutes,
+      sleepHours: type.sleepHours
+    };
+  }
+
+  /** 保存値・初期値・タイプを合成した目標を返す。蛋白質は基準（体重×係数）で自動設定 */
   function getHealthGoals(db) {
     const stored = (db && db.healthGoals) || {};
     const defaults = C.HEALTH_GOAL_DEFAULTS;
     const weight = getWeightForCalculation(db);
     const proteinDefault = Math.round(weight * defaults.proteinPerKg);
+    const typeKey = stored.goalType && C.HEALTH_GOAL_TYPES[stored.goalType] ? stored.goalType : C.DEFAULT_GOAL_TYPE;
+    const type = C.HEALTH_GOAL_TYPES[typeKey];
     return {
+      goalType: typeKey,
       calorieLimitKcal: stored.calorieLimitKcal != null ? Number(stored.calorieLimitKcal) : defaults.calorieLimitKcal,
       proteinGoalG: stored.proteinGoalG != null ? Number(stored.proteinGoalG) : proteinDefault,
-      exerciseMinutes: stored.exerciseMinutes != null ? Number(stored.exerciseMinutes) : defaults.exerciseMinutes,
-      sleepHours: stored.sleepHours != null ? Number(stored.sleepHours) : defaults.sleepHours
+      exerciseMinutes: stored.exerciseMinutes != null ? Number(stored.exerciseMinutes) : (type ? type.exerciseMinutes : defaults.exerciseMinutes),
+      sleepHours: stored.sleepHours != null ? Number(stored.sleepHours) : (type ? type.sleepHours : defaults.sleepHours)
     };
   }
 
@@ -520,6 +544,9 @@
         errors[k] = jp + "は" + min + "〜" + max + "の範囲で入力してください。";
       }
     });
+    if (input.goalType != null && input.goalType !== "" && !C.HEALTH_GOAL_TYPES[input.goalType]) {
+      errors.goalType = "目標タイプを選択してください。";
+    }
     return { ok: Object.keys(errors).length === 0, errors };
   }
 
@@ -527,6 +554,7 @@
     const v = validateGoalInput(input);
     if (!v.ok) return { ok: false, errors: v.errors };
     db.healthGoals = {
+      goalType: input.goalType && C.HEALTH_GOAL_TYPES[input.goalType] ? input.goalType : C.DEFAULT_GOAL_TYPE,
       calorieLimitKcal: Number(input.calorieLimitKcal),
       proteinGoalG: Number(input.proteinGoalG),
       exerciseMinutes: Number(input.exerciseMinutes),
@@ -541,6 +569,7 @@
 
   /**
    * 日付の健康スコアを計算する（各0〜2、合計0〜6）。
+   * 目標との達成度で緩めに判定する（すぐ満点にせず、半分から許容）。
    * hasAny: 記録が1件でもあるか（未記録判定に使う）
    */
   function getDailyScores(db, date) {
@@ -551,15 +580,20 @@
 
     let meal = 0;
     if (meals.count > 0) {
-      meal = (meals.kcal <= goals.calorieLimitKcal && meals.protein >= goals.proteinGoalG) ? 2 : 1;
+      // 目標内なら2（ただしカロリーは1.1倍まで、蛋白は0.9倍までを許容＝厳しくしない）
+      const inKcal = meals.kcal <= goals.calorieLimitKcal * 1.1;
+      const inProtein = meals.protein >= goals.proteinGoalG * 0.9;
+      meal = (inKcal && inProtein) ? 2 : 1; // 記録がある限り最低1点
     }
     let exercise = 0;
     if (ex.count > 0) {
-      exercise = ex.minutes >= goals.exerciseMinutes ? 2 : 1;
+      exercise = ex.minutes >= goals.exerciseMinutes * 0.8 ? 2 : 1; // 80%で満点、記録があれば最低1
     }
     let sleepScore = 0;
     if (sleep && sleep.hours != null) {
-      sleepScore = sleep.hours >= goals.sleepHours ? 2 : 1;
+      // 目標の約9割から、1.3倍までを満点（少し短くてもOK。厳しくしない）
+      const within = sleep.hours >= goals.sleepHours * 0.9 && sleep.hours <= goals.sleepHours * 1.3;
+      sleepScore = within ? 2 : 1;
     }
     const hasAny = meals.count > 0 || ex.count > 0 || !!sleep;
     return {
@@ -656,7 +690,7 @@
     hasWeightOnDate, saveWeight, removeWeight, validateWeightInput, calcBMI, calcBMR,
 
     // 目標
-    getHealthGoals, validateGoalInput, setHealthGoals,
+    getHealthGoals, recommendGoals, validateGoalInput, setHealthGoals,
 
     // 日次評価・EXP
     getDailyScores, getExpKey, getExpForScores, getEvaluationState, evaluateDay

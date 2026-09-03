@@ -41,12 +41,24 @@
     };
     db.currentPet = pet;
     db.relationships.pet[generationId] = { bond: pet.petBond, questsCompleted: 0 };
+    // 健康目標（初期設定で決めたタイプと各目標）を保存
+    const gh = globalThis.KE_HEALTH.setHealthGoals(db, {
+      goalType: values.goalType,
+      calorieLimitKcal: values.calorieLimitKcal,
+      proteinGoalG: values.proteinGoalG,
+      exerciseMinutes: values.exerciseMinutes,
+      sleepHours: values.sleepHours
+    });
+    if (!gh.ok) {
+      UI.showErrorNotice("健康目標を保存できませんでした。もう一度お試しください。");
+      return;
+    }
     if (!DB.save()) {
       UI.showErrorNotice("初期設定を保存できませんでした。もう一度お試しください。");
       return;
     }
     UI.showNotice("初期設定が完了しました。ペットの卵をお預かりしました！");
-    navigate("home");
+    UI.showOnboarding(function () { navigate("home"); });
   }
 
   function navigate(target) {
@@ -98,9 +110,13 @@
     UI.install(navigate);
     if (!DB.hasProfile()) {
       UI.renderSetup(handleSetupComplete);
-      UI.showNotice("ようこそ！ 初期設定を始めましょう。");
     } else {
-      UI.renderHome(DB.get());
+      const seenOnboarding = !!(DB.get().settings && DB.get().settings.onboardingDone);
+      if (seenOnboarding) {
+        UI.renderHome(DB.get());
+      } else {
+        UI.showOnboarding(function () { UI.renderHome(DB.get()); });
+      }
     }
   }
 
