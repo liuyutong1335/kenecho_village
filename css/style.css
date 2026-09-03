@@ -385,6 +385,23 @@ input:focus, select:focus, button:focus-visible {
 .departure-area { margin-top: 10px; border-top: 2px dashed var(--orange-warn); padding-top: 8px; }
 .memory-card { margin-top: 14px; }
 
+/* ===== ホーム ===== */
+.home-layout { display: flex; gap: 20px; flex-wrap: wrap; align-items: stretch; }
+.home-char { flex: 0 0 auto; background: var(--paper-light); border: var(--border-thin) solid var(--paper-shadow); padding: 16px; text-align: center; }
+.home-main { flex: 1 1 360px; display: flex; flex-direction: column; gap: 12px; }
+.home-main .card { margin-top: 0; }
+.home-next-desc { margin-bottom: 8px; }
+
+/* ===== アクセシビリティ（低モーション） ===== */
+@media (prefers-reduced-motion: reduce) {
+  .egg-shake { animation: none !important; }
+  *, *::before, *::after {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ===== トースト ===== */
 .modal-root { position: fixed; inset: 0; pointer-events: none; z-index: 900; display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: 12px; }
 .toast {

@@ -23,6 +23,7 @@ const SCRIPT_ORDER = [
   "js/data/npc-data.js",
   "js/data/conversation-scenes.js",
   "js/data/animation-manifest.js",
+  "js/data/pixel-art/pets.js",
   "js/db.js",
   "js/health.js",
   "js/pet-game.js",

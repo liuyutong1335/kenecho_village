@@ -77,3 +77,12 @@ test("animation-manifest に必須動作名が定義されている", () => {
   assert.deepEqual(M.eggMotions, ["egg_idle", "egg_shake", "egg_hatch"]);
   assert.deepEqual(M.npcMotions, ["idle", "talk", "happy", "neutral", "troubled", "appear", "special"]);
 });
+
+test("ピクセル定義が6種のアクセサリと表情フレームを持つ", () => {
+  const abs = path.join(root, "data", "pixel-art", "pets.js");
+  const P = require(abs).KE_PIXEL_PETS;
+  assert.ok(P.BASE.length === 16, "ベースは16行");
+  assert.ok(P.FACES.normal && P.FACES.blink && P.FACES.happy && P.FACES.sleepy && P.FACES.troubled);
+  const ids = Object.keys(P.ACCESSORIES).sort();
+  assert.deepEqual(ids, ["bearcub", "bird", "cat", "fox", "rabbit", "tanuki"]);
+});

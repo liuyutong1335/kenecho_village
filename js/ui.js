@@ -301,20 +301,78 @@
   }
 
   /** ホーム画面（プロフィール済み向け） */
-  function renderHome(data) {
+  function renderHome() {
     const root = refs.appRoot;
     clear(root);
-    const hasProfile = globalThis.KE_DB.hasProfile();
+    const DB = globalThis.KE_DB;
+    const H9 = globalThis.KE_HEALTH;
+    const PET = globalThis.KE_PET;
+    const SPR = globalThis.KE_SPRITE;
+    const db = DB.get();
+    const profile = db.profile || {};
+    const pet = db.currentPet;
+    const today = U.todayStr();
+    if (!pet) { renderPlaceholder("ホーム", "ペットを迎えてから使い始められます。"); return; }
+
+    PET.refreshStage(db);
+    const condition = PET.getCondition(db, today);
+    const condMeta = PET.getConditionMeta(condition);
+    const meals = H9.getMealTotals(db, today);
+    const ex = H9.getExerciseTotals(db, today);
+    const sleep = H9.getSleepOnDate(db, today);
+    const weight = H9.hasWeightOnDate(db, today);
+    const evalSt = H9.getEvaluationState(db, today);
+
+    const petStageHost = el("div", { class: "pet-stage" });
+    if (!pet.speciesRevealed || pet.stage === "egg") {
+      globalThis.KE_ANIMATION.playEgg(petStageHost, "egg_idle", 3, {});
+      petStageHost.setAttribute("aria-label", pet.name + "の卵");
+    } else {
+      globalThis.KE_ANIMATION.playPetIdle(petStageHost, pet.speciesId, condition, 4);
+      petStageHost.setAttribute("aria-label", pet.name + " " + condMeta.label);
+    }
+
+    // 次行動の案内
+    let nextAction = null;
+    if (!pet.speciesRevealed) {
+      nextAction = { label: "外へ出て卵をかえそう", target: "pet", desc: "ペット小屋から外へ出ると、種類が決まります。" };
+    } else if (meals.count === 0 && ex.count === 0 && !sleep && !weight) {
+      nextAction = { label: "今日の記録をしよう", target: "record", desc: "食事・運動・睡眠・体重を記録すると、ペットが育ちます。" };
+    } else if (!evalSt.granted) {
+      nextAction = { label: "今日の評価を確定しよう", target: "record", desc: "記録から健康EXPがもらえます。" };
+    } else {
+      nextAction = { label: "今日の会話クエストへ", target: "quest", desc: "NPCと3択の会話を楽しめます。" };
+    }
 
     const panel = el("section", { class: "panel", "aria-labelledby": "homeTitle" }, [
-      el("h1", { id: "homeTitle", text: "kenecho Village" }),
-      el("p", { class: "lead", text: "健康を記録して、会話の達人をめざそう。研修用・本番利用不可。" }),
-      el("div", { class: "card" }, [
-        el("h2", { text: "データの状態" }),
-        el("ul", { class: "list" }, [
-          el("li", { text: "スキーマバージョン: " + data.schemaVersion }),
-          el("li", { text: "プロフィール: " + (hasProfile ? "あり（" + (data.profile.displayName || "") + "）" : "未設定") }),
-          el("li", { text: "ペット: " + (data.currentPet ? (data.currentPet.name || "") + "（" + (data.currentPet.stage === "egg" ? "卵" : data.currentPet.stage) + "）" : "未取得") })
+      el("h1", { id: "homeTitle", text: "こんにちは、" + (profile.displayName || "") + " さん" }),
+      el("p", { class: "lead", text: "健康を記録して、会話の達人をめざそう。" }),
+      el("div", { class: "home-layout" }, [
+        el("div", { class: "home-char" }, [
+          petStageHost,
+          el("p", { class: "field-hint", text: pet.name + "／" + condMeta.label }),
+          el("p", { class: "field-hint", text: "成長：" + (pet.stage === "egg" ? "卵" : PET.getStageLabel(PET.getPetStage(pet, today))) })
+        ]),
+        el("div", { class: "home-main" }, [
+          el("div", { class: "card" }, [
+            el("h2", { text: "今日の記録状況" }),
+            el("ul", { class: "checklist" }, [
+              el("li", { class: meals.count > 0 ? "check--done" : "check--todo", text: (meals.count > 0 ? "✓ " : "… ") + "食事：" + meals.count + "件" }),
+              el("li", { class: ex.count > 0 ? "check--done" : "check--todo", text: (ex.count > 0 ? "✓ " : "… ") + "運動：" + ex.minutes + "分" }),
+              el("li", { class: sleep ? "check--done" : "check--todo", text: (sleep ? "✓ " : "… ") + "睡眠：" + (sleep ? sleep.hours + "h" : "未記録") }),
+              el("li", { class: weight ? "check--done" : "check--todo", text: (weight ? "✓ " : "… ") + "体重：" + (weight ? "記録済み" : "未記録") })
+            ]),
+            evalSt.granted
+              ? el("p", { class: "field-hint", text: "今日の健康EXPは確定済み（+" + evalSt.stored.exp + "）" })
+              : el("p", { class: "field-hint", text: "今日の評価はまだです。" })
+          ]),
+          el("div", { class: "card" }, [
+            el("h2", { text: "次にやること" }),
+            el("p", { class: "lead home-next-desc", text: nextAction.desc }),
+            el("button", { type: "button", class: "btn btn--primary", text: nextAction.label, onclick: function () {
+              if (globalThis.KE_APP) globalThis.KE_APP.navigate(nextAction.target);
+            } })
+          ])
         ])
       ])
     ]);
@@ -1124,16 +1182,15 @@
     const stageLabel = pet.stage === "egg" ? "卵" : PET.getStageLabel(stageKey);
     const species = pet.speciesRevealed ? PET.getSpeciesById(pet.speciesId) : null;
 
-    // 中央表示（卵は共通スプライト・種類非公開。公開後は種類色のペット）
+    // 中央表示（アニメーション：卵は待機/そよぎ、ぺットは健康状態に応じた動作）
     const stage = el("div", { class: "pet-stage" });
-    let canvas;
     if (!pet.speciesRevealed || pet.stage === "egg") {
-      canvas = SPR.canvasTag(SPR.renderEgg(5), pet.name + "（卵）", "sprite-canvas");
+      globalThis.KE_ANIMATION.playEgg(stage, "egg_idle", 4, {});
+      stage.setAttribute("aria-label", pet.name + "（卵）");
     } else {
-      const color = (species && species.color) || "#7fa650";
-      canvas = SPR.canvasTag(SPR.renderPet(color, 5), pet.name + " " + condMeta.label, "sprite-canvas");
+      globalThis.KE_ANIMATION.playPetIdle(stage, pet.speciesId, condition, 5);
+      stage.setAttribute("aria-label", pet.name + " " + condMeta.label);
     }
-    stage.append(canvas);
 
     // 掲示板（今日の記録状況）
     const meals = H9.getMealTotals(db, today);
@@ -1207,13 +1264,14 @@
     const SPR = globalThis.KE_SPRITE;
     clear(root);
     const pet = DB.get().currentPet;
+    let hatching = false;
+    const eggStage = el("div", { class: "pet-stage", "aria-label": pet.name + "の卵" });
+    globalThis.KE_ANIMATION.playEgg(eggStage, "egg_idle", 6, {});
     const panel = el("section", { class: "panel village-entrance", "aria-labelledby": "villageTitle" }, [
       el("h1", { id: "villageTitle", text: "村の入口" }),
       el("p", { class: "lead", text: "ペット小屋を出て、村の入口に着きました。" }),
       el("p", { class: "field-hint", text: "卵がぴくぴく動いています…。種類はここで初めて決まります。" }),
-      el("div", { class: "pet-stage egg-shake", "aria-label": pet.name + "の卵" }, [
-        SPR.canvasTag(SPR.renderEgg(6), pet.name + "の卵", "sprite-canvas")
-      ]),
+      eggStage,
       el("p", { class: "field-hint", text: "「自分で選ぶ」または「おまかせ（" + (pet.selectionMode === "random" ? "ランダム決定" : "6種類から選択") + "）」でかえる予定です。" }),
       el("div", { class: "form-actions" }, [
         el("button", { type: "button", class: "btn btn--confirm", text: "卵をかえす（孵化）", onclick: hatchNow }),
@@ -1225,6 +1283,12 @@
     root.append(panel);
 
     function hatchNow() {
+      if (hatching) return;
+      hatching = true;
+      globalThis.KE_ANIMATION.playEgg(eggStage, "egg_hatch", 5, function () { proceed(); });
+    }
+
+    function proceed() {
       const db = DB.get();
       const pet = db.currentPet;
       if (pet.selectionMode === "random") {
