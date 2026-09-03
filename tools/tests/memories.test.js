@@ -70,13 +70,18 @@ test("startNextGeneration が新世代の卵を開始し、直前と同種を除
   assert.equal(candidates.length, 5);
 });
 
-test("第2世代を孵化させ、思い出を2つにできる", () => {
+test("第2世代を孵化させ、旅立ちの思い出と孵化の思い出が残る", () => {
   const d = dbRevealed();
   PET.completeDeparture(d);
   PET.startNextGeneration(d, "ポポ", "choose");
   PET.applyHatch(d, "fox");
+  // 孵化した瞬間の思い出が追加される
+  assert.equal(d.petMemories.length, 2);
+  const hatchMem = d.petMemories[d.petMemories.length - 1];
+  assert.equal(hatchMem.type, "hatch");
+  assert.equal(hatchMem.generationId, "gen_002");
   // 日数・EXPで成長は問わず、旅立ち自体は可能（卵では不可）
   d.currentPet.stage = "companion";
   assert.equal(PET.completeDeparture(d).ok, true);
-  assert.equal(d.petMemories.length, 2);
+  assert.equal(d.petMemories.length, 3); // 孵化 + 旅立1世代 + 旅立2世代
 });

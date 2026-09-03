@@ -128,7 +128,8 @@
     out.dailyEvaluations = data.dailyEvaluations && typeof data.dailyEvaluations === "object" ? data.dailyEvaluations : {};
     out.customFoods = Array.isArray(data.customFoods) ? data.customFoods : [];
     out.customExercises = Array.isArray(data.customExercises) ? data.customExercises : [];
-    out.currentPet = null; // currentPet の検査は M6 以降で段階的に厳格化
+    // currentPet は保存値を保持する（最小限の形だけチェック。厳格化は段階的に）
+    out.currentPet = data.currentPet && typeof data.currentPet === "object" ? data.currentPet : null;
     out.petMemories = Array.isArray(data.petMemories) ? data.petMemories : [];
     out.petEncyclopedia = data.petEncyclopedia && typeof data.petEncyclopedia === "object" ? data.petEncyclopedia : {};
     out.relationships = data.relationships && typeof data.relationships === "object" ? data.relationships : { pet: {}, npcs: {} };

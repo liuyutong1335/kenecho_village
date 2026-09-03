@@ -431,6 +431,16 @@ input:focus, select:focus, button:focus-visible {
 /* ===== 思い出・旅立ち ===== */
 .departure-area { margin-top: 10px; border-top: 2px dashed var(--orange-warn); padding-top: 8px; }
 .memory-card { margin-top: 14px; }
+.memory-photo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--paper-light);
+  border: var(--border-thin) solid var(--paper-shadow);
+  padding: 12px;
+  margin-bottom: 10px;
+}
+.memory-photo .sprite-canvas { width: auto; height: auto; }
 
 /* ===== ホーム ===== */
 .home-layout { display: flex; gap: 20px; flex-wrap: wrap; align-items: stretch; }
