@@ -334,6 +334,18 @@ input:focus, select:focus, button:focus-visible {
 .check--done { color: #d7e9c4; }
 .check--todo { color: #e8cdb0; }
 
+/* ===== 村の入口・孵化 ===== */
+.village-entrance { max-width: 640px; margin: 0 auto; }
+.egg-shake { animation: eggsh .45s infinite alternate; }
+@keyframes eggsh { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+.species-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin: 12px 0; }
+.species-card { display: flex; flex-direction: column; gap: 4px; align-items: center; padding: 12px 8px; background: #fff; border: var(--border-thin) solid var(--paper-shadow); box-shadow: 2px 3px 0 var(--paper-shadow); cursor: pointer; font-family: var(--font-base); font-size: 15px; color: var(--ink); }
+.species-card:hover { box-shadow: 3px 4px 0 var(--wood-dark); transform: translate(-1px, -1px); }
+.species-name { font-weight: bold; font-size: 16px; }
+.species-coach { background: var(--sun); padding: 1px 6px; font-size: 13px; }
+.species-reveal { text-align: center; max-width: 560px; margin: 0 auto; }
+.species-reveal .pet-stage { margin: 12px auto; width: max-content; }
+
 /* ===== トースト ===== */
 .modal-root { position: fixed; inset: 0; pointer-events: none; z-index: 900; display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: 12px; }
 .toast {

@@ -129,6 +129,52 @@
     return (globalThis.KE_PETS || []).filter(function (p) { return p.id !== previousSpeciesId; });
   }
 
+  /** 直前の世代の種類（思い出の末尾から取得）。初代は null */
+  function getPreviousSpeciesId(db) {
+    const mem = (db && db.petMemories) || [];
+    return mem.length > 0 ? mem[mem.length - 1].speciesId : null;
+  }
+
+  /** 孵化で選べる候補一覧（次世代は直前世代と同種を除外） */
+  function getHatchCandidates(db) {
+    return getSelectableSpecies(getPreviousSpeciesId(db));
+  }
+
+  /**
+   * 種類を決定して公開し、同一保存対象として図鑑へ登録する。
+   * - 未公開（speciesRevealed=false）の卵のみ有効
+   * - 図鑑は初回発見日を維持（同じ種類を再取得しても変更しない）
+   * - stage を child にし hatchedAt を記録
+   */
+  function applyHatch(db, speciesId) {
+    const pet = db.currentPet;
+    if (!pet) return { ok: false, reason: "no_pet", message: "ペットが見つかりません。" };
+    if (pet.speciesRevealed) return { ok: false, reason: "already", message: "種類は公開済みです。" };
+    const candidates = getHatchCandidates(db);
+    if (!candidates.some(function (p) { return p.id === speciesId; })) {
+      return { ok: false, reason: "invalid", message: "選べない種類です。" };
+    }
+    if (!db.petEncyclopedia) db.petEncyclopedia = {};
+    const existing = db.petEncyclopedia[speciesId];
+    const firstDiscover = !(existing && existing.discovered);
+    pet.speciesId = speciesId;
+    pet.speciesRevealed = true;
+    pet.hatchedAt = U.todayStr();
+    pet.stage = "child";
+    if (firstDiscover) {
+      db.petEncyclopedia[speciesId] = { discovered: true, discoveredAt: pet.hatchedAt };
+    }
+    return { ok: true, speciesId: speciesId, hatchedAt: pet.hatchedAt, firstDiscover: firstDiscover };
+  }
+
+  /** おまかせ：候補からランダムに決定して公開する */
+  function revealRandomSpecies(db) {
+    const candidates = getHatchCandidates(db);
+    if (!candidates.length) return { ok: false, reason: "empty", message: "選べる種類がありません。" };
+    const pick = candidates[U.randInt(0, candidates.length - 1)];
+    return applyHatch(db, pick.id);
+  }
+
   const KE_PET = {
     createEgg: createEgg,
     computeStage: computeStage,
@@ -140,6 +186,10 @@
     getConditionMeta: getConditionMeta,
     getSpeciesById: getSpeciesById,
     getSelectableSpecies: getSelectableSpecies,
+    getPreviousSpeciesId: getPreviousSpeciesId,
+    getHatchCandidates: getHatchCandidates,
+    applyHatch: applyHatch,
+    revealRandomSpecies: revealRandomSpecies,
     CONDITION_META: CONDITION_META
   };
 

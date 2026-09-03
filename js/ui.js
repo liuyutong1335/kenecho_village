@@ -1160,10 +1160,7 @@
     const exitButton = el("button", {
       type: "button", class: "btn btn--primary",
       text: pet.stage === "egg" ? "外へ出る（卵を持って）" : "外へ出る",
-      onclick: function () {
-        // M7 で村の入口→孵化へ接続
-        showNotice("村の入口への道は次のマイルストーンで実装されます。");
-      }
+      onclick: startOuting
     });
 
     const panel = el("section", { class: "panel pet-house", "aria-labelledby": "petHouseTitle" }, [
@@ -1182,6 +1179,114 @@
           ]),
           el("div", { class: "form-actions" }, [exitButton])
         ])
+      ])
+    ]);
+    root.append(panel);
+  }
+
+  /* ==================================================================== */
+  /* 村の入口・孵化・種類公開（M7）                                         */
+  /* ==================================================================== */
+
+  /** 小屋の外へ出る。未公開の卵なら孵化フローへ */
+  function startOuting() {
+    const db = globalThis.KE_DB.get();
+    const pet = db.currentPet;
+    if (!pet || !pet.speciesRevealed) {
+      renderVillageEntrance();
+      return;
+    }
+    showNotice("村の道を進むと、NPCとの会話クエストができるようになります（次のマイルストーンで実装予定）。");
+  }
+
+  function renderVillageEntrance() {
+    const root = refs.appRoot;
+    const DB = globalThis.KE_DB;
+    const PET = globalThis.KE_PET;
+    const SPR = globalThis.KE_SPRITE;
+    clear(root);
+    const pet = DB.get().currentPet;
+    const panel = el("section", { class: "panel village-entrance", "aria-labelledby": "villageTitle" }, [
+      el("h1", { id: "villageTitle", text: "村の入口" }),
+      el("p", { class: "lead", text: "ペット小屋を出て、村の入口に着きました。" }),
+      el("p", { class: "field-hint", text: "卵がぴくぴく動いています…。種類はここで初めて決まります。" }),
+      el("div", { class: "pet-stage egg-shake", "aria-label": pet.name + "の卵" }, [
+        SPR.canvasTag(SPR.renderEgg(6), pet.name + "の卵", "sprite-canvas")
+      ]),
+      el("p", { class: "field-hint", text: "「自分で選ぶ」または「おまかせ（" + (pet.selectionMode === "random" ? "ランダム決定" : "6種類から選択") + "）」でかえる予定です。" }),
+      el("div", { class: "form-actions" }, [
+        el("button", { type: "button", class: "btn btn--confirm", text: "卵をかえす（孵化）", onclick: hatchNow }),
+        el("button", { type: "button", class: "btn btn--ghost", text: "小屋に戻る", onclick: function () {
+          if (globalThis.KE_APP && globalThis.KE_APP.navigate) globalThis.KE_APP.navigate("pet");
+        } })
+      ])
+    ]);
+    root.append(panel);
+
+    function hatchNow() {
+      const db = DB.get();
+      const pet = db.currentPet;
+      if (pet.selectionMode === "random") {
+        const r = PET.revealRandomSpecies(db);
+        if (!r.ok) { showErrorNotice(r.message || "孵化できませんでした。"); return; }
+        if (!DB.save()) showErrorNotice("保存に失敗しました。");
+        renderSpeciesReveal(r.speciesId, r.firstDiscover);
+      } else {
+        renderSpeciesChoice();
+      }
+    }
+  }
+
+  function renderSpeciesChoice() {
+    const root = refs.appRoot;
+    const DB = globalThis.KE_DB;
+    const PET = globalThis.KE_PET;
+    const SPR = globalThis.KE_SPRITE;
+    clear(root);
+    const candidates = PET.getHatchCandidates(DB.get());
+    const panel = el("section", { class: "panel", "aria-labelledby": "choiceTitle" }, [
+      el("h1", { id: "choiceTitle", text: "卵がかえった！ 仲間を選ぼう" }),
+      el("p", { class: "field-hint", text: "ここで仲間の種類が決まります。選ぶと図鑑にも登録されます。" }),
+      el("div", { class: "species-grid role-grid" }, candidates.map(function (sp) {
+        return el("button", { type: "button", class: "species-card", onclick: function () {
+          const r = PET.applyHatch(DB.get(), sp.id);
+          if (!r.ok) { showErrorNotice(r.message || "選べない種類です。"); return; }
+          if (!DB.save()) showErrorNotice("保存に失敗しました。");
+          renderSpeciesReveal(r.speciesId, r.firstDiscover);
+        } }, [
+          SPR.canvasTag(SPR.renderPet(sp.color, 4), sp.name + " の姿", "sprite-canvas"),
+          el("span", { class: "species-name", text: sp.name }),
+          el("span", { class: "species-coach", text: sp.coachTypeLabel }),
+          el("span", { class: "field-hint", text: sp.summary })
+        ]);
+      })),
+      el("div", { class: "form-actions" }, [
+        el("button", { type: "button", class: "btn btn--ghost", text: "まだ決めない（卵に戻る）", onclick: function () {
+          if (globalThis.KE_APP && globalThis.KE_APP.navigate) globalThis.KE_APP.navigate("pet");
+        } })
+      ])
+    ]);
+    root.append(panel);
+  }
+
+  function renderSpeciesReveal(speciesId) {
+    const root = refs.appRoot;
+    const DB = globalThis.KE_DB;
+    const PET = globalThis.KE_PET;
+    const SPR = globalThis.KE_SPRITE;
+    clear(root);
+    const pet = DB.get().currentPet;
+    const sp = PET.getSpeciesById(speciesId);
+    const panel = el("section", { class: "panel species-reveal", "aria-labelledby": "revealTitle" }, [
+      el("h1", { id: "revealTitle", text: "その子、かえりました！" }),
+      el("div", { class: "pet-stage" }, [SPR.canvasTag(SPR.renderPet(sp.color, 6), pet.name + "（" + sp.name + "）", "sprite-canvas")]),
+      el("p", { class: "lead", text: pet.name + " は「" + sp.name + "」でした！" }),
+      el("p", { class: "field-hint", text: "コーチタイプ：" + sp.coachTypeLabel + " ／ " + sp.summary }),
+      el("p", { class: "field-hint", text: "図鑑に登録されました。これで“物まねコーチ”が話せるようになります。" }),
+      el("div", { class: "form-actions" }, [
+        el("button", { type: "button", class: "btn btn--primary", text: "ペット小屋へ戻る", onclick: function () {
+          if (globalThis.KE_APP && globalThis.KE_APP.navigate) globalThis.KE_APP.navigate("pet");
+        } })
       ])
     ]);
     root.append(panel);
