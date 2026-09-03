@@ -1,56 +1,84 @@
 "use strict";
 /*
  * kenecho Village - 起動とナビゲーション（KE_APP）
- * ロジック層の最後に読み込む。DB初期化 → 画面表示 → トップバー遷移を担う。
- * M1 では骨格のみ（ナビ先はホームまたはプレースホルダ）。
+ * ロジック層の最後に読み込む。DB初期化 → 初期設定／ホーム判定 → 画面表示 → トップバー遷移。
  */
 (function () {
   const U = globalThis.KE_UTIL;
   const C = globalThis.KE_CONFIG;
   const DB = globalThis.KE_DB;
   const UI = globalThis.KE_UI;
+  const PET = globalThis.KE_PET;
 
   const BUILT_SCREENS = {
     home: true
     // record / pet / quest / notebook / memories / encyclopedia / settings は今後追加
   };
 
-  function navigate(target) {
-    const data = DB.get();
-    if (target === "home" || BUILT_SCREENS[target]) {
-      UI.renderHome(data);
+  const SCREEN_LABELS = {
+    record: "記録",
+    pet: "ペット",
+    quest: "会話クエスト",
+    notebook: "交流ノート",
+    memories: "思い出",
+    encyclopedia: "図鑑",
+    settings: "設定"
+  };
+
+  /** 初期設定完了時の処理：プロフィールと第1世代卵を作成し保存する */
+  function handleSetupComplete(values) {
+    const db = DB.get();
+    const generationId = "gen_001";
+    const pet = PET.createEgg(generationId, values.petName, values.selectionMode);
+    db.profile = {
+      displayName: String(values.displayName).trim(),
+      age: Number(values.age),
+      gender: values.gender,
+      heightCm: Number(values.heightCm),
+      weightKg: Number(values.weightKg),
+      profileId: U.generateId("p")
+    };
+    db.currentPet = pet;
+    db.relationships.pet[generationId] = { bond: pet.petBond, questsCompleted: 0 };
+    if (!DB.save()) {
+      UI.showErrorNotice("初期設定を保存できませんでした。もう一度お試しください。");
       return;
     }
-    const labels = {
-      record: "記録",
-      pet: "ペット",
-      quest: "会話クエスト",
-      notebook: "交流ノート",
-      memories: "思い出",
-      encyclopedia: "図鑑",
-      settings: "設定"
-    };
-    UI.renderPlaceholder(labels[target] || target, "「" + (labels[target] || target) + "」は今後のマイルストーンで実装されます。");
+    UI.showNotice("初期設定が完了しました。ペットの卵をお預かりしました！");
+    navigate("home");
+  }
+
+  function navigate(target) {
+    if (!DB.hasProfile() && target !== "settings") {
+      // 未設定なら常に初期設定へ（設定以外）
+      UI.renderSetup(handleSetupComplete);
+      return;
+    }
+    if (target === "home" || BUILT_SCREENS[target]) {
+      UI.renderHome(DB.get());
+      return;
+    }
+    UI.renderPlaceholder(SCREEN_LABELS[target] || target, "「" + (SCREEN_LABELS[target] || target) + "」は今後のマイルストーンで実装されます。");
   }
 
   function start() {
     const result = DB.load();
     if (result === "quarantined") {
       UI.showErrorNotice("保存データに異常があったため、安全な初期値で起動しました。");
-      return;
     }
     UI.install(navigate);
-    const data = DB.get();
-    // M2 で初期設定フローへ差し替え
-    UI.renderHome(data);
-    if (result === "new") {
-      UI.showNotice("ようこそ！ 初期設定は次のマイルストーンで追加されます。");
+    if (!DB.hasProfile()) {
+      UI.renderSetup(handleSetupComplete);
+      UI.showNotice("ようこそ！ 初期設定を始めましょう。");
+    } else {
+      UI.renderHome(DB.get());
     }
   }
 
   const KE_APP = {
     start: start,
-    navigate: navigate
+    navigate: navigate,
+    handleSetupComplete: handleSetupComplete
   };
 
   if (globalThis) globalThis.KE_APP = KE_APP;
