@@ -1,12 +1,14 @@
 "use strict";
 /*
  * kenecho Village - ペットのピクセル定義（KE_PIXEL_PETS）
- * 共通のボディ（16×16文字グリッド）に、種類別の「耳・しっぽ・模様」を
- * アクセサリとして重ね、顔（目・口）は表情フレームで差し替える。
+ * 6種それぞれに独立した 16×16 の輪郭（body）を持ち、種類がひと目でわかる。
+ * 顔（目・口）は FACES のフレームで差し替える（座標は全種共通）。
  * 色は UI 基本色パレットと各ペットのテーマ色を使う。
  * すべて本作品独自のオリジナルデザイン。
  *
- * グリッド文字: B=body / E=eye(標準) / M=mouth / F=foot / D=dark shading
+ * グリッド文字: B=body / D=dark(濃い側影) / d=dark(淡い側影)
+ *   / F=foot(足) / T=tail(しっぽ・アクセント) / W=white(薄い腹・口元) / .=透明
+ * body を定義した種は耳・しっぽも body に含める（sprite.js は body 優先で合成する）。
  */
 (function () {
   const BASE = [
@@ -29,59 +31,143 @@
   ];
 
   const ACCESSORIES = {
+    /* うさぎ：立つ長い耳・丸い身体・白い腹 */
     rabbit: {
       color: "#EFE1C6", dark: "#C9B185",
-      ears: [
-        { x: 4, y: 0, cells: "EE", color: "#EFE1C6" },
-        { x: 10, y: 0, cells: "EE", color: "#EFE1C6" },
-        { x: 4, y: 1, cells: "EE", color: "#C9B185" },
-        { x: 10, y: 1, cells: "EE", color: "#C9B185" }
-      ],
-      tail: null, note: "長い耳のうさぎ"
+      ears: null, tail: null, note: "長い耳のうさぎ",
+      body: [
+        "...BB......BB...",
+        "...BB......BB...",
+        "...BB......BB...",
+        "...BB......BB...",
+        "..BBB.BBBB.BBB..",
+        "..BBBBBBBBBBBB..",
+        ".BBBBBBBBBBBBBB.",
+        ".BBBBBBBBBBBBBB.",
+        ".BBBBWWWWWWWWBB.",
+        "..BBBWBBBBBWBB..",
+        "..BBWWBBBBWWBB..",
+        "...BBBBWWBBBB...",
+        "....BBBBBBBB....",
+        ".F....BBBB....F.",
+        "..F...BBBB...F..",
+        "................"
+      ]
     },
+    /* きつね：三角の尖耳・尖った口元・ふさふさの大きなしっぽ */
     fox: {
       color: "#D9824B", dark: "#A94E45",
-      ears: [
-        { x: 3, y: 0, cells: "E", color: "#D9824B" },
-        { x: 12, y: 0, cells: "E", color: "#D9824B" },
-        { x: 3, y: 1, cells: "E", color: "#EFE1C6" },
-        { x: 12, y: 1, cells: "E", color: "#EFE1C6" }
-      ],
-      tail: { x: 14, y: 12, cells: "TT", color: "#D9824B" }, note: "しっぽのきつね"
+      ears: null, tail: null, note: "ふさふさしっぽのきつね",
+      body: [
+        "..B...........B.",
+        "..B...........B.",
+        "...B.........B..",
+        "...BBBBBBBBBB...",
+        "..BBBBWBBBBWBB..",
+        ".BBBBBBBBBBBBBB.",
+        ".BBWWWWWWWWWWBB.",
+        "BBWWWWWWWWWWWWBB",
+        ".BBWWWWWWWWWWBB.",
+        "..BBBBWBBBBBB...",
+        "..BBBBBBBBBB.BB.",
+        "...BBBBBBBB..TT.",
+        "....BBBBBB..TTT.",
+        ".F....BBB..TTTT.",
+        "..F...BB...TTT..",
+        "................"
+      ]
     },
+    /* こぐま：丸い耳・大きくて丸い身体・太い足 */
     bearcub: {
       color: "#9A6642", dark: "#5B3A29",
-      ears: [
-        { x: 4, y: 1, cells: "E", color: "#9A6642" },
-        { x: 11, y: 1, cells: "E", color: "#9A6642" },
-        { x: 5, y: 2, cells: "E", color: "#5B3A29" },
-        { x: 10, y: 2, cells: "E", color: "#5B3A29" }
-      ],
-      tail: null, note: "丸い耳のこぐま"
+      ears: null, tail: null, note: "丸い耳のこぐま",
+      body: [
+        "................",
+        "................",
+        "....B......B....",
+        "....BB....BB....",
+        "...BBBBBBBBBB...",
+        "..BBBBBBBBBBBB..",
+        ".BBBBBBBBBBBBBB.",
+        ".BBBBBBBBBBBBBB.",
+        ".BBBBBBBWBBBBBB.",
+        ".BB..BBWWBB..BB.",
+        ".BBBBBBWWBBBBBB.",
+        ".BBBBBBBBBBBBBB.",
+        ".BBBBWWWWWWBBBB.",
+        ".F...BBBBBB...F.",
+        ".FF..BBBBBB..FF.",
+        ".F...BBBBBB...F."
+      ]
     },
+    /* ねこ：とんがり耳・スマートな身体・長いしっぽ */
     cat: {
       color: "#A9A9A0", dark: "#7A766F",
-      ears: [
-        { x: 3, y: 0, cells: "E", color: "#A9A9A0" },
-        { x: 12, y: 0, cells: "E", color: "#A9A9A0" },
-        { x: 3, y: 1, cells: "E", color: "#EFE1C6" },
-        { x: 12, y: 1, cells: "E", color: "#EFE1C6" }
-      ],
-      tail: { x: 14, y: 10, cells: "TT", color: "#A9A9A0" }, note: "とがった耳のねこ"
+      ears: null, tail: null, note: "とがった耳のねこ",
+      body: [
+        ".B............B.",
+        ".B............B.",
+        ".BB..........BB.",
+        "..BBBBBBBBBBBB..",
+        "..BBBBBBBBBBBB..",
+        "..BBBBBBBBBBBB..",
+        ".BBBBBBBBBBBBBB.",
+        ".BBBBBBBBBBBBBB.",
+        "..BBWWWWWWWBB...",
+        "..BBBBBBBBBB....",
+        "...BBBBBBBB.BB..",
+        "...BBBBBBBB..BB.",
+        "....BBBBBB...BB.",
+        "....BBBBB.....T.",
+        ".F....BBB.....T.",
+        "..F...BBB....T.."
+      ]
     },
+    /* ことり：丸い身体・尖ったくちばし・翼と小さなしっぽ */
     bird: {
       color: "#7FA650", dark: "#56733E",
-      ears: null,
-      tail: { x: 14, y: 9, cells: "TT", color: "#56733E" },
-      beak: "ornage", note: "小さなことり"
+      ears: null, tail: null, note: "小さなことり",
+      body: [
+        "................",
+        ".TT.............",
+        ".TT.............",
+        "..TTT...........",
+        "....BBBBBBBB....",
+        "..BBBBBBBBBBBB..",
+        ".BBBBBBBBBBBBBB.",
+        ".BBBBBBBBBBBBBB.",
+        "..BBBBWBBBBBBB..",
+        "...BBWDDDBBB....",
+        "..BBBBBBBBB.....",
+        ".BWBWWBBBBBB....",
+        "..BBBBBBBBB.....",
+        "..F..BBB..F.....",
+        "..F..F..F.......",
+        "................"
+      ]
     },
+    /* たぬき：丸い耳・丸い身体・縞しっぽ */
     tanuki: {
       color: "#C9965B", dark: "#8A6240",
-      ears: [
-        { x: 4, y: 0, cells: "E", color: "#C9965B" },
-        { x: 11, y: 0, cells: "E", color: "#C9965B" }
-      ],
-      tail: { x: 0, y: 12, cells: "TT", color: "#C9965B" }, note: "縞しっぽのたぬき"
+      ears: null, tail: null, note: "縞しっぽのたぬき",
+      body: [
+        "................",
+        "................",
+        "...B........B...",
+        "...BB.BBBB.BB...",
+        "..BBBBBBBBBBBB..",
+        ".BBBBBBBBBBBBBB.",
+        ".BBBBBBBBBBBBBB.",
+        ".BBBBBBBBBBBBBB.",
+        "..BBBBBBBBBBBB..",
+        "..BBWWWBBWWWBB..",
+        "..BBBBBBBBBBBB..",
+        "...BBBBWWBBBB...",
+        "....BBBBBBBB....",
+        ".F...BBBB...TTT.",
+        "..F..BBBB...TT..",
+        "..F..BBBB...TT.."
+      ]
     }
   };
 

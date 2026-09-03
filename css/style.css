@@ -286,12 +286,30 @@ input:focus, select:focus, button:focus-visible {
 .btn--danger-text { color: var(--red-dark); }
 
 .food-search { position: relative; }
+.food-search-bar { display: flex; align-items: stretch; gap: 8px; }
+.food-search-bar input[type="search"] { min-width: 0; }
+.food-list-toggle { flex: 0 0 auto; }
 .food-suggest { position: absolute; z-index: 50; left: 0; right: 0; background: #fff; border: var(--border-thin) solid var(--wood-dark); box-shadow: 3px 4px 0 var(--shadow); max-height: 300px; overflow: auto; }
 .food-suggest-item { display: flex; flex-direction: column; align-items: flex-start; width: 100%; text-align: left; padding: 8px 10px; border: 0; border-bottom: 1px solid var(--paper-shadow); background: #fff; font-size: 16px; cursor: pointer; font-family: var(--font-base); }
 .food-suggest-item:hover { background: var(--paper-light); }
 .food-suggest-item .field-hint { font-size: 13px; }
 .food-selected { background: var(--paper); border: var(--border-thin) solid var(--green-safe); padding: 8px 10px; margin-bottom: 8px; display: flex; flex-direction: column; }
 .meal-form { margin-bottom: 16px; }
+
+/* カスタム食品/運動の内聯折りたたみ区 */
+.custom-inline {
+  margin-top: 16px;
+  border-top: 2px dashed var(--paper-shadow);
+  padding-top: 8px;
+}
+.custom-inline summary {
+  cursor: pointer;
+  font-weight: bold;
+  padding: 6px 4px;
+  user-select: none;
+}
+.custom-inline summary:hover { color: var(--ink-sub); }
+.custom-inline-body { padding: 4px 2px; }
 
 /* ===== オーバーレイ・モーダル ===== */
 .overlay {
@@ -310,10 +328,39 @@ input:focus, select:focus, button:focus-visible {
   width: 100%;
   max-width: 420px;
   outline: var(--border-thin) solid var(--wood);
+  position: relative;
 }
 .dialog--wide { max-width: 720px; }
 .dialog-title { margin-top: 0; }
 .dialog-body { margin: 8px 0 16px; }
+
+/* ダイアログ右上の閉じる ×（テーマ色） */
+.dialog-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--wood-dark);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-base);
+}
+.dialog-close:hover { color: var(--red-dark); }
+.dialog-close:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+
+/* ===== 初回ガイド（オンボーディング） ===== */
+.onboarding { max-width: 620px; text-align: center; }
+.onboarding-step { font-weight: bold; color: var(--wood-dark); margin-bottom: 8px; }
+.onboarding em { display: block; font-style: normal; font-size: 34px; margin-bottom: 10px; }
+.onboarding-icon { font-size: 44px; line-height: 1.2; margin-bottom: 10px; }
+.onboarding-hint { margin-top: 14px; font-size: 14px; color: var(--ink-sub); }
 
 /* ===== サマリーバー・トレンド ===== */
 .summary-bar { margin-top: 16px; }
@@ -403,7 +450,7 @@ input:focus, select:focus, button:focus-visible {
 }
 
 /* ===== トースト ===== */
-.modal-root { position: fixed; inset: 0; pointer-events: none; z-index: 900; display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: 12px; }
+.modal-root { position: fixed; inset: 0; pointer-events: none; z-index: 900; display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: 88px; }
 .toast {
   pointer-events: auto;
   background: var(--paper);

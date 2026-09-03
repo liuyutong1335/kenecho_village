@@ -93,7 +93,8 @@
       happy: "happy",
       normal: "idle",
       lonely: "troubled",
-      sleepy: "sleepy"
+      sleepy: "sleepy",
+      sick: "sleepy"
     }[condition] || "idle";
     const cfg = globalThis.KE_ANIMATION_MANIFEST.common.petMotions[motion] || { frames: 4, fps: 4 };
     return play(hostEl, function (f) {
