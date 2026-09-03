@@ -45,7 +45,10 @@
     const kw = String(keyword || "").trim().toLowerCase();
     const max = limit || 10;
     const out = [];
-    const sources = PRESET_FOODS.concat((db && db.customFoods) || []);
+    // 一覧表示（キーワードなし）時は、カスタム食品を先頭に（新しく足したものが見えるように）
+    const sources = kw === ""
+      ? ((db && db.customFoods) || []).concat(PRESET_FOODS)
+      : PRESET_FOODS.concat((db && db.customFoods) || []);
     for (let i = 0; i < sources.length; i++) {
       if (kw === "" || sources[i].name.toLowerCase().indexOf(kw) >= 0) {
         out.push(sources[i]);
@@ -220,7 +223,10 @@
     const kw = String(keyword || "").trim().toLowerCase();
     const max = limit || 10;
     const out = [];
-    const sources = PRESET_EXERCISES.concat((db && db.customExercises) || []);
+    // 一覧表示（キーワードなし）時は、カスタム運動を先頭に（新しく足したものが見えるように）
+    const sources = kw === ""
+      ? ((db && db.customExercises) || []).concat(PRESET_EXERCISES)
+      : PRESET_EXERCISES.concat((db && db.customExercises) || []);
     for (let i = 0; i < sources.length; i++) {
       if (kw === "" || sources[i].name.toLowerCase().indexOf(kw) >= 0) {
         out.push(sources[i]);

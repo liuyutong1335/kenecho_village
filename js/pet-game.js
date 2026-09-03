@@ -156,10 +156,18 @@
     return (globalThis.KE_PETS || []).filter(function (p) { return p.id !== previousSpeciesId; });
   }
 
-  /** 直前の世代の種類（思い出の末尾から取得）。初代は null */
+  /** 直前の世代の種類（旅立った世代のうち最新から取得）。初代は null */
+  function isDepartureMemory(m) {
+    // 従来データ（type なし）は旅立ちの思い出として扱う
+    return !m.type || m.type === "departure";
+  }
   function getPreviousSpeciesId(db) {
-    const mem = (db && db.petMemories) || [];
-    return mem.length > 0 ? mem[mem.length - 1].speciesId : null;
+    const mem = db.petMemories || [];
+    for (let i = mem.length - 1; i >= 0; i--) {
+      const m = mem[i];
+      if (m && isDepartureMemory(m) && m.speciesId) return m.speciesId;
+    }
+    return null;
   }
 
   /** 現在の世代の思い出レコードを組み立てる */
@@ -175,6 +183,7 @@
       if (typeof b === "number" && b > maxBond) { maxBond = b; mainNpcId = id; }
     });
     return {
+      type: "departure",
       generationId: pet.generationId,
       name: pet.name,
       speciesId: pet.speciesRevealed ? pet.speciesId : null,
@@ -197,7 +206,9 @@
     if (pet.stage === "egg" || !pet.speciesRevealed) {
       return { ok: false, reason: "not_ready", message: "旅立つ準備ができていません。" };
     }
-    const already = (db.petMemories || []).some(function (m) { return m.generationId === pet.generationId; });
+    const already = (db.petMemories || []).some(function (m) {
+      return isDepartureMemory(m) && m.generationId === pet.generationId;
+    });
     if (already) return { ok: false, reason: "already_departed", message: "この世代は旅立ち済みです。" };
     const memory = buildPetMemory(db);
     if (!db.petMemories) db.petMemories = [];
@@ -207,7 +218,11 @@
 
   /** 次世代の新しい卵を開始する（呼び出し前に completeDeparture 済みであること） */
   function startNextGeneration(db, name, selectionMode) {
-    const genNo = (db.petMemories || []).length + 1;
+    // 世代番号は「旅立った世代」から決める（孵化の思い出は含めない）
+    const departedCount = (db.petMemories || []).filter(function (m) {
+      return isDepartureMemory(m);
+    }).length;
+    const genNo = departedCount + 1;
     const nextGenId = "gen_" + String(genNo).padStart(3, "0");
     const pet = createEgg(nextGenId, name, selectionMode);
     db.currentPet = pet;
@@ -247,7 +262,28 @@
     if (firstDiscover) {
       db.petEncyclopedia[speciesId] = { discovered: true, discoveredAt: pet.hatchedAt };
     }
+    // 生まれた瞬間の思い出（最初の1枚）を残す
+    addHatchMemory(db, pet);
     return { ok: true, speciesId: speciesId, hatchedAt: pet.hatchedAt, firstDiscover: firstDiscover };
+  }
+
+  /** 孵化した瞬間（生まれた！）の思い出を先頭に追加する */
+  function addHatchMemory(db, pet) {
+    if (!db.petMemories) db.petMemories = [];
+    const already = db.petMemories.some(function (m) {
+      return m.type === "hatch" && m.generationId === pet.generationId;
+    });
+    if (already) return;
+    db.petMemories.push({
+      type: "hatch",
+      generationId: pet.generationId,
+      name: pet.name,
+      speciesId: pet.speciesId || null,
+      birthDate: pet.birthDate,
+      hatchedAt: pet.hatchedAt,
+      // エフェクト画像の種類（UIが描画）
+      image: "egg_hatch"
+    });
   }
 
   /** おまかせ：候補からランダムに決定して公開する */
@@ -277,6 +313,7 @@
 
     // 思い出・旅立ち・次世代（M12）
     buildPetMemory: buildPetMemory,
+    addHatchMemory: addHatchMemory,
     completeDeparture: completeDeparture,
     startNextGeneration: startNextGeneration,
 

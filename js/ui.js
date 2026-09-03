@@ -1673,7 +1673,7 @@
         el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--ghost btn--sm", text: "会話練習モードへ", onclick: renderPracticeScreen })]),
         el("div", { class: "conv-bg bg-" + sc.background, "aria-hidden": "true" }),
         el("div", { class: "conv-stage", "aria-label": "会話のようす" }, [
-          el("div", { class: "conv-char conv-char--user", "aria-label": "あなた" }, [el("div", { class: "conv-avatar conv-avatar--user", "aria-hidden": "true" }), el("span", { class: "nameplate", text: "あなた" })]),
+          el("div", { class: "conv-char conv-char--user", "aria-label": "あなた" }, [SPR.canvasTag(SPR.renderUserAvatar((db.profile && db.profile.gender) || "male", 3), "あなた", "sprite-canvas conv-avatar conv-avatar--user"), el("span", { class: "nameplate", text: "あなた" })]),
           el("div", { class: "conv-char conv-char--pet", "aria-label": db.currentPet.name }, [
             SPR.canvasTag(SPR.renderPet(speciesColorOf(db), 3), db.currentPet.name + "（一緒にいる）", "sprite-canvas conv-avatar"),
             el("span", { class: "nameplate", text: db.currentPet.name })
@@ -1837,7 +1837,7 @@
         el("h1", { id: "practiceTitle", text: "会話練習：" + sc.title + "（" + (st.idx + 1) + " / " + rounds.length + "ターン" + (isBonusTurn ? "・ボーナス" : "") + "）" }),
         el("div", { class: "conv-bg bg-" + sc.background, "aria-hidden": "true" }),
         el("div", { class: "conv-stage", "aria-label": "会話のようす" }, [
-          el("div", { class: "conv-char conv-char--user", "aria-label": "あなた" }, [el("div", { class: "conv-avatar conv-avatar--user", "aria-hidden": "true" }), el("span", { class: "nameplate", text: "あなた" })]),
+          el("div", { class: "conv-char conv-char--user", "aria-label": "あなた" }, [SPR.canvasTag(SPR.renderUserAvatar((db.profile && db.profile.gender) || "male", 3), "あなた", "sprite-canvas conv-avatar conv-avatar--user"), el("span", { class: "nameplate", text: "あなた" })]),
           el("div", { class: "conv-char conv-char--pet", "aria-label": db.currentPet.name }, [SPR.canvasTag(SPR.renderPet(speciesColorOf(db), 3), db.currentPet.name, "sprite-canvas conv-avatar"), el("span", { class: "nameplate", text: db.currentPet.name })]),
           el("div", { class: "conv-char conv-char--npc", "aria-label": npc.displayName }, [SPR.canvasTag(SPR.renderSilhouette("#5a554e", 3), npc.displayName, "sprite-canvas conv-avatar"), el("span", { class: "nameplate", text: npc.displayName })])
         ]),
@@ -2077,17 +2077,30 @@
       panel.append(el("p", { class: "lead", text: "まだ思い出はありません。ペットとの時間を重ねると、ここに記録が残ります。" }));
     }
     memories.forEach(function (m) {
+      const SPR = globalThis.KE_SPRITE;
       const sp = m.speciesId ? PET.getSpeciesById(m.speciesId) : null;
       const mainNpc = m.mainNpcId ? (globalThis.KE_NPCS || []).find(function (n) { return n.id === m.mainNpcId; }) : null;
-      panel.append(el("article", { class: "card memory-card" }, [
-        el("h2", { text: m.name + (sp ? "（" + sp.name + "）" : "（種類不明）") + "　" + m.generationId }),
-        el("ul", { class: "list" }, [
-          el("li", { text: "誕生：" + m.birthDate + " ／ 孵化：" + (m.hatchedAt || "—") + " ／ 旅立ち：" + m.departedAt }),
-          el("li", { text: "一緒に過ごした日数：" + m.daysTogether + "日 ／ 最終成長段階：" + PET.getStageLabel(m.finalStage) }),
-          el("li", { text: "健康記録日数：" + m.healthRecordDays + "日 ／ 会話クエスト完了日数：" + m.questDays + "日" }),
-          el("li", { text: "最終きずな度：" + m.finalBond + (mainNpc ? " ／ よく話したNPC：" + mainNpc.displayName : "") })
-        ])
-      ]));
+      const card = el("article", { class: "card memory-card" }, []);
+      if (m.type === "hatch") {
+        // 生まれた瞬間の写真（破殻エッグのピクセル画）
+        const shot = SPR.renderEggFrame("egg_hatch", 8, 4);
+        card.append(
+          el("div", { class: "memory-photo" }, [SPR.canvasTag(shot, m.name + " が生まれた瞬間", "sprite-canvas")]),
+          el("h2", { text: "🐣 生まれた！  " + m.name + (sp ? "（" + sp.name + "）" : "") }),
+          el("p", { class: "field-hint", text: m.hatchedAt + "　たまごが割れて、ペットが生まれました。" })
+        );
+      } else {
+        card.append(
+          el("h2", { text: m.name + (sp ? "（" + sp.name + "）" : "（種類不明）") + "　" + m.generationId }),
+          el("ul", { class: "list" }, [
+            el("li", { text: "誕生：" + m.birthDate + " ／ 孵化：" + (m.hatchedAt || "—") + " ／ 旅立ち：" + m.departedAt }),
+            el("li", { text: "一緒に過ごした日数：" + m.daysTogether + "日 ／ 最終成長段階：" + PET.getStageLabel(m.finalStage) }),
+            el("li", { text: "健康記録日数：" + m.healthRecordDays + "日 ／ 会話クエスト完了日数：" + m.questDays + "日" }),
+            el("li", { text: "最終きずな度：" + m.finalBond + (mainNpc ? " ／ よく話したNPC：" + mainNpc.displayName : "") })
+          ])
+        );
+      }
+      panel.append(card);
     });
     root.append(panel);
   }
