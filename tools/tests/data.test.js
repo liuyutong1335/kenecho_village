@@ -54,11 +54,15 @@ test("npc データが8名・id重複なし", () => {
   assert.equal(new Set(ids).size, 8);
 });
 
-test("コーチ台詞にフォールバック用の安全な台詞が存在する", () => {
+test("コーチ台詞が100〜300件（目標150〜180）・フォールバックあり・ID一意", () => {
   const S = load("pet-coach-speech.js");
   assert.equal(Array.isArray(S), true);
+  assert.ok(S.length >= 100 && S.length <= 300, "件数 100〜300（現: " + S.length + "）");
+  assert.ok(S.length >= 150, "目標150件以上（現: " + S.length + "）");
   const fallback = S.filter((s) => s.purpose === "fallback");
   assert.ok(fallback.length >= 1);
+  const ids = new Set(S.map((s) => s.id));
+  assert.equal(ids.size, S.length, "台詞IDが一意");
 });
 
 test("foods / exercises / scenes は配列としてロードできる（件数は各Mで充足）", () => {

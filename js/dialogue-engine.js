@@ -44,27 +44,57 @@
    *        npcRelationLevel, petRelationLevel, purpose, recentIds }
    * 戻り値: { id, text, tier }
    */
+  /** 成長・旅立ち・特別会話など、回答分類に依存しないイベント台詞の抽選 */
+  function pickEvent(c) {
+    const pool = globalThis.KE_COACH_SPEECH || [];
+    // ① 全条件合致 → ② purpose＋種類のみ → ③ purposeのみ → ④ フォールバック
+    let candidates = pool.filter(function (e) {
+      return e.purpose === c.purpose && isCandidate(e, c);
+    });
+    if (candidates.length === 0 && c.petType) {
+      candidates = pool.filter(function (e) {
+        return e.purpose === c.purpose && e.petTypes.indexOf(c.petType) >= 0;
+      });
+    }
+    if (candidates.length === 0) candidates = pool.filter((e) => e.purpose === c.purpose);
+    if (candidates.length === 0) candidates = pool.filter((e) => e.purpose === "fallback");
+    candidates = applyRecentAvoid(candidates, c.recentIds);
+    const chosen = U.pickWeighted(candidates);
+    if (!chosen) return { id: null, text: "", tier: 0 };
+    return { id: chosen.id, text: chosen.text, tier: 0 };
+  }
+
   function pick(ctx) {
     const pool = globalThis.KE_COACH_SPEECH || [];
     const c = ctx || {};
+    if (["level_up", "departure", "special", "greeting", "hatch", "new_egg"].indexOf(c.purpose) >= 0) {
+      return pickEvent(c);
+    }
     const answers = byAnswerType(pool, c);
+    const byAt = function (list) {
+      if (!c.answerType) return list;
+      return list.filter(function (e) { return e.answerType === c.answerType; });
+    };
 
     let candidates = [];
     let tier = 4;
-    if (c.petType) candidates = answers.filter(function (e) { return e.petTypes.indexOf(c.petType) >= 0; });
-    if (candidates.length > 0 && c.answerType) {
-      const byPet = candidates.filter(function (e) {
-        return e.answerType === c.answerType || !e.answerType;
-      });
-      candidates = byPet.length > 0 ? byPet : candidates;
-      tier = 1;
-    } else if (c.coachType && c.answerType) {
-      candidates = answers.filter(function (e) { return e.coachTypes.indexOf(c.coachType) >= 0; });
-      tier = 2;
-    } else if (c.answerType) {
-      candidates = answers.filter(function (e) { return e.answerType === c.answerType; });
-      tier = 3;
+
+    // 1) ペット種類＋回答分類
+    if (c.petType && c.answerType) {
+      candidates = byAt(answers.filter(function (e) { return e.petTypes.indexOf(c.petType) >= 0; }));
+      if (candidates.length > 0) tier = 1;
     }
+    // 2) コーチタイプ＋回答分類
+    if (candidates.length === 0 && c.coachType && c.answerType) {
+      candidates = byAt(answers.filter(function (e) { return e.coachTypes.indexOf(c.coachType) >= 0; }));
+      if (candidates.length > 0) tier = 2;
+    }
+    // 3) 回答分類のみ
+    if (candidates.length === 0 && c.answerType) {
+      candidates = byAt(answers);
+      if (candidates.length > 0) tier = 3;
+    }
+    // 4) 共通の安全な台詞
     if (candidates.length === 0) {
       candidates = pool.filter(function (e) { return e.purpose === "fallback"; });
       tier = 4;
