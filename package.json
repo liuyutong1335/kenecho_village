@@ -1,0 +1,16 @@
+{
+  "name": "kenecho-village",
+  "version": "0.1.0",
+  "private": true,
+  "description": "健康と会話で育てるピクセルペット（研修用ローカルWebアプリ）。実行時外部依存なし。",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test tools/tests/"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {},
+  "devDependencies": {}
+}
