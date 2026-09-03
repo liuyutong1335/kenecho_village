@@ -1229,12 +1229,21 @@
       if (pet.selectionMode === "random") {
         const r = PET.revealRandomSpecies(db);
         if (!r.ok) { showErrorNotice(r.message || "孵化できませんでした。"); return; }
-        if (!DB.save()) showErrorNotice("保存に失敗しました。");
-        renderSpeciesReveal(r.speciesId, r.firstDiscover);
+        finishHatch(r.speciesId, r.firstDiscover);
       } else {
         renderSpeciesChoice();
       }
     }
+  }
+
+  /** 孵化確定後の締め処理：最初のNPCと出会い、同一保存して公開演出へ */
+  function finishHatch(speciesId, firstDiscover) {
+    const db = globalThis.KE_DB.get();
+    const REL = globalThis.KE_RELATIONSHIP;
+    REL.ensureNpc(db, "npc_sato"); // 種類公開後にのみ登場させる
+    if (!db.relationshipHistory) db.relationshipHistory = [];
+    if (!globalThis.KE_DB.save()) showErrorNotice("保存に失敗しました。");
+    renderSpeciesReveal(speciesId, firstDiscover);
   }
 
   function renderSpeciesChoice() {
@@ -1251,8 +1260,7 @@
         return el("button", { type: "button", class: "species-card", onclick: function () {
           const r = PET.applyHatch(DB.get(), sp.id);
           if (!r.ok) { showErrorNotice(r.message || "選べない種類です。"); return; }
-          if (!DB.save()) showErrorNotice("保存に失敗しました。");
-          renderSpeciesReveal(r.speciesId, r.firstDiscover);
+          finishHatch(r.speciesId, r.firstDiscover);
         } }, [
           SPR.canvasTag(SPR.renderPet(sp.color, 4), sp.name + " の姿", "sprite-canvas"),
           el("span", { class: "species-name", text: sp.name }),
@@ -1269,20 +1277,28 @@
     root.append(panel);
   }
 
-  function renderSpeciesReveal(speciesId) {
+  function renderSpeciesReveal(speciesId, firstDiscover) {
     const root = refs.appRoot;
     const DB = globalThis.KE_DB;
     const PET = globalThis.KE_PET;
     const SPR = globalThis.KE_SPRITE;
     clear(root);
-    const pet = DB.get().currentPet;
+    const db = DB.get();
+    const pet = db.currentPet;
     const sp = PET.getSpeciesById(speciesId);
+    const npcSato = (globalThis.KE_NPCS || []).find(function (n) { return n.id === "npc_sato"; });
     const panel = el("section", { class: "panel species-reveal", "aria-labelledby": "revealTitle" }, [
       el("h1", { id: "revealTitle", text: "その子、かえりました！" }),
       el("div", { class: "pet-stage" }, [SPR.canvasTag(SPR.renderPet(sp.color, 6), pet.name + "（" + sp.name + "）", "sprite-canvas")]),
       el("p", { class: "lead", text: pet.name + " は「" + sp.name + "」でした！" }),
       el("p", { class: "field-hint", text: "コーチタイプ：" + sp.coachTypeLabel + " ／ " + sp.summary }),
-      el("p", { class: "field-hint", text: "図鑑に登録されました。これで“物まねコーチ”が話せるようになります。" }),
+      el("p", { class: "field-hint", text: (firstDiscover ? "図鑑に新しく登録されました。" : "図鑑の登録が更新されました。") + " これでコーチ台詞を使えるようになります。" }),
+      el("div", { class: "card" }, [
+        el("h2", { text: "最初のNPCと出会った" }),
+        el("p", { text: "…村の入り口で女性が手を振っていた。どうやら" + (npcSato ? npcSato.displayName : "佐藤さん") + "という名前らしい。" }),
+        el("p", { class: "field-hint", text: npcSato ? npcSato.intro : "" }),
+        el("p", { class: "field-hint", text: "「会話クエスト」から話しかけられるようになります（次のマイルストーンで実装）。" })
+      ]),
       el("div", { class: "form-actions" }, [
         el("button", { type: "button", class: "btn btn--primary", text: "ペット小屋へ戻る", onclick: function () {
           if (globalThis.KE_APP && globalThis.KE_APP.navigate) globalThis.KE_APP.navigate("pet");
