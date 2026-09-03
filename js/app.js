@@ -11,8 +11,9 @@
   const PET = globalThis.KE_PET;
 
   const BUILT_SCREENS = {
-    home: true
-    // record / pet / quest / notebook / memories / encyclopedia / settings は今後追加
+    home: true,
+    record: true
+    // pet / quest / notebook / memories / encyclopedia / settings は今後追加
   };
 
   const SCREEN_LABELS = {
@@ -52,6 +53,10 @@
     if (!DB.hasProfile() && target !== "settings") {
       // 未設定なら常に初期設定へ（設定以外）
       UI.renderSetup(handleSetupComplete);
+      return;
+    }
+    if (target === "record") {
+      UI.renderRecordScreen();
       return;
     }
     if (target === "home" || BUILT_SCREENS[target]) {
