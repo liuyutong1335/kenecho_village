@@ -437,6 +437,7 @@
         ]),
         el("div", { class: "tabs", role: "tablist", "aria-label": "健康記録の分類" }, tabs),
         el("div", { class: "tab-panel", role: "tabpanel" }, buildTabContent()),
+        buildEvaluationCard(state.date),
         buildSummaryBar()
       ]);
     }
@@ -447,6 +448,52 @@
       if (state.tab === "sleep") return buildSleepTab();
       if (state.tab === "weight") return buildWeightTab();
       return [el("div", { class: "card" }, el("p", { class: "lead", text: "準備中" }))];
+    }
+
+    /** 日次健康評価とEXP確定（全タブ共通） */
+    function buildEvaluationCard(date) {
+      const db = DB.get();
+      const st = H.getEvaluationState(db, date);
+      const card = el("div", { class: "card eval-card" }, [el("h2", { text: "日次健康評価（" + date + "）" })]);
+      if (st.granted) {
+        const ev = st.stored;
+        card.append(
+          el("p", { class: "field-hint", text: "この日は評価済みです。確定済みのEXP・きずな度は、過去の記録変更で再計算されません。" }),
+          el("div", { class: "stat-row" }, [
+            statBox("食事", ev.scores.meal + " 点"),
+            statBox("運動", ev.scores.exercise + " 点"),
+            statBox("睡眠", ev.scores.sleep + " 点"),
+            statBox("合計", ev.total + " 点"),
+            statBox("獲得EXP", "+" + ev.exp)
+          ])
+        );
+        return card;
+      }
+      const p = st.preview;
+      const expLabel = p.scores.hasAny ? "+" + p.exp : "未記録（EXP +" + p.exp + "）";
+      const petName = db.currentPet ? db.currentPet.name : "ペット";
+      card.append(
+        el("p", { class: "field-hint", text: "この日の記録（食事/運動/睡眠 各0〜2点・合計0〜6点）からEXPを計算します。確定すると1回だけ加算されます。" }),
+        el("div", { class: "stat-row" }, [
+          statBox("食事", p.scores.meal + " 点"),
+          statBox("運動", p.scores.exercise + " 点"),
+          statBox("睡眠", p.scores.sleep + " 点"),
+          statBox("合計", p.total + " 点"),
+          statBox("EXP（目安）", expLabel)
+        ]),
+        el("div", { class: "form-actions" }, [
+          el("button", { type: "button", class: "btn btn--confirm", text: "この日の評価を確定する", onclick: function () {
+            confirmDialog("健康EXPの確定", "この日の評価（合計" + p.total + "点・EXP +" + p.exp + "）を確定しますか？", function () {
+              const r = H.evaluateDay(DB.get(), date);
+              if (!r.ok) { showErrorNotice(r.message || "評価を確定できませんでした。"); return; }
+              mutate(function () { });
+              showStampNotice("健康EXP +" + r.exp);
+              showNotice(petName + " の経験値が増えました。");
+            });
+          } })
+        ])
+      );
+      return card;
     }
 
     /** 目標とBMI・基礎代謝の参考表示（全タブ共通） */

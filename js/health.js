@@ -536,6 +536,100 @@
   }
 
   /* ------------------------------------------------------------------ */
+  /* 日次健康評価とEXP（M5）                                              */
+  /* ------------------------------------------------------------------ */
+
+  /**
+   * 日付の健康スコアを計算する（各0〜2、合計0〜6）。
+   * hasAny: 記録が1件でもあるか（未記録判定に使う）
+   */
+  function getDailyScores(db, date) {
+    const goals = getHealthGoals(db);
+    const meals = getMealTotals(db, date);
+    const ex = getExerciseTotals(db, date);
+    const sleep = getSleepOnDate(db, date);
+
+    let meal = 0;
+    if (meals.count > 0) {
+      meal = (meals.kcal <= goals.calorieLimitKcal && meals.protein >= goals.proteinGoalG) ? 2 : 1;
+    }
+    let exercise = 0;
+    if (ex.count > 0) {
+      exercise = ex.minutes >= goals.exerciseMinutes ? 2 : 1;
+    }
+    let sleepScore = 0;
+    if (sleep && sleep.hours != null) {
+      sleepScore = sleep.hours >= goals.sleepHours ? 2 : 1;
+    }
+    const hasAny = meals.count > 0 || ex.count > 0 || !!sleep;
+    return {
+      meal: meal,
+      exercise: exercise,
+      sleep: sleepScore,
+      total: meal + exercise + sleepScore,
+      hasAny: hasAny
+    };
+  }
+
+  /** EXP表のキー（未記録なら none、なければ合計スコア） */
+  function getExpKey(scores) {
+    return scores.hasAny ? String(scores.total) : "none";
+  }
+
+  function getExpForScores(scores) {
+    const v = C.SCORE_EXP_TABLE[getExpKey(scores)];
+    return typeof v === "number" ? v : 0;
+  }
+
+  /**
+   * 評価の状態を返す。
+   * - granted: 確定済みか
+   * - stored : 確定済みなら保存された評価
+   * - preview: 未確定なら現在の記録から再計算したスコアとEXP
+   */
+  function getEvaluationState(db, date) {
+    const stored = db.dailyEvaluations && db.dailyEvaluations[date];
+    if (stored && stored.granted) {
+      return { granted: true, stored: stored, preview: null };
+    }
+    const scores = getDailyScores(db, date);
+    const exp = getExpForScores(scores);
+    return {
+      granted: false,
+      stored: stored || null,
+      preview: { scores: scores, total: scores.total, exp: exp }
+    };
+  }
+
+  /**
+   * 日次評価を確定し EXP を付与する。
+   * - 二重付与はしない（granted 確定済みは拒否）
+   * - 未来日付は不可
+   * - currentPet.cumulativeExp / recordedDays を更新
+   */
+  function evaluateDay(db, date) {
+    if (!U.parseDate(date)) return { ok: false, reason: "invalid_date", message: "日付が不正です。" };
+    if (U.isFutureDate(date)) return { ok: false, reason: "future_date", message: "未来の日付は評価できません。" };
+    if (!db.currentPet) return { ok: false, reason: "no_pet", message: "ペットが見つかりません。" };
+    const st = getEvaluationState(db, date);
+    if (st.granted) return { ok: false, reason: "already_granted", message: "この日の評価は確定済みです。" };
+    const s = st.preview.scores;
+    const exp = st.preview.exp;
+    if (!db.dailyEvaluations) db.dailyEvaluations = {};
+    db.dailyEvaluations[date] = {
+      date: date,
+      scores: { meal: s.meal, exercise: s.exercise, sleep: s.sleep },
+      total: s.total,
+      exp: exp,
+      granted: true,
+      cumulativeExpAtGrant: db.currentPet.cumulativeExp
+    };
+    db.currentPet.cumulativeExp += exp;
+    db.currentPet.recordedDays = (db.currentPet.recordedDays || 0) + 1;
+    return { ok: true, exp: exp, total: s.total, scores: db.dailyEvaluations[date].scores, cumulativeExp: db.currentPet.cumulativeExp };
+  }
+
+  /* ------------------------------------------------------------------ */
   /* 集約エクスポート                                                    */
   /* ------------------------------------------------------------------ */
 
@@ -562,7 +656,10 @@
     hasWeightOnDate, saveWeight, removeWeight, validateWeightInput, calcBMI, calcBMR,
 
     // 目標
-    getHealthGoals, validateGoalInput, setHealthGoals
+    getHealthGoals, validateGoalInput, setHealthGoals,
+
+    // 日次評価・EXP
+    getDailyScores, getExpKey, getExpForScores, getEvaluationState, evaluateDay
   };
 
   if (globalThis) globalThis.KE_HEALTH = KE_HEALTH;
