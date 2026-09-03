@@ -59,6 +59,10 @@
       UI.renderRecordScreen();
       return;
     }
+    if (target === "pet") {
+      UI.renderPetScreen();
+      return;
+    }
     if (target === "home" || BUILT_SCREENS[target]) {
       UI.renderHome(DB.get());
       return;

@@ -1105,6 +1105,88 @@
     draw();
   }
 
+  /** ペット小屋画面（卵またはペット・掲示板・外出入口） */
+  function renderPetScreen() {
+    const root = refs.appRoot;
+    const DB = globalThis.KE_DB;
+    const H9 = globalThis.KE_HEALTH;
+    const PET = globalThis.KE_PET;
+    const SPR = globalThis.KE_SPRITE;
+    clear(root);
+    const db = DB.get();
+    const pet = db.currentPet;
+    if (!pet) { renderPlaceholder("ペット", "ペットが見つかりません。"); return; }
+    PET.refreshStage(db);
+    const today = U.todayStr();
+    const condition = PET.getCondition(db, today);
+    const condMeta = PET.getConditionMeta(condition);
+    const stageKey = pet.speciesRevealed ? PET.getPetStage(pet, today) : "egg";
+    const stageLabel = pet.stage === "egg" ? "卵" : PET.getStageLabel(stageKey);
+    const species = pet.speciesRevealed ? PET.getSpeciesById(pet.speciesId) : null;
+
+    // 中央表示（卵は共通スプライト・種類非公開。公開後は種類色のペット）
+    const stage = el("div", { class: "pet-stage" });
+    let canvas;
+    if (!pet.speciesRevealed || pet.stage === "egg") {
+      canvas = SPR.canvasTag(SPR.renderEgg(5), pet.name + "（卵）", "sprite-canvas");
+    } else {
+      const color = (species && species.color) || "#7fa650";
+      canvas = SPR.canvasTag(SPR.renderPet(color, 5), pet.name + " " + condMeta.label, "sprite-canvas");
+    }
+    stage.append(canvas);
+
+    // 掲示板（今日の記録状況）
+    const meals = H9.getMealTotals(db, today);
+    const ex = H9.getExerciseTotals(db, today);
+    const sleep = H9.getSleepOnDate(db, today);
+    const weight = H9.hasWeightOnDate(db, today);
+    const evalSt = H9.getEvaluationState(db, today);
+    const bulletItems = [
+      ["食事", meals.count > 0, meals.count + " 件"],
+      ["運動", ex.count > 0, ex.minutes + " 分"],
+      ["睡眠", !!sleep, sleep ? sleep.hours + " 時間" : "未記録"],
+      ["体重", weight, weight ? "記録あり" : "未記録"]
+    ];
+    const bulletin = el("div", { class: "bulletin" }, [
+      el("h3", { text: "今日の記録状況（木製掲示板）" }),
+      el("ul", { class: "checklist" }, bulletItems.map(function (row) {
+        return el("li", { class: row[1] ? "check--done" : "check--todo", text: (row[1] ? "✓ " : "… ") + row[0] + "：" + row[2] });
+      })),
+      evalSt.granted
+        ? el("p", { class: "field-hint", text: "今日の健康EXPは確定済み（+" + evalSt.stored.exp + "）" })
+        : el("p", { class: "field-hint", text: "今日の評価はまだです。「記録」画面で確定できます。" })
+    ]);
+
+    const exitButton = el("button", {
+      type: "button", class: "btn btn--primary",
+      text: pet.stage === "egg" ? "外へ出る（卵を持って）" : "外へ出る",
+      onclick: function () {
+        // M7 で村の入口→孵化へ接続
+        showNotice("村の入口への道は次のマイルストーンで実装されます。");
+      }
+    });
+
+    const panel = el("section", { class: "panel pet-house", "aria-labelledby": "petHouseTitle" }, [
+      el("h1", { id: "petHouseTitle", text: "ペット小屋" }),
+      el("div", { class: "pet-house-layout" }, [
+        stage,
+        el("div", { class: "pet-house-info" }, [
+          el("h2", { text: pet.name }),
+          el("p", { class: "field-hint", text: "成長段階：" + stageLabel + (species ? " ／ 種類：" + species.name + "（" + species.coachTypeLabel + "）" : " ／ 種類はまだ分かりません") }),
+          el("p", { class: "field-hint", text: "健康状態：" + condMeta.label + "（" + condMeta.desc + "）" }),
+          bulletin,
+          el("div", { class: "stat-row" }, [
+            statBox("累計EXP", String(pet.cumulativeExp)),
+            statBox("ペットきずな度", String(pet.petBond)),
+            statBox("記録日数", String(pet.recordedDays))
+          ]),
+          el("div", { class: "form-actions" }, [exitButton])
+        ])
+      ])
+    ]);
+    root.append(panel);
+  }
+
   /** インストール：DOM 参照の確保とトップバー操作の結線 */
   function install(onNavigate) {
     refs.appRoot = document.getElementById("app-root");
@@ -1130,6 +1212,7 @@
     renderHome: renderHome,
     renderPlaceholder: renderPlaceholder,
     renderRecordScreen: renderRecordScreen,
+    renderPetScreen: renderPetScreen,
     install: install
   };
 
