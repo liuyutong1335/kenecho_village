@@ -105,3 +105,12 @@ test("canSerialize が循環参照等を検出できる", () => {
   circular.self = circular;
   assert.equal(KE_DB.canSerialize(circular), false);
 });
+
+test("保存失敗（setItem throw）を save が false で握り、状態を維持する", () => {
+  storage.setItem = () => { throw new Error("Quota exceeded"); };
+  KE_DB.load();
+  const db = KE_DB.get();
+  db.profile = { displayName: "x", profileId: "p" };
+  assert.equal(KE_DB.save(), false);
+  assert.equal(KE_DB.get().profile.profileId, "p"); // メモリ上の状態は保たれる
+});

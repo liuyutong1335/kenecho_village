@@ -79,6 +79,10 @@
       UI.renderEncyclopediaScreen();
       return;
     }
+    if (target === "settings") {
+      UI.renderSettingsScreen();
+      return;
+    }
     if (target === "home" || BUILT_SCREENS[target]) {
       UI.renderHome(DB.get());
       return;

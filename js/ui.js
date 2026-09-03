@@ -1842,6 +1842,164 @@
     root.append(panel);
   }
 
+  /* ==================================================================== */
+  /* 設定・研修デモツール（M15）                                            */
+  /* ==================================================================== */
+
+  function renderSettingsScreen() {
+    const root = refs.appRoot;
+    clear(root);
+    const DB = globalThis.KE_DB;
+    const H9 = globalThis.KE_HEALTH;
+    const PET = globalThis.KE_PET;
+    const db = DB.get();
+    const profile = db.profile || {};
+    const pet = db.currentPet;
+
+    const panel = el("section", { class: "panel", "aria-labelledby": "settingsTitle" }, [
+      el("h1", { id: "settingsTitle", text: "設定" }),
+      el("p", { class: "field-hint", text: "プロフィール・健康目標・研修デモツール・データ初期化を扱います。" })
+    ]);
+
+    // ---- プロフィール ----
+    const nameInput = el("input", { type: "text", maxlength: "20", value: profile.displayName || "" });
+    panel.append(el("section", { class: "card" }, [
+      el("h2", { text: "プロフィール" }),
+      el("p", { class: "field-hint", text: "profileId：" + (profile.profileId || "なし") + "（表示名を変更しても profileId は変わりません）" }),
+      el("div", { class: "form-grid" }, [
+        el("div", { class: "field" }, [el("label", { for: "disp_name", text: "表示名" }), nameInput])
+      ]),
+      el("p", { class: "field-hint", text: "年齢 " + (profile.age || "—") + "／性別 " + (profile.gender ? (C.GENDER_OPTIONS[profile.gender] || profile.gender) : "—") + "／身長 " + (profile.heightCm || "—") + "cm／体重（初期）" + (profile.weightKg || "—") + "kg" }),
+      el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--primary", text: "表示名を変更", onclick: function () {
+        const v = UI_validateName(nameInput.value);
+        if (v) { showErrorNotice(v); return; }
+        db.profile.displayName = String(nameInput.value).trim();
+        if (!DB.save()) showErrorNotice("保存に失敗しました。");
+        else showNotice("表示名を変更しました。");
+        renderSettingsScreen();
+      } })])
+    ]));
+
+    // ---- 健康目標 ----
+    panel.append(el("section", { class: "card" }, [
+      el("h2", { text: "健康目標（初期値を含む）" }),
+      el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--primary", text: "健康目標を設定", onclick: openGoalSettingsModal })])
+    ]));
+
+    // ---- 研修デモツール ----
+    const noPet = !pet;
+    panel.append(el("section", { class: "card demo-tools", "aria-labelledby": "demoTitle" }, [
+      el("h2", { id: "demoTitle", text: "研修デモツール（本番利用外）" }),
+      el("p", { class: "field-hint", text: "研修・デモで世代循環や成長を簡単に確認するための操作です。通常利用の記録とは別に扱ってください。" }),
+      el("div", { class: "stat-row" }, [
+        statBox("累計EXP", pet ? String(pet.cumulativeExp) : "—"),
+        statBox("成長段階", pet ? (pet.stage === "egg" ? "卵" : PET.getStageLabel(PET.getPetStage(pet, U.todayStr()))) : "—")
+      ]),
+      el("div", { class: "form-actions" }, [
+        el("button", { type: "button", class: "btn btn--primary", text: "EXPを+100付与", onclick: function () {
+          if (!pet) return;
+          confirmDialog("デモ：EXP付与", "現在のペットにEXPを+100します（デモ専用操作）。よろしいですか？", function () {
+            pet.cumulativeExp += 100;
+            const r = PET.refreshStage(db, U.todayStr());
+            if (DB.save()) {
+              showNotice("EXP +100（現在 " + pet.cumulativeExp + "）。" + (r.changed ? "成長段階が「" + PET.getStageLabel(r.to) + "」になりました！" : ""));
+            } else showErrorNotice("保存に失敗しました。");
+            renderSettingsScreen();
+          });
+        } }),
+        el("button", { type: "button", class: "btn btn--primary", text: "孵化日を7日前へ（段階判定を進める）", onclick: function () {
+          if (!pet || !pet.hatchedAt) { showErrorNotice("孵化前の卵には適用できません。"); return; }
+          pet.hatchedAt = U.addDays(U.todayStr(), -7);
+          const r = PET.refreshStage(db, U.todayStr());
+          DB.save();
+          showNotice("孵化日を7日前にしました。" + (r.changed ? "成長段階が「" + PET.getStageLabel(r.to) + "」になりました。" : ""));
+          renderSettingsScreen();
+        } }),
+        pet && !pet.speciesRevealed
+          ? el("button", { type: "button", class: "btn btn--primary", text: "強制的にかえす", onclick: function () {
+            confirmDialog("デモ：孵化強制", "卵をかえして種類を公開します（デモ専用）。よろしいですか？", function () {
+              const r = PET.revealRandomSpecies(db);
+              if (!r.ok) { showErrorNotice(r.message); return; }
+              globalThis.KE_RELATIONSHIP.ensureNpc(db, "npc_sato");
+              DB.save();
+              showNotice("種類が公開されました。図鑑・NPCも解放されています。");
+              renderSettingsScreen();
+            });
+          } })
+          : null,
+        el("button", { type: "button", class: "btn btn--danger", text: "旅立ちを強制", onclick: function () {
+          if (!pet || pet.stage === "egg") { showErrorNotice("旅立ちには孵化済みのペットが必要です。"); return; }
+          confirmDialog("デモ：旅立ち強制", "現在のペットを思い出にし、次世代の卵を開始します（デモ専用）。よろしいですか？", function () {
+            const r = PET.completeDeparture(db);
+            if (!r.ok) { showErrorNotice(r.message); return; }
+            DB.save();
+            renderNextGenerationScreen();
+          });
+        } })
+      ])
+    ]));
+
+    // ---- データ初期化 ----
+    panel.append(el("section", { class: "card" }, [
+      el("h2", { text: "データ初期化" }),
+      el("p", { class: "field-hint", text: "全データを消去し、初期状態へ戻します。戻すことはできません。" }),
+      el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--danger", text: "すべてのデータを初期化", onclick: function () {
+        confirmDialog("データ初期化", "保存済みの記録・ペット・思い出・きずな度をすべて消去します。よろしいですか？", function () {
+          DB.resetData();
+          if (globalThis.KE_APP) globalThis.KE_APP.navigate("home");
+          showNotice("初期データで再起動しました。");
+        }, "初期化する");
+      } })])
+    ]));
+
+    root.append(panel);
+  }
+
+  function UI_validateName(value) {
+    const v = String(value || "").trim();
+    if (!v) return "表示名を入力してください。";
+    if (v.length > 20) return "表示名は20文字以内で入力してください。";
+    return null;
+  }
+
+  function openGoalSettingsModal() {
+    const DB = globalThis.KE_DB;
+    const H9 = globalThis.KE_HEALTH;
+    const g = H9.getHealthGoals(DB.get());
+    const overlay = el("div", { class: "overlay", role: "dialog", "aria-modal": "true", "aria-label": "健康目標の設定" });
+    const dialog = el("div", { class: "dialog dialog--wide" }, []);
+    const cal = el("input", { type: "number", min: "500", max: "10000", value: g.calorieLimitKcal });
+    const pro = el("input", { type: "number", min: "10", max: "300", value: g.proteinGoalG });
+    const ex = el("input", { type: "number", min: "1", max: "1440", value: g.exerciseMinutes });
+    const sl = el("input", { type: "number", min: "1", max: "16", step: "0.5", value: g.sleepHours });
+    const err = el("p", { class: "field-error" });
+    dialog.append(
+      el("h2", { class: "dialog-title", text: "健康目標の設定" }),
+      el("p", { class: "field-hint", text: "未設定時は初期値（カロリー上限2000kcal／蛋白質 体重×1.0g／運動30分／睡眠7時間）を使います。" }),
+      el("div", { class: "form-grid" }, [
+        el("div", { class: "field" }, [el("label", { text: "1日の摂取カロリー上限（kcal）" }), cal]),
+        el("div", { class: "field" }, [el("label", { text: "蛋白質目標（g）" }), pro]),
+        el("div", { class: "field" }, [el("label", { text: "運動時間目標（分）" }), ex]),
+        el("div", { class: "field" }, [el("label", { text: "睡眠時間目標（時間）" }), sl])
+      ]),
+      err,
+      el("div", { class: "form-actions" }, [
+        el("button", { type: "button", class: "btn btn--ghost", text: "閉じる", onclick: function () { overlay.remove(); } }),
+        el("button", { type: "button", class: "btn btn--confirm", text: "保存する", onclick: function () {
+          const r = H9.setHealthGoals(DB.get(), { calorieLimitKcal: cal.value, proteinGoalG: pro.value, exerciseMinutes: ex.value, sleepHours: sl.value });
+          if (!r.ok) { err.textContent = Object.values(r.errors).join(" "); return; }
+          DB.save();
+          showNotice("健康目標を保存しました。");
+          overlay.remove();
+          renderSettingsScreen();
+        } })
+      ])
+    );
+    overlay.append(dialog);
+    overlay.addEventListener("keydown", function (ev) { if (ev.key === "Escape") overlay.remove(); });
+    refs.modalRoot.append(overlay);
+  }
+
   /** インストール：DOM 参照の確保とトップバー操作の結線 */
   function install(onNavigate) {
     refs.appRoot = document.getElementById("app-root");
@@ -1874,6 +2032,7 @@
     renderEncyclopediaScreen: renderEncyclopediaScreen,
     renderMemoriesScreen: renderMemoriesScreen,
     renderNextGenerationScreen: renderNextGenerationScreen,
+    renderSettingsScreen: renderSettingsScreen,
     install: install
   };
 
