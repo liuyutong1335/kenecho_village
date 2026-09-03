@@ -78,6 +78,23 @@ test("animation-manifest に必須動作名が定義されている", () => {
   assert.deepEqual(M.npcMotions, ["idle", "talk", "happy", "neutral", "troubled", "appear", "special"]);
 });
 
+test("NPCの sceneIds がシーンIDと一致し、全20シーンが割当済み", () => {
+  const npcs = load("npc-data.js");
+  const scenes = load("conversation-scenes.js");
+  const sceneIds = new Set(scenes.map((s) => s.id));
+  const npcIds = new Set(npcs.map((n) => n.id));
+  scenes.forEach((s) => npcIds.has(s.npcId) || (() => { throw new Error("NPC不正: " + s.npcId + " in " + s.id); })());
+  const assigned = new Set();
+  npcs.forEach((n) => {
+    assert.ok(Array.isArray(n.sceneIds) && n.sceneIds.length > 0, n.id + " にシーンが無い");
+    n.sceneIds.forEach((sid) => {
+      assert.ok(sceneIds.has(sid), n.id + " → 不明シーン " + sid);
+      assigned.add(sid);
+    });
+  });
+  assert.equal(assigned.size, 20, "全20シーンが割当済み");
+});
+
 test("ピクセル定義が6種のアクセサリと表情フレームを持つ", () => {
   const abs = path.join(root, "data", "pixel-art", "pets.js");
   const P = require(abs).KE_PIXEL_PETS;
