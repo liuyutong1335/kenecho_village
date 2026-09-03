@@ -315,6 +315,13 @@ input:focus, select:focus, button:focus-visible {
 .dialog-title { margin-top: 0; }
 .dialog-body { margin: 8px 0 16px; }
 
+/* ===== サマリーバー・トレンド ===== */
+.summary-bar { margin-top: 16px; }
+.trend { display: flex; align-items: flex-end; gap: 3px; overflow-x: auto; padding-top: 8px; background: #fff; border: var(--border-thin) solid var(--paper-shadow); padding: 12px 8px 6px; }
+.trend-col { display: flex; flex-direction: column; align-items: center; flex: 1 1 0; min-width: 12px; }
+.trend-bar { width: 100%; max-width: 14px; background: var(--green-safe); border: 2px solid var(--grass-dark); border-bottom: 0; }
+.trend-label { font-size: 11px; color: var(--ink-sub); white-space: nowrap; margin-top: 4px; }
+
 /* ===== トースト ===== */
 .modal-root { position: fixed; inset: 0; pointer-events: none; z-index: 900; display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: 12px; }
 .toast {

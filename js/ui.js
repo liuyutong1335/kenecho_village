@@ -392,7 +392,13 @@
       selectedFood: null,
       foodQty: "",
       mealType: "breakfast",
-      searchText: ""
+      searchText: "",
+      // 運動
+      exSel: null,
+      exSearch: "",
+      exMinutes: "",
+      exCalcMode: "mets",
+      exCalories: ""
     };
 
     function mutate(fn) {
@@ -430,18 +436,39 @@
           el("div", { class: "record-datefield" }, [el("label", { for: "record_date", text: "記録する日付" }), dateInput])
         ]),
         el("div", { class: "tabs", role: "tablist", "aria-label": "健康記録の分類" }, tabs),
-        el("div", { class: "tab-panel", role: "tabpanel" }, buildTabContent())
+        el("div", { class: "tab-panel", role: "tabpanel" }, buildTabContent()),
+        buildSummaryBar()
       ]);
     }
 
     function buildTabContent() {
-      if (state.tab === "meal") return [buildMealTab()];
-      const msgs = {
-        exercise: "運動の記録は次のマイルストーン（M4）で実装されます。",
-        sleep: "睡眠の記録は次のマイルストーン（M4）で実装されます。",
-        weight: "体重の記録は次のマイルストーン（M4）で実装されます。"
-      };
-      return [el("div", { class: "card" }, el("p", { class: "lead", text: msgs[state.tab] }))];
+      if (state.tab === "meal") return buildMealTab();
+      if (state.tab === "exercise") return buildExerciseTab();
+      if (state.tab === "sleep") return buildSleepTab();
+      if (state.tab === "weight") return buildWeightTab();
+      return [el("div", { class: "card" }, el("p", { class: "lead", text: "準備中" }))];
+    }
+
+    /** 目標とBMI・基礎代謝の参考表示（全タブ共通） */
+    function buildSummaryBar() {
+      const db = DB.get();
+      const profile = db.profile;
+      const weight = H.getWeightForCalculation(db);
+      const bmi = H.calcBMI(weight, profile && profile.heightCm);
+      const bmr = profile ? H.calcBMR(weight, profile.heightCm, profile.age, profile.gender) : null;
+      const goals = H.getHealthGoals(db);
+      return el("div", { class: "card summary-bar" }, [
+        el("h2", { text: "目標と計算（参考情報）" }),
+        el("div", { class: "stat-row" }, [
+          statBox("BMI（参考）", bmi != null ? fmtNum(bmi, 1) : "—"),
+          statBox("基礎代謝（kcal/日）", bmr != null ? String(bmr) : "—"),
+          statBox("カロリー上限", goals.calorieLimitKcal + " kcal"),
+          statBox("蛋白質目標", goals.proteinGoalG + " g"),
+          statBox("運動目標", goals.exerciseMinutes + " 分"),
+          statBox("睡眠目標", goals.sleepHours + " h")
+        ]),
+        el("button", { type: "button", class: "btn btn--ghost btn--sm", text: "健康目標を設定", onclick: renderGoalModal })
+      ]);
     }
 
     function buildMealTab() {
@@ -714,6 +741,318 @@
       body.addEventListener("keydown", function (ev) { if (ev.key === "Escape") overlay.remove(); });
       refs.modalRoot.append(overlay);
       drawDialog();
+    }
+
+    /* ---- 運動タブ ---- */
+    function selectExercise(exObj) {
+      state.exSel = exObj;
+      state.exSearch = "";
+      state.exMinutes = "";
+      draw();
+    }
+
+    function exerciseSearchControl() {
+      const wrap = el("div", { class: "food-search" });
+      const input = el("input", { type: "search", placeholder: "運動名で検索（例：ウォーキング）", "aria-label": "運動検索", value: state.exSearch || "" });
+      const list = el("div", { class: "food-suggest", role: "listbox", "aria-label": "検索結果" });
+      input.addEventListener("input", function () {
+        state.exSearch = input.value;
+        const items = H.searchExercises(DB.get(), input.value, 8);
+        list.replaceChildren();
+        if (!String(input.value).trim()) return;
+        items.forEach(function (exObj) {
+          list.append(el("button", { type: "button", class: "food-suggest-item", role: "option", onclick: function () { selectExercise(exObj); } }, [
+            el("span", { text: exObj.name }),
+            el("span", { class: "field-hint", text: "METs " + exObj.mets + (exObj.note ? "／" + exObj.note : "") })
+          ]));
+        });
+      });
+      wrap.append(input, list);
+      return wrap;
+    }
+
+    function buildExerciseTab() {
+      return [buildExerciseForm(), buildExerciseListSection()];
+    }
+
+    function buildExerciseForm() {
+      const card = el("div", { class: "card" }, [el("h2", { text: "運動を記録する" })]);
+      const exObj = state.exSel;
+      if (exObj) {
+        card.append(el("div", { class: "food-selected" }, [el("strong", { text: exObj.name }), el("span", { class: "field-hint", text: "METs " + exObj.mets })]));
+      }
+      card.append(el("div", { class: "field" }, [el("span", { class: "field-label-inline", html: "運動を選ぶ" }), exerciseSearchControl()]));
+
+      const minutes = el("input", { type: "number", min: "1", max: "1440", step: "1", id: "ex_min", value: state.exMinutes || "", "aria-label": "運動時間（分）", oninput: function () { state.exMinutes = minutes.value; } });
+      const manual = el("input", { type: "number", min: "0", step: "1", id: "ex_manual", value: state.exCalories || "", "aria-label": "消費カロリー（直接入力）", oninput: function () { state.exCalories = manual.value; } });
+      const metsRadio = el("input", { type: "radio", name: "calcMode", value: "mets" });
+      const manRadio = el("input", { type: "radio", name: "calcMode", value: "manual" });
+      if (state.exCalcMode === "manual") manRadio.checked = true; else metsRadio.checked = true;
+      metsRadio.addEventListener("change", function () { state.exCalcMode = "mets"; draw(); });
+      manRadio.addEventListener("change", function () { state.exCalcMode = "manual"; draw(); });
+
+      const weightKg = H.getWeightForCalculation(DB.get());
+      const modeField = el("div", { class: "field" }, [
+        el("span", { class: "field-label-inline", html: "消費カロリーの入力方法" }),
+        el("div", { class: "radio-group" }, [
+          el("label", { class: "radio-row" }, [metsRadio, el("span", { class: "radio-label", text: "METsで自動計算" })]),
+          el("label", { class: "radio-row" }, [manRadio, el("span", { class: "radio-label", text: "直接入力する" })])
+        ])
+      ]);
+      const fields = [el("div", { class: "field" }, [el("label", { for: "ex_min", text: "運動時間（分）" }), minutes])];
+      if (state.exCalcMode === "manual") {
+        fields.push(el("div", { class: "field" }, [el("label", { for: "ex_manual", text: "消費カロリー（kcal）" }), manual]));
+      }
+      card.append(el("div", { class: "form-grid" }, fields));
+      card.append(modeField);
+      card.append(el("p", { class: "field-hint", text: "METs法: 消費kcal = METs × 3.5 × 体重（最新 " + fmtNum(weightKg, 1) + "kg）÷ 200 × 分。参考値です。" }));
+
+      const actions = el("div", { class: "form-actions" });
+      if (exObj) {
+        actions.append(el("button", { type: "button", class: "btn btn--primary", text: "記録する", onclick: function () {
+          const input = { exerciseId: exObj.id, minutes: state.exMinutes, calories: state.exCalories, calcMode: state.exCalcMode || "mets", date: state.date };
+          const v = H.validateExerciseInput(DB.get(), input);
+          if (!v.ok) { showErrorNotice(Object.values(v.errors).join(" ")); return; }
+          const rec = H.buildExerciseRecord(DB.get(), input, weightKg);
+          mutate(function (d) { H.addExercise(d, state.date, rec); });
+          state.exSel = null; state.exMinutes = ""; state.exCalories = ""; state.exCalcMode = "mets";
+          showStampNotice("運動を記録しました");
+        } }));
+      } else {
+        card.append(el("p", { class: "field-hint", text: "運動を検索して選ぶと記録できます。" }));
+      }
+      card.append(actions);
+      return card;
+    }
+
+    function buildExerciseListSection() {
+      const db = DB.get();
+      const list = H.getExercises(db, state.date);
+      const t = H.getExerciseTotals(db, state.date);
+      const card = el("div", { class: "card" }, [
+        el("h2", { text: state.date + " の運動記録" }),
+        el("div", { class: "stat-row" }, [
+          statBox("合計時間", t.minutes + " 分"),
+          statBox("合計消費カロリー", fmtNum(t.calories, 0) + " kcal"),
+          statBox("件数", t.count + " 件")
+        ])
+      ]);
+      if (list.length === 0) card.append(el("p", { class: "field-hint", text: "この日の記録はまだありません。" }));
+      list.forEach(function (r) {
+        card.append(el("div", { class: "meal-row" }, [
+          el("div", { class: "meal-row-main" }, [
+            el("strong", { text: r.name + "（" + r.minutes + "分）" }),
+            el("span", { class: "field-hint", text: "消費カロリー 約" + fmtNum(r.calories, 0) + " kcal（" + (r.calcMode === "manual" ? "直接入力" : "METs推定") + "）" })
+          ]),
+          el("div", { class: "meal-row-actions" }, [
+            el("button", { type: "button", class: "btn btn--ghost btn--sm btn--danger-text", text: "削除", onclick: function () {
+              confirmDialog("運動記録の削除", "この運動記録を削除しますか？", function () {
+                mutate(function (d) { H.removeExercise(d, state.date, r.id); });
+                showNotice("運動記録を削除しました。");
+              });
+            } })
+          ])
+        ]));
+      });
+      card.append(el("div", { class: "form-actions" }, [
+        el("button", { type: "button", class: "btn btn--ghost", text: "カスタム運動を管理", onclick: renderCustomExerciseModal })
+      ]));
+      return card;
+    }
+
+    function renderCustomExerciseModal() {
+      const overlay = el("div", { class: "overlay", role: "dialog", "aria-modal": "true", "aria-label": "カスタム運動の管理" });
+      const body = el("div", { class: "dialog dialog--wide" }, []);
+      function drawDialog() {
+        body.replaceChildren();
+        body.append(el("h2", { class: "dialog-title", text: "カスタム運動の管理" }));
+        const customs = (DB.get().customExercises || []);
+        if (customs.length === 0) body.append(el("p", { class: "field-hint", text: "登録済みのカスタム運動はありません。下のフォームから追加できます。" }));
+        customs.forEach(function (ce) {
+          body.append(el("div", { class: "meal-row" }, [
+            el("div", { class: "meal-row-main" }, [el("strong", { text: ce.name }), el("span", { class: "field-hint", text: "METs " + ce.mets + (ce.note ? "／" + ce.note : "") })]),
+            el("div", { class: "meal-row-actions" }, [
+              el("button", { type: "button", class: "btn btn--ghost btn--sm btn--danger-text", text: "削除", onclick: function () {
+                confirmDialog("カスタム運動の削除", ce.name + " を削除しますか？", function () {
+                  mutate(function (d) { H.removeCustomExercise(d, ce.id); });
+                  showNotice("カスタム運動を削除しました。");
+                  drawDialog();
+                });
+              } })
+            ])
+          ]));
+        });
+        body.append(customExerciseForm());
+        body.append(el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--ghost", text: "閉じる", onclick: function () { overlay.remove(); } })]));
+      }
+      function customExerciseForm() {
+        const name = el("input", { type: "text", maxlength: "30", placeholder: "例：庭の草むしり" });
+        const mets = el("input", { type: "number", min: "0.1", max: "20", step: "0.1", placeholder: "4.0" });
+        const note = el("input", { type: "text", maxlength: "40", placeholder: "備考（任意）" });
+        const err = el("p", { class: "field-error" });
+        const wrap = el("div", { class: "field" }, [
+          el("h3", { class: "meal-group-title", text: "カスタム運動を追加" }),
+          el("div", { class: "form-grid" }, [
+            el("div", { class: "field" }, [el("label", { text: "運動名" }), name]),
+            el("div", { class: "field" }, [el("label", { text: "METs" }), mets]),
+            el("div", { class: "field" }, [el("label", { text: "備考" }), note])
+          ]),
+          err,
+          el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--primary", text: "追加する", onclick: function () {
+            const r = H.addCustomExercise(DB.get(), { name: name.value, mets: mets.value, note: note.value });
+            if (!r.ok) { err.textContent = Object.values(r.errors).join(" "); return; }
+            mutate(function () { });
+            showNotice("カスタム運動を追加しました。");
+            drawDialog();
+          } })])
+        ]);
+        return wrap;
+      }
+      overlay.append(body);
+      body.addEventListener("keydown", function (ev) { if (ev.key === "Escape") overlay.remove(); });
+      refs.modalRoot.append(overlay);
+      drawDialog();
+    }
+
+    /* ---- 睡眠タブ ---- */
+    function buildSleepTab() {
+      const db = DB.get();
+      const rec = H.getSleepOnDate(db, state.date);
+      const card = el("div", { class: "card" }, [el("h2", { text: "睡眠を記録する（起床日基準）" })]);
+      const sleepAt = el("input", { type: "time", id: "sl_at", value: rec ? rec.sleepAt : "" });
+      const wakeAt = el("input", { type: "time", id: "wl_at", value: rec ? rec.wakeAt : "" });
+      const err = el("p", { class: "field-error" });
+      const hint = el("p", { class: "field-hint", text: "" });
+      function updateHint() {
+        const h = H.calcSleepHours(sleepAt.value, wakeAt.value);
+        hint.textContent = h != null ? "睡眠時間は約 " + fmtNum(h, 1) + " 時間です。" : "";
+      }
+      sleepAt.addEventListener("change", updateHint);
+      wakeAt.addEventListener("change", updateHint);
+      updateHint();
+      card.append(
+        el("p", { class: "field-hint", text: "入眠時刻と起床時刻を記録します。就寝と起床が同じ時刻の場合は保存されません。" }),
+        el("div", { class: "form-grid" }, [
+          el("div", { class: "field" }, [el("label", { for: "sl_at", text: "入眠時刻" }), sleepAt]),
+          el("div", { class: "field" }, [el("label", { for: "wl_at", text: "起床時刻" }), wakeAt])
+        ]),
+        hint,
+        err,
+        el("div", { class: "form-actions" }, [
+          el("button", { type: "button", class: "btn btn--primary", text: rec ? "更新する" : "保存する", onclick: function () {
+            const v = H.validateSleepInput({ sleepAt: sleepAt.value, wakeAt: wakeAt.value, date: state.date });
+            if (!v.ok) { err.textContent = Object.values(v.errors).join(" "); return; }
+            mutate(function (d) { H.saveSleep(d, state.date, sleepAt.value, wakeAt.value); });
+            showStampNotice("睡眠を記録しました");
+          } }),
+          rec ? el("button", { type: "button", class: "btn btn--ghost btn--danger-text", text: "記録を削除", onclick: function () {
+            confirmDialog("睡眠記録の削除", "この日の睡眠記録を削除しますか？", function () {
+              mutate(function (d) { H.removeSleep(d, state.date); });
+              showNotice("睡眠記録を削除しました。");
+            });
+          } }) : null
+        ])
+      );
+      return [card];
+    }
+
+    /* ---- 体重タブ ---- */
+    function buildTrendChart(entries) {
+      const wrap = el("div", { class: "trend", role: "img", "aria-label": "直近の体重トレンドグラフ" });
+      if (entries.length === 0) {
+        wrap.append(el("p", { class: "field-hint", text: "記録があると直近30日のグラフが表示されます。" }));
+        return wrap;
+      }
+      const values = entries.map(function (e) { return e.kg; });
+      const min = Math.min.apply(null, values);
+      const max = Math.max.apply(null, values);
+      const span = (max - min) || 1;
+      entries.forEach(function (e) {
+        const h = Math.round((e.kg - min) / span * 64) + 8;
+        wrap.append(el("div", { class: "trend-col", title: e.date + " " + fmtNum(e.kg, 1) + "kg" }, [
+          el("div", { class: "trend-bar", style: "height:" + h + "px" }),
+          el("span", { class: "trend-label", text: e.date.slice(5) })
+        ]));
+      });
+      return wrap;
+    }
+
+    function buildWeightTab() {
+      const db = DB.get();
+      const entries = H.getWeightEntries(db);
+      const existing = H.hasWeightOnDate(db, state.date);
+      const card = el("div", { class: "card" }, [el("h2", { text: "体重を記録する（1日1件）" })]);
+      const kg = el("input", { type: "number", min: "20", max: "400", step: "0.1", id: "kg_input", value: existing ? db.healthRecords.weight[state.date].kg : "" });
+      const err = el("p", { class: "field-error" });
+      card.append(
+        el("div", { class: "form-grid" }, [el("div", { class: "field" }, [el("label", { for: "kg_input", text: "体重（kg）" }), kg])]),
+        existing ? el("p", { class: "field-hint", text: "この日付には体重が登録済みです。上書きする場合は確認が表示されます。" }) : null,
+        err,
+        el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--primary", text: existing ? "上書き登録" : "登録する", onclick: function () {
+          const v = H.validateWeightInput({ kg: kg.value, date: state.date });
+          if (!v.ok) { err.textContent = Object.values(v.errors).join(" "); return; }
+          const doSave = function () {
+            mutate(function (d) { H.saveWeight(d, state.date, Number(kg.value)); });
+            showStampNotice(existing ? "体重を上書きしました" : "体重を記録しました");
+          };
+          if (existing) confirmDialog("体重の上書き", "この日付の体重は上書きされます。よろしいですか？", doSave);
+          else doSave();
+        } })])
+      );
+      const listCard = el("div", { class: "card" }, [el("h2", { text: "体重の履歴とトレンド" })]);
+      listCard.append(buildTrendChart(H.getRecentWeights(db, 30)));
+      if (entries.length === 0) {
+        listCard.append(el("p", { class: "field-hint", text: "記録はまだありません。" }));
+      } else {
+        entries.slice(0, 30).forEach(function (e) {
+          listCard.append(el("div", { class: "meal-row" }, [
+            el("div", { class: "meal-row-main" }, [el("strong", { text: e.date }), el("span", { class: "field-hint", text: fmtNum(e.kg, 1) + " kg" })]),
+            el("div", { class: "meal-row-actions" }, [el("button", { type: "button", class: "btn btn--ghost btn--sm btn--danger-text", text: "削除", onclick: function () {
+              confirmDialog("体重記録の削除", e.date + " の体重記録を削除しますか？", function () {
+                mutate(function (d) { H.removeWeight(d, e.date); });
+                showNotice("体重記録を削除しました。");
+              });
+            } })])
+          ]));
+        });
+      }
+      return [card, listCard];
+    }
+
+    /* ---- 健康目標モーダル ---- */
+    function renderGoalModal() {
+      const g = H.getHealthGoals(DB.get());
+      const overlay = el("div", { class: "overlay", role: "dialog", "aria-modal": "true", "aria-label": "健康目標の設定" });
+      const dialog = el("div", { class: "dialog dialog--wide" }, []);
+      const cal = el("input", { type: "number", min: "500", max: "10000", value: g.calorieLimitKcal });
+      const pro = el("input", { type: "number", min: "10", max: "300", value: g.proteinGoalG });
+      const ex = el("input", { type: "number", min: "1", max: "1440", value: g.exerciseMinutes });
+      const sl = el("input", { type: "number", min: "1", max: "16", step: "0.5", value: g.sleepHours });
+      const err = el("p", { class: "field-error" });
+      dialog.append(
+        el("h2", { class: "dialog-title", text: "健康目標の設定" }),
+        el("p", { class: "field-hint", text: "目標は日次の評価とペットの状態に使われます。未設定時は初期値を使います。" }),
+        el("div", { class: "form-grid" }, [
+          el("div", { class: "field" }, [el("label", { text: "1日の摂取カロリー上限（kcal）" }), cal]),
+          el("div", { class: "field" }, [el("label", { text: "蛋白質目標（g）" }), pro]),
+          el("div", { class: "field" }, [el("label", { text: "運動時間目標（分）" }), ex]),
+          el("div", { class: "field" }, [el("label", { text: "睡眠時間目標（時間）" }), sl])
+        ]),
+        err,
+        el("div", { class: "form-actions" }, [
+          el("button", { type: "button", class: "btn btn--ghost", text: "閉じる", onclick: function () { overlay.remove(); } }),
+          el("button", { type: "button", class: "btn btn--confirm", text: "保存する", onclick: function () {
+            const r = H.setHealthGoals(DB.get(), { calorieLimitKcal: cal.value, proteinGoalG: pro.value, exerciseMinutes: ex.value, sleepHours: sl.value });
+            if (!r.ok) { err.textContent = Object.values(r.errors).join(" "); return; }
+            mutate(function () { });
+            showNotice("健康目標を保存しました。");
+            overlay.remove();
+          } })
+        ])
+      );
+      overlay.append(dialog);
+      dialog.addEventListener("keydown", function (ev) { if (ev.key === "Escape") overlay.remove(); });
+      refs.modalRoot.append(overlay);
     }
 
     draw();
