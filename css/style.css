@@ -1,0 +1,252 @@
+/* kenecho Village - 田園生活風ピクセルUI
+ * 基本色・8pxグリッド・共通部品（トップバー/パネル/ボタン/フォーム/モーダル/トースト）。
+ * UIデザイン仕様（docs/03_UIデザイン仕様書.md）に従う。
+ */
+:root {
+  /* ---- UIデザイン仕様 基本色 ---- */
+  --sky: #a9d6d2;        /* 空色 */
+  --grass: #7fa650;      /* 草色 */
+  --grass-dark: #56733e; /* 濃い草色 */
+  --wood: #9a6642;       /* 木材 */
+  --wood-dark: #5b3a29;  /* 濃い木材 */
+  --wood-light: #b57c52;
+  --soil: #c9965b;       /* 土 */
+  --paper: #f4ddaa;      /* 紙 */
+  --paper-light: #faf0d7;
+  --paper-shadow: #d1a85b; /* 紙の影 */
+  --sun: #e9b949;        /* 黄色 */
+  --green-safe: #6faf65; /* 安心の緑 */
+  --orange-warn: #d9824b; /* 注意の橙 */
+  --red-dark: #a94e45;   /* 暗い赤 */
+  --ink: #3e2f28;        /* 本文 */
+  --ink-sub: #66564d;    /* 補足 */
+  --shadow: rgba(59, 38, 24, .28);
+
+  /* ---- グリッド・寸法 ---- */
+  --grid: 8px;
+  --border-w: 4px;
+  --border-thin: 2px;
+  --max-width: 920px;
+  --btn-h: 48px;
+
+  /* ---- タイポ ---- */
+  --font-base: system-ui, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 16px; }
+
+body {
+  margin: 0;
+  font-family: var(--font-base);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  background-color: var(--sky);
+  background-image:
+    linear-gradient(0deg, transparent 47%, rgba(255,255,255,.16) 48%, rgba(255,255,255,.16) 52%, transparent 53%),
+    repeating-linear-gradient(0deg, transparent 0 47px, rgba(255,255,255,.10) 47px 52px);
+}
+
+/* ===== スキップリンク ===== */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 1000;
+  background: var(--sun);
+  color: var(--ink);
+  padding: 8px 16px;
+  font-weight: bold;
+}
+.skip-link:focus { left: 0; }
+
+/* ===== 上バー（木製看板風） ===== */
+.topbar {
+  background: var(--wood);
+  border-bottom: 4px solid var(--wood-dark);
+  box-shadow: 0 4px 0 var(--shadow);
+  padding: 10px 16px;
+}
+.topbar-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.topbar-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: var(--paper-light);
+  font-weight: bold;
+  font-size: 18px;
+  font-family: var(--font-base);
+}
+.topbar-logo-mark {
+  width: 24px;
+  height: 24px;
+  background: var(--paper);
+  box-shadow: inset -3px -3px 0 rgba(0,0,0,.12);
+}
+.topbar-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--grid);
+  margin-left: auto;
+}
+.topbar-nav button {
+  height: var(--btn-h);
+  min-width: 72px;
+  padding: 0 12px;
+  border: var(--border-thin) solid var(--wood-dark);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: bold;
+  font-family: var(--font-base);
+  cursor: pointer;
+  box-shadow: 2px 3px 0 var(--paper-shadow), 2px 3px 0 rgba(0,0,0,.18);
+}
+.topbar-nav button:hover { background: var(--paper-light); transform: translate(-1px, -1px); }
+.topbar-nav button:active { transform: translate(1px, 2px); box-shadow: 0 0 0 rgba(0,0,0,0); }
+
+.topbar-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: var(--paper);
+  color: var(--red-dark);
+  border: var(--border-thin) solid var(--red-dark);
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+/* ===== メイン ===== */
+.app-root {
+  max-width: var(--max-width);
+  margin: 24px auto 40px;
+  padding: 0 16px;
+}
+.app-root:focus { outline: none; }
+
+.page-footer {
+  text-align: center;
+  padding: 16px;
+  color: var(--wood-dark);
+  font-size: 13px;
+  background: rgba(255,255,255,.35);
+}
+
+/* ===== パネル・カード（木枠＋紙） ===== */
+.panel {
+  background: var(--paper);
+  border: var(--border-w) solid var(--wood-dark);
+  box-shadow: 0 4px 0 var(--wood-dark), 4px 6px 0 var(--shadow);
+  padding: 24px;
+  outline: var(--border-thin) solid var(--wood);
+  margin-bottom: 24px;
+}
+.panel h1 { margin-top: 0; font-size: 24px; }
+.panel h2 { margin-top: 0; font-size: 20px; }
+.lead { font-weight: bold; }
+
+.card {
+  background: var(--paper-light);
+  border: var(--border-thin) solid var(--paper-shadow);
+  box-shadow: 2px 3px 0 var(--paper-shadow);
+  padding: 16px;
+  margin-top: 16px;
+}
+.list { margin: 8px 0; padding-left: 20px; }
+
+/* ===== ボタン ===== */
+button.btn {
+  min-height: var(--btn-h);
+  padding: 8px 20px;
+  border: var(--border-thin) solid var(--wood-dark);
+  font-size: 16px;
+  font-weight: bold;
+  font-family: var(--font-base);
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 2px 3px 0 var(--wood-dark);
+}
+button.btn:hover { filter: brightness(.97); }
+button.btn:active { transform: translate(2px, 3px); box-shadow: 0 0 0 var(--wood-dark); }
+button.btn--primary { background: var(--wood); color: var(--paper-light); }
+button.btn--confirm { background: var(--green-safe); color: #fff; }
+button.btn--warn { background: var(--orange-warn); color: #fff; }
+button.btn--danger { background: var(--red-dark); color: #fff; }
+button.btn--ghost { background: transparent; box-shadow: none; }
+button[disabled] { opacity: .5; cursor: not-allowed; }
+
+/* ===== フォーム ===== */
+.field { margin: 12px 0; }
+.field > label { display: block; font-weight: bold; margin-bottom: 4px; }
+.field-hint { color: var(--ink-sub); font-size: 14px; margin-top: 2px; }
+input[type="text"], input[type="number"], input[type="time"], input[type="date"], input[type="search"], select {
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 10px;
+  font-size: 16px;
+  font-family: var(--font-base);
+  color: var(--ink);
+  background: #fff;
+  border: var(--border-thin) solid var(--wood-dark);
+  border-radius: 0;
+}
+input:focus, select:focus, button:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 2px;
+}
+.field-error {
+  color: var(--red-dark);
+  font-weight: bold;
+  font-size: 14px;
+  margin-top: 4px;
+}
+.field--invalid input { border-color: var(--red-dark); }
+
+/* 複数列フォーム */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.form-actions { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+
+/* ===== トースト ===== */
+.modal-root { position: fixed; inset: 0; pointer-events: none; z-index: 900; display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: 12px; }
+.toast {
+  pointer-events: auto;
+  background: var(--paper);
+  border: var(--border-thin) solid var(--wood-dark);
+  box-shadow: 3px 4px 0 var(--shadow);
+  padding: 12px 18px;
+  font-weight: bold;
+  max-width: 70%;
+  cursor: pointer;
+}
+.toast--error { border-color: var(--red-dark); color: var(--red-dark); }
+
+/* ===== リンク・その他 ===== */
+a { color: var(--wood-dark); }
+a:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}

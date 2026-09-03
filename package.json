@@ -5,7 +5,7 @@
   "description": "健康と会話で育てるピクセルペット（研修用ローカルWebアプリ）。実行時外部依存なし。",
   "type": "commonjs",
   "scripts": {
-    "test": "node --test tools/tests/"
+    "test": "node --test \"tools/tests/*.test.js\""
   },
   "engines": {
     "node": ">=18"

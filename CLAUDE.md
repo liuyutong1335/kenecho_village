@@ -28,6 +28,7 @@
 index.html              … 全画面の骨格・script/css 読み込み（依存順）
 css/style.css           … 田園生活風ピクセルUI（8pxグリッド・基本色パレット）
 js/config.js            … 定数集約（現実・成長閾値・目標初期値・EXP表・関係段階・スコア基準）
+js/util.js              … 汎用ヘルパ（日付/時刻・ID生成・クランプ・乱数・重み付き抽選）
 js/data/                … データ（スポット使用禁止、UI描画へ直接書かない）
   foods.js              … プリセット食品50件
   exercises.js          … プリセット運動20件
