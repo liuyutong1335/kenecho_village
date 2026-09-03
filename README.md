@@ -45,7 +45,7 @@
 | データ | localStorage（統一スキーマ・破損データ隔離） |
 | テスト | Node 標準の `node --test`（外部パッケージなし） |
 
-**利用条件**：`index.html` を直接開くだけで動作。インターネット通信は発生しません（Network タブで確認可）。
+**利用条件**：`kenecho-village.html` を直接開くだけで動作。インターネット通信は発生しません（Network タブで確認可）。
 
 ## 4. 機能一覧
 
@@ -72,7 +72,7 @@ Git・Node.js は開発者のみ必要です（実行には不要）。
 git clone <repository-url>
 
 # 2. インストール不要。そのまま起動
-#    「index.html」を Chrome または Edge で開く（ダブルクリック可）
+#    「kenecho-village.html」を Chrome または Edge で開く（ダブルクリック可）
 ```
 
 - サーバ起動・ビルド・通信は一切不要
@@ -80,7 +80,7 @@ git clone <repository-url>
 
 ## 6. はじめての使い方
 
-1. `index.html` を開くと初期設定が始まります（表示名 → 年齢・性別 → 身長・体重 → ペット名 → 決定方式）
+1. `kenecho-village.html` を開くと初期設定が始まります（表示名 → 年齢・性別 → 身長・体重 → ペット名 → 決定方式）
 2. ホームで食品・運動・睡眠・体重を記録します（過去日付の記録も可）
 3. 1日の記録を「評価確定」すると健康EXPを得てペットが育ちます
 4. ペット小屋から「外へ出る」と卵が孵化し、種類が公開されます
@@ -92,7 +92,7 @@ git clone <repository-url>
 ## 7. プロジェクト構成
 
 ```
-├─ index.html              起動画面（全画面コンテナ・script読み込み）
+├─ kenecho-village.html              起動画面（全画面コンテナ・script読み込み）
 ├─ css/style.css           田園生活風ピクセルUI
 ├─ js/                     アプリ本体（data / ロジック / UI）
 │  ├─ config.js            定数一元管理

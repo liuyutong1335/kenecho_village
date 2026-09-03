@@ -14,7 +14,7 @@
 
 1. HTML / CSS / JavaScript のみ。外部フレームワーク・外部API・外部DB・CDN・外部画像・外部フォントは一切使用しない
 2. サーバーへデータを送信しない。データは localStorage へ保存
-3. `index.html` を `file://` で直接開いて動作すること（読み込み用のサーバ起動を前提にしない）
+3. `kenecho-village.html` を `file://` で直接開いて動作すること（読み込み用のサーバ起動を前提にしない）
 4. `fetch()` を使わない。独立データはローカル JavaScript ファイルとして読み込む
 5. **ES Modules は使わない**（file:// で CORS により読み込めないため）。classic `<script>` タグを依存順で並べ、各ファイルは `globalThis` に名前空間を公開する
 6. ユーザー入力は `textContent` 等で安全に表示し、HTML 文字列へ直接埋め込まない
@@ -25,7 +25,7 @@
 ## ファイル構成
 
 ```
-index.html              … 全画面の骨格・script/css 読み込み（依存順）
+kenecho-village.html              … 全画面の骨格・script/css 読み込み（依存順）
 css/style.css           … 田園生活風ピクセルUI（8pxグリッド・基本色パレット）
 js/config.js            … 定数集約（現実・成長閾値・目標初期値・EXP表・関係段階・スコア基準）
 js/util.js              … 汎用ヘルパ（日付/時刻・ID生成・クランプ・乱数・重み付き抽選）
@@ -53,7 +53,7 @@ tools/tests/            … Node標準テスト（node --test）
 docs/                   … 要件定義・詳細設計・UI仕様・テスト仕様
 ```
 
-`index.html` の `<script>` は「data → ロジック → sprite/animation → ui → app」の順で読み込む。app.js が必ず最後。
+`kenecho-village.html` の `<script>` は「data → ロジック → sprite/animation → ui → app」の順で読み込む。app.js が必ず最後。
 
 ## データ・設計の一致ルール
 

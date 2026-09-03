@@ -1,7 +1,7 @@
 "use strict";
 /*
  * スモークテスト。
- * - index.html の <script src> がすべて実在し、依存順で require できること
+ * - kenecho-village.html の <script src> がすべて実在し、依存順で require できること
  * - 各モジュールが期待する名前空間を globalThis へ公開していること
  */
 const { test } = require("node:test");
@@ -10,7 +10,7 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.join(__dirname, "..", "..");
-const INDEX = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+const INDEX = fs.readFileSync(path.join(ROOT, "kenecho-village.html"), "utf8");
 
 const SCRIPT_ORDER = [
   "js/util.js",
@@ -36,13 +36,13 @@ const SCRIPT_ORDER = [
   "js/app.js"
 ];
 
-test("index.html が外部リソース（url 等）を含まない", () => {
+test("kenecho-village.html が外部リソース（url 等）を含まない", () => {
   assert.equal(/<script[^>]+src="https?:/i.test(INDEX), false, "外部URLのscript");
   assert.equal(/<img[^>]+src="https?:/i.test(INDEX), false, "外部画像URL");
   assert.equal(/@import[^;]+url/i.test(INDEX), false, "CSS url import");
 });
 
-test("index.html の script 順が定義と一致し、ファイルがすべて実在する", () => {
+test("kenecho-village.html の script 順が定義と一致し、ファイルがすべて実在する", () => {
   const tags = [];
   const re = /<script[^>]+src="([^"]+)"/g;
   let m;
