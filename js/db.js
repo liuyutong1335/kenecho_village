@@ -78,7 +78,7 @@
       petMemories: [],
       petEncyclopedia: {}, // speciesId -> { discovered, discoveredAt }
       relationships: { pet: {}, npcs: {} }, // pet: gen -> {bond, questsCompleted} / npcs: npcId -> {bond, conversations, lastTalkedAt, unlockedEvents}
-      conversation: { dailyQuestDate: null, dailyQuestCompleted: false, recentDialogueIds: [], unlockedSceneIds: [], recentStoryIds: [], lastOutingNpcId: null },
+      conversation: { dailyQuestDate: null, dailyQuestCompleted: false, recentDialogueIds: [], unlockedSceneIds: [], recentStoryIds: [], lastOutingNpcId: null, outing: null },
       relationshipHistory: [], // { at, key, delta, from, to, why }
       npcMemory: {} // "<profileId>:<npcId>" -> NpcMemory（NPC別の会話記憶・約束・期待。世代を超えて維持）
     };

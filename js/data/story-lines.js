@@ -80,6 +80,29 @@
       ]
     },
 
+    {
+      id: "story_open_rain_001", role: "open",
+      sceneCategories: [], tags: [], personalities: [], relationLevels: [], requiresPrev: false, weather: ["rain"],
+      weight: 8,
+      npcLine: "今日は雨だね。お互い、かぜをひかないように。", npcExpression: "smile",
+      answers: [
+        { text: "ありがとうございます。ちゃんと傘を持ってきました。", type: "good", facet: "self_disclose", npcReply: "えらい！ 雨の日は足元も気をつけてね。", npcExpression: "happy", explanation: "無事に備える姿勢を伝えると、気遣いが報われる。", nextHint: "天気から体調の話へ続けられる。", weight: 10 },
+        { text: "はい、気をつけます。", type: "short", facet: "onward", npcReply: "うん、気をつけてね。", npcExpression: "smile", explanation: "短いが自然。相手の気遣いを受け取れる。", nextHint: "「あなたも」を添えると良い。", weight: 10 },
+        { text: "雨はちょっと苦手です。", type: "short", facet: "self_disclose", npcReply: "そう？ でも、おかげで静かで落ち着くよ。", npcExpression: "neutral", explanation: "素直な感想も無理はない。", nextHint: "雨の良いところを探すと話せる。", weight: 10 }
+      ]
+    },
+    {
+      id: "story_open_fair_001", role: "open",
+      sceneCategories: [], tags: [], personalities: [], relationLevels: [], requiresPrev: false, weather: ["clear", "cloudy"],
+      weight: 8,
+      npcLine: "今日はいい天気で、気分もさわやかだね。", npcExpression: "happy",
+      answers: [
+        { text: "本当ですね。散歩が気持ちよさそうです。", type: "good", facet: "self_disclose", npcReply: "いいね。空気がきれいなうちに歩くと気分がいいよ。", npcExpression: "happy", explanation: "天気に自分の予定を重ねると共感されやすい。", nextHint: "散歩の話へ自然に続く。", weight: 10 },
+        { text: "そうですね。", type: "short", facet: "onward", npcReply: "ね。", npcExpression: "smile", explanation: "短いが自然な相づち。", nextHint: "「何するの？」と聞くと続く。", weight: 10 },
+        { text: "晴れてもやることだらけで…。", type: "short", facet: "self_disclose", npcReply: "それは大変だ。でも、空気だけは吸ってね。", npcExpression: "smile", explanation: "愚痴を軽く伝えても、相手は寄り添える。", nextHint: "「少し休もう」と返せると良い。", weight: 10 }
+      ]
+    },
+
     /* ==================== develop（展開） ==================== */
     {
       id: "story_dev_work_001", role: "develop", sceneCategories: ["work"],

@@ -14,7 +14,7 @@
     {
       id: "scn_001", title: "朝の相談", category: "work", npcId: "npc_sato", background: "office",
       tags: ["work", "advice"],
-      context: "朝、オフィスで資料のつくり方がわからず、佐藤さんに相談しました。",
+      context: "午前中、オフィスで資料のつくり方がわからず、佐藤さんに相談しました。",
       rounds: [
         {
           npcLine: "おはよう。何かあった？ ちょっと顔色が曇ってるよ。", npcExpression: "neutral",

@@ -144,6 +144,49 @@
       promise: "約束",
       onward: "会話を続ける",
       avoid: "回避・そらす"
+    },
+
+    /** ---- 外出の時間帯・天気（feat/time-aware-outing）----
+     * from/to は「0時からの分」。深夜は 23:00〜翌4:59（TIME_MINUTES_WRAP=300 未満も深夜扱い）。
+     * 朝は散歩・通勤途中・朝の買い物のみ（職場内・酒会は出さない）。酒会は夜のみ。
+     */
+    OUTING: {
+      TIME_BANDS: [
+        { key: "morning", label: "朝", from: 300, to: 659 },   // 05:00–10:59
+        { key: "daytime", label: "昼", from: 660, to: 959 },   // 11:00–15:59
+        { key: "evening", label: "夕方", from: 960, to: 1139 },// 16:00–18:59
+        { key: "night", label: "夜", from: 1140, to: 1379 },   // 19:00–22:59
+        { key: "late_night", label: "深夜", from: 1380, to: 1440 } // 23:00–23:59
+      ],
+      TIME_MINUTES_WRAP: 300, // 0:00–4:59 は深夜扱い
+      /** 天気は実天気ではなく、ローカル抽選のゲーム内設定 */
+      WEATHER: { clear: "晴れ", cloudy: "くもり", rain: "雨" },
+      WEATHER_WEIGHTS: {
+        morning: { clear: 55, cloudy: 28, rain: 17 },
+        daytime: { clear: 50, cloudy: 30, rain: 20 },
+        evening: { clear: 45, cloudy: 32, rain: 23 },
+        night: { clear: 45, cloudy: 33, rain: 22 },
+        late_night: { clear: 55, cloudy: 33, rain: 12 }
+      },
+      /** 各時間帯で「必ず存在する安全な場面」（候補が無いときのフォールバック） */
+      SAFE_SCENES: {
+        morning: ["scn_013"],
+        daytime: ["scn_001"],
+        evening: ["scn_017"],
+        night: ["scn_010"],
+        late_night: ["scn_010"]
+      },
+      /** 場面ごとに出現できる時間帯（未指定＝全時間帯で可） */
+      SCENE_BANDS: {
+        scn_001: ["daytime"], scn_002: ["daytime", "evening"], scn_003: ["daytime"], scn_004: ["daytime", "evening"],
+        scn_005: ["daytime", "evening"], scn_006: ["evening", "night"],
+        scn_007: ["morning", "daytime"], scn_008: ["morning", "daytime"],
+        scn_009: ["daytime", "evening"], scn_010: ["night", "late_night"], scn_011: ["daytime"], scn_012: ["daytime", "evening"],
+        scn_013: ["morning", "daytime"], scn_014: ["morning"], scn_015: ["morning", "daytime", "evening"], scn_016: ["morning", "daytime", "evening"],
+        scn_017: ["evening", "night"], scn_018: ["daytime", "evening"], scn_019: ["evening", "night"], scn_020: ["daytime", "evening"]
+      },
+      /** ストーリー臺詞の天気一致ボーナス（確率の初期案） */
+      WEATHER_BONUS: 5
     }
   };
 

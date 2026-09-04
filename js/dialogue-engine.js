@@ -158,6 +158,12 @@
       if (!tagOverlap(e.tags, scene.tags)) continue;
       if (!matches({ personalities: e.personalities }, "personalities", npc.personality)) continue;
       if (!matches({ relationLevels: e.relationLevels }, "relationLevels", c.relationLevel)) continue;
+      // 天気に紐づく台詞（指定があれば一致する場合のみ・一致で重み加算）
+      let weatherMatched = false;
+      if (Array.isArray(e.weather) && e.weather.length) {
+        if (!c.weather || e.weather.indexOf(c.weather) < 0) continue;
+        weatherMatched = true;
+      }
       // 直前の選択に依存する台詞（前の選択が無い、またはfacet不一致なら除外）
       if (e.requiresPrev && c.prevFacet == null) continue;
       if (Array.isArray(e.prevFacets) && e.prevFacets.length > 0 && e.prevFacets.indexOf(c.prevFacet) < 0) continue;
@@ -171,6 +177,7 @@
       if (matches({ relationLevels: e.relationLevels }, "relationLevels", c.relationLevel)) w += bonus.relation;
       if (Array.isArray(e.prevFacets) && e.prevFacets.indexOf(c.prevFacet) >= 0) w += bonus.facet;
       if (tagOverlap(e.tags, scene.tags)) w += bonus.topic;
+      if (weatherMatched) w += (C.OUTING && C.OUTING.WEATHER_BONUS) || 5;
       scored.push({ entry: e, weight: w, e: e });
     }
 
