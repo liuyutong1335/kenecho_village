@@ -155,7 +155,7 @@ test("recommendGoals が身体データと目的で個別の推薦を出す（�
   // 基礎代謝×1.0（維持）＋ 活動分
   assert.equal(rec.calorieLimitKcal, 2003);
   assert.notEqual(rec.calorieLimitKcal, 2000, "固定デフォルト2000を使わない");
-  assert.equal(rec.proteinGoalG, 78);      // 65 × 1.2（維持）
+  assert.equal(rec.proteinGoalG, 91);      // 65 × 1.4（維持）
   assert.equal(rec.exerciseMinutes, 30);
   assert.equal(rec.sleepHours, 7);
 });
@@ -166,11 +166,13 @@ test("recommendGoals が目的別（減量/増量/維持）と体格別に値を
   const lose = H.recommendGoals(dry, "lose", body);
   const gain = H.recommendGoals(dry, "gain", body);
   assert.equal(lose.calorieLimitKcal, 1843); // 1603 × 0.9 ＋ 400
-  assert.equal(gain.calorieLimitKcal, 2163); // 1603 × 1.1 ＋ 400
+  assert.equal(gain.calorieLimitKcal, 2363); // 1603 × 1.1 ＋ 400 ＋ 増量ボーナス200
   assert.equal(lose.proteinGoalG, 104);      // 65 × 1.6
-  assert.equal(gain.proteinGoalG, 111);      // 65 × 1.7
+  assert.equal(gain.proteinGoalG, 117);      // 65 × 1.8
   assert.equal(lose.exerciseMinutes, 45);
   assert.equal(gain.sleepHours, 8);
+  // 維持の蛋白質は減量を超えない（1.4 < 1.6）
+  assert.ok(H.recommendGoals(dry, "maintain", body).proteinGoalG < H.recommendGoals(dry, "lose", body).proteinGoalG, "維持 < 減量（蛋白質）");
   // 体格が違えば、同じ目的でも別の推薦になる
   const big = H.recommendGoals(dry, "lose", { heightCm: 180, weightKg: 80, age: 30, gender: "male" });
   assert.equal(big.bmr, 1780);

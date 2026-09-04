@@ -511,7 +511,8 @@
     const weight = getWeightForCalculation(db, profile);
     const bmr = calcBMR(weight, profile.heightCm, profile.age, profile.gender);
     const activity = C.CALORIE_ACTIVITY_KCAL != null ? Number(C.CALORIE_ACTIVITY_KCAL) : 400;
-    const calorieLimitKcal = bmr != null ? Math.round(bmr * type.calorieRatio) + activity : C.HEALTH_GOAL_DEFAULTS.calorieLimitKcal;
+    const typeExtra = type.calorieExtraKcal != null ? Number(type.calorieExtraKcal) : 0;
+    const calorieLimitKcal = bmr != null ? Math.round(bmr * type.calorieRatio) + activity + typeExtra : C.HEALTH_GOAL_DEFAULTS.calorieLimitKcal;
     return {
       goalType: type === C.HEALTH_GOAL_TYPES[goalType] ? goalType : C.DEFAULT_GOAL_TYPE,
       bmr: bmr != null ? bmr : null,

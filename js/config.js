@@ -50,14 +50,15 @@
     CALORIE_ACTIVITY_KCAL: 400,
 
     /** ---- 健康目標タイプ（初期設定で選択、推薦値を算出）----
-     * calorieDelta: BMRに対する摂取カロリー比（1.0 = 維持）
-     * proteinPerKg: 蛋白質 = 体重kg × 係数
+     * calorieRatio: 基礎代謝に対する摂取カロリー比（1.0 = 維持）
+     * calorieExtraKcal: 活動分とは別にさらに加算するkcal（増量で上乗せ）
+     * proteinPerKg: 蛋白質 = 体重kg × 係数（減量 < 維持 にならないよう維持は減量未満）
      * exerciseMinutes / sleepHours: タイプごとの推奨目標
      */
     HEALTH_GOAL_TYPES: {
-      lose: { label: "減量", calorieRatio: 0.9, proteinPerKg: 1.6, exerciseMinutes: 45, sleepHours: 8, desc: "少し控えめな摂取と運動で、ゆるやかな減量をめざします" },
-      gain: { label: "増量（体づくり）", calorieRatio: 1.1, proteinPerKg: 1.7, exerciseMinutes: 40, sleepHours: 8, desc: "エネルギーとたんぱく質をしっかりとり、からだづくりを応援します" },
-      maintain: { label: "健康維持", calorieRatio: 1.0, proteinPerKg: 1.2, exerciseMinutes: 30, sleepHours: 7, desc: "無理のない範囲で、毎日の健康をキープします" }
+      lose: { label: "減量", calorieRatio: 0.9, calorieExtraKcal: 0, proteinPerKg: 1.6, exerciseMinutes: 45, sleepHours: 8, desc: "少し控えめな摂取と運動で、ゆるやかな減量をめざします" },
+      gain: { label: "増量（体づくり）", calorieRatio: 1.1, calorieExtraKcal: 200, proteinPerKg: 1.8, exerciseMinutes: 40, sleepHours: 8, desc: "エネルギーとたんぱく質をしっかりとり、からだづくりを応援します" },
+      maintain: { label: "健康維持", calorieRatio: 1.0, calorieExtraKcal: 0, proteinPerKg: 1.4, exerciseMinutes: 30, sleepHours: 7, desc: "無理のない範囲で、毎日の健康をキープします" }
     },
     /** 目標タイプ未選択時の既定 */
     DEFAULT_GOAL_TYPE: "maintain",
