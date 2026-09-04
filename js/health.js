@@ -501,11 +501,12 @@
    * 目標タイプ別の推薦目標を算出する（初期設定・未カスタマイズ時の提示用）。
    * profile（体重・身長・年齢・性別）とタイプの係数から、
    * 摂取カロリー（BMR×比）・蛋白質（体重×係数）・運動・睡眠を返す。
+   * profileOverride を渡すと DB 未保存の入力値を優先する（初期設定ウィザード途中用）。
    */
-  function recommendGoals(db, goalType) {
-    const profile = (db && db.profile) || {};
+  function recommendGoals(db, goalType, profileOverride) {
+    const profile = profileOverride || (db && db.profile) || {};
     const type = C.HEALTH_GOAL_TYPES[goalType] || C.HEALTH_GOAL_TYPES[C.DEFAULT_GOAL_TYPE];
-    const weight = getWeightForCalculation(db);
+    const weight = getWeightForCalculation(db, profile);
     const bmr = calcBMR(weight, profile.heightCm, profile.age, profile.gender);
     const calorieLimitKcal = bmr != null ? Math.round(bmr * type.calorieRatio) : C.HEALTH_GOAL_DEFAULTS.calorieLimitKcal;
     return {

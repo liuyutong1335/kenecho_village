@@ -146,3 +146,37 @@ test("setHealthGoals で保存と検証ができる", () => {
   assert.ok(H.setHealthGoals(d, { calorieLimitKcal: 100, proteinGoalG: 70, exerciseMinutes: 45, sleepHours: 8 }).errors.calorieLimitKcal);
   assert.ok(H.setHealthGoals(d, { calorieLimitKcal: 1800, proteinGoalG: "xx", exerciseMinutes: 45, sleepHours: 8 }).errors.proteinGoalG);
 });
+
+test("recommendGoals が身体データと目的で個別の推薦を出す（初期設定ウィザード用の回帰）", () => {
+  // DB にプロフィールが未保存（ウィザード途中）でも profileOverride から算出できる
+  const dry = db(); // profile なし
+  const rec = H.recommendGoals(dry, "maintain", { heightCm: 170, weightKg: 65, age: 23, gender: "male" });
+  assert.equal(rec.bmr, 1603);            // Mifflin–St Jeor
+  assert.equal(rec.calorieLimitKcal, 1603); // BMR × 1.0（維持）
+  assert.notEqual(rec.calorieLimitKcal, 2000, "固定デフォルト2000を使わない");
+  assert.equal(rec.proteinGoalG, 78);      // 65 × 1.2（維持）
+  assert.equal(rec.exerciseMinutes, 30);
+  assert.equal(rec.sleepHours, 7);
+});
+
+test("recommendGoals が目的別（減量/増量/維持）と体格別に値を変える", () => {
+  const dry = db();
+  const body = { heightCm: 170, weightKg: 65, age: 23, gender: "male" };
+  const lose = H.recommendGoals(dry, "lose", body);
+  const gain = H.recommendGoals(dry, "gain", body);
+  assert.equal(lose.calorieLimitKcal, 1443); // 1603 × 0.9
+  assert.equal(gain.calorieLimitKcal, 1763); // 1603 × 1.1
+  assert.equal(lose.proteinGoalG, 104);      // 65 × 1.6
+  assert.equal(gain.proteinGoalG, 111);      // 65 × 1.7
+  assert.equal(lose.exerciseMinutes, 45);
+  assert.equal(gain.sleepHours, 8);
+  // 体格が違えば、同じ目的でも別の推薦になる
+  const big = H.recommendGoals(dry, "lose", { heightCm: 180, weightKg: 80, age: 30, gender: "male" });
+  assert.equal(big.bmr, 1780);
+  assert.equal(big.calorieLimitKcal, 1602);
+  assert.equal(big.proteinGoalG, 128);
+  // 既定挙動（上書きなし・プロフィールなし）はデフォルトへ落ちる
+  const fallback = H.recommendGoals(dry, "maintain");
+  assert.equal(fallback.calorieLimitKcal, 2000);
+  assert.equal(fallback.bmr, null);
+});

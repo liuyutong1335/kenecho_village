@@ -140,7 +140,7 @@
   /** 初期設定ウィザード（1画面1質問・10枚） */
   function renderSetup(onComplete) {
     const root = refs.appRoot;
-    const state = { step: 1, values: {} };
+    const state = { step: 1, values: {}, prefilledGoalType: null };
     const maxStep = 10;
 
     const stepRadio = [
@@ -284,10 +284,18 @@
       return { value: k, label: t.label, note: t.desc };
     });
 
-    /** 選択中の目標タイプが持つ推奨目標 */
+    /** 選択中の目標タイプが持つ推奨目標
+     *  ウィザード途中は DB にプロフィールが未保存のため、入力値（身長・体重・年齢・性別）を
+     *  プロフィール上書きとして渡し、その人の身体データから BMR×目的係数で算出させる。 */
     function recommendedTargets() {
       const H9 = globalThis.KE_HEALTH;
-      return H9.recommendGoals(globalThis.KE_DB.get(), state.values.goalType);
+      const v = state.values;
+      const profile = {};
+      if (v.heightCm != null && v.heightCm !== "") profile.heightCm = Number(v.heightCm);
+      if (v.weightKg != null && v.weightKg !== "") profile.weightKg = Number(v.weightKg);
+      if (v.age != null && v.age !== "") profile.age = Number(v.age);
+      if (v.gender) profile.gender = v.gender;
+      return H9.recommendGoals(globalThis.KE_DB.get(), state.values.goalType, profile);
     }
 
     function step8Content(errors) {
@@ -301,10 +309,13 @@
 
     function step9Content(errors) {
       const rec = recommendedTargets();
-      // 初回表示時は推奨値を初期値に（ユーザー変更は保持）
-      if (state.values.calorieLimitKcal == null) state.values.calorieLimitKcal = rec.calorieLimitKcal;
-      if (state.values.proteinGoalG == null) state.values.proteinGoalG = rec.proteinGoalG;
-      if (state.values.exerciseMinutes == null) state.values.exerciseMinutes = rec.exerciseMinutes;
+      // 目標タイプごとの推奨値を初期値に。手動編集は保持し、目標タイプを変えたときだけ当該タイプの推奨で更新する
+      const goalTypeChanged = state.prefilledGoalType !== state.values.goalType;
+      if (state.values.calorieLimitKcal == null || goalTypeChanged) state.values.calorieLimitKcal = rec.calorieLimitKcal;
+      if (state.values.proteinGoalG == null || goalTypeChanged) state.values.proteinGoalG = rec.proteinGoalG;
+      if (state.values.exerciseMinutes == null || goalTypeChanged) state.values.exerciseMinutes = rec.exerciseMinutes;
+      if (goalTypeChanged) state.values.sleepHours = rec.sleepHours;
+      state.prefilledGoalType = state.values.goalType;
 
       const cal = el("input", {
         type: "number", min: "500", max: "10000", step: "10",
