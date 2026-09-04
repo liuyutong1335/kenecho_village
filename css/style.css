@@ -455,6 +455,11 @@ input:focus, select:focus, button:focus-visible {
 .cap-pet { left: 34%; }
 .cap-npc { left: 68%; }
 
+/* ===== 交流ノート：NPCアイコン ===== */
+.npc-card-icon { image-rendering: pixelated; }
+.npc-portrait { text-align: center; margin-bottom: 8px; }
+.npc-portrait canvas { image-rendering: pixelated; }
+
 /* ===== 思い出・旅立ち ===== */
 .departure-area { margin-top: 10px; border-top: 2px dashed var(--orange-warn); padding-top: 8px; }
 .memory-card { margin-top: 14px; }
