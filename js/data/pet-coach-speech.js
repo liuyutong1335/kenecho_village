@@ -278,8 +278,108 @@
     { id: "coach_tanuki_ctx_daily_bad", petTypes: ["tanuki"], answerType: "bad", sceneTags: ["daily"], text: "日常で知らん顔してると、お調子者の株が下がるドン。声はかけとくものだ。", adviceExample: "おっと、この手もあるドン。「おーい！」と、一声かけるだけで株は上がる。", weight: 10 },
     { id: "coach_tanuki_ctx_food_good", petTypes: ["tanuki"], answerType: "good", sceneTags: ["food"], text: "食事で場を楽しませて、料理もふえて、もう最高ドン！ 食卓の名人だな。", adviceExample: "おっと、この手もあるドン。「おかわり！」の一言で、店主も笑うドン。" , weight: 10 },
     { id: "coach_tanuki_ctx_food_short", petTypes: ["tanuki"], answerType: "short", sceneTags: ["food"], text: "食事の短い注文も、にんまり笑えば、もう一丁前ドン。あとは味を褒めるだけだ。", adviceExample: "おっと、この手もあるドン。「うまい！」を添えると、お代わりも無料になるかもドン。", weight: 10 },
-    { id: "coach_tanuki_ctx_food_bad", petTypes: ["tanuki"], answerType: "bad", sceneTags: ["food"], text: "食事でだんまりは、お調子者の根城が寂しくなるドン。食卓は笑いで満たそう。", adviceExample: "おっと、この手もあるドン。「今日の一押しは？」と聞くだけで、場が咲くドン。", weight: 10 }
+    { id: "coach_tanuki_ctx_food_bad", petTypes: ["tanuki"], answerType: "bad", sceneTags: ["food"], text: "食事でだんまりは、お調子者の根城が寂しくなるドン。食卓は笑いで満たそう。", adviceExample: "おっと、この手もあるドン。「今日の一押しは？」と聞くだけで、場が咲くドン。", weight: 10 },
+
+    /* ============ facet専用の仕上げ（各ペット4件 → 合計50件/種） ============ */
+    { id: "coach_rabbit_facet_q_good", petTypes: ["rabbit"], answerType: "good", facets: ["question"], text: "優しく質問を返せて、相手も安心して話せたね。その聞き方が宝物よ。", adviceExample: "たとえば、「それはどうやって？」と、相手の話をひとつ広げてみよう。", weight: 10 },
+    { id: "coach_rabbit_facet_emp_good", petTypes: ["rabbit"], answerType: "good", facets: ["empathy"], text: "共感の言葉が優しく届いて、相手の心もほぐれたね。それがいちばんの癒しだよ。", adviceExample: "たとえば、「わかるよ、私も同じ気持ち」と、感じたことを返してみよう。", weight: 10 },
+    { id: "coach_rabbit_facet_sd_short", petTypes: ["rabbit"], answerType: "short", facets: ["self_disclose"], text: "短い返しに自分のことを少し添えて、かえって自然だったね。続けていこう。", adviceExample: "たとえば、「ありがとう。こういう話は好きです」と、ひとつだけ足そう。", weight: 10 },
+    { id: "coach_rabbit_facet_av_bad", petTypes: ["rabbit"], answerType: "bad", facets: ["avoid"], text: "避けてしまうのは、優しさじゃない時もあるよ。今日は一歩踏み出す日だったね。", adviceExample: "たとえば、逃げる前に「大丈夫ですか？」と、声の一つでも残そう。", weight: 10 },
+
+    { id: "coach_fox_facet_q_good", petTypes: ["fox"], answerType: "good", facets: ["question"], text: "質問で要点を引き出せた。会話を前へ進める聞き方は、攻略の鍵だ。", adviceExample: "例えば、「具体的には、どれだけ？」と、数値を引き出すと強い。", weight: 10 },
+    { id: "coach_fox_facet_emp_good", petTypes: ["fox"], answerType: "good", facets: ["empathy"], text: "共感も計算ずくなら便利だ。心を込めて、言葉も短く通じたね。", adviceExample: "例えば、「そうだね、それ、わかるよ」と、一拍だけ余計に。", weight: 10 },
+    { id: "coach_fox_facet_sd_short", petTypes: ["fox"], answerType: "short", facets: ["self_disclose"], text: "短い返しに自分の状況を添えると、相手の迷子が減る。効率的だ。", adviceExample: "例えば、「今日は早めに切り上げます」と、一言添えてみよう。", weight: 10 },
+    { id: "coach_fox_facet_av_bad", petTypes: ["fox"], answerType: "bad", facets: ["avoid"], text: "回避は、状況によっては逃げになる。切り抜けたほうが得だった。次からは正面から。", adviceExample: "例えば、「一度、時間をもらえますか」と、立て直しの一言を置こう。", weight: 10 },
+
+    { id: "coach_bearcub_facet_q_good", petTypes: ["bearcub"], answerType: "good", facets: ["question"], text: "思いきって聞けて、ぐっと前に進んだぞ！ 質問はドアを開くのだ。", adviceExample: "こうしてみよう。「それ、どうやるの？」と、聞けば道が開ける。", weight: 10 },
+    { id: "coach_bearcub_facet_emp_good", petTypes: ["bearcub"], answerType: "good", facets: ["empathy"], text: "相手の気持ちを察して、元気に受け止めたな。そのぬくもり、大事にしろ！", adviceExample: "こうしてみよう。「いいね、その気持ち！」と、勢いで受け止めよう。", weight: 10 },
+    { id: "coach_bearcub_facet_sd_short", petTypes: ["bearcub"], answerType: "short", facets: ["self_disclose"], text: "短くても自分のことを話すと、距離がグッと近づくぞ。今日はいい一歩だ。", adviceExample: "こうしてみよう。「俺は〜が好きなんだ！」と、短く宣言しよう。", weight: 10 },
+    { id: "coach_bearcub_facet_av_bad", petTypes: ["bearcub"], answerType: "bad", facets: ["avoid"], text: "避けてばかりじゃ、元気も届かないぞ。ちゃんと振り返って、声をかけよう。", adviceExample: "こうしてみよう。「おーい！」と、まず一声あげてみよう。", weight: 10 },
+
+    { id: "coach_cat_facet_q_good", petTypes: ["cat"], answerType: "good", facets: ["question"], text: "興味をぶつけて、相手の心をこじ開けたね。好奇心は最高の鍵だ。", adviceExample: "試しに、「それ、なんで面白いの？」と、理由を聞いてみよう。", weight: 10 },
+    { id: "coach_cat_facet_emp_good", petTypes: ["cat"], answerType: "good", facets: ["empathy"], text: "にゃりと共感できて、相手も油断してくれたね。良い狩りだった。", adviceExample: "試しに、「わかる、それ好き」と、すっきり寄り添ってみよう。", weight: 10 },
+    { id: "coach_cat_facet_sd_short", petTypes: ["cat"], answerType: "short", facets: ["self_disclose"], text: "短い返しに自分の話を混ぜると、相手も安心するよ。それが気配りだ。", adviceExample: "試しに、「そうですね、私も好きです」と、一つだけ添えてみよう。", weight: 10 },
+    { id: "coach_cat_facet_av_bad", petTypes: ["cat"], answerType: "bad", facets: ["avoid"], text: "避けてばかりじゃ、獲物は逃げっぱなし。今日はアンテナを戻そう。", adviceExample: "試しに、無視せず「うん」とだけでも、顔を向けてみよう。", weight: 10 },
+
+    { id: "coach_bird_facet_q_good", petTypes: ["bird"], answerType: "good", facets: ["question"], text: "控えめに質問できて、失礼なく踏み込めたね。丁寧な探りは鳥の得意技だ。", adviceExample: "ええと、丁寧に言うなら、「よかったら、詳しく聞いてもいいですか？」と、一文で。", weight: 10 },
+    { id: "coach_bird_facet_emp_good", petTypes: ["bird"], answerType: "good", facets: ["empathy"], text: "慎重な共感で、相手も安心しておしゃべりできたね。それが美しさだ。", adviceExample: "ええと、丁寧に言うなら、「それ、よくわかります」と、静かに返そう。", weight: 10 },
+    { id: "coach_bird_facet_sd_short", petTypes: ["bird"], answerType: "short", facets: ["self_disclose"], text: "短い返しに少しだけ胸を開いて、堅実に近づけた。それで十分だよ。", adviceExample: "ええと、丁寧に言うなら、「私も、よくここに来ます」と、一つだけ。", weight: 10 },
+    { id: "coach_bird_facet_av_bad", petTypes: ["bird"], answerType: "bad", facets: ["avoid"], text: "避けるのは癖だけど、今日の相手は逃がしたくないね。一度だけ羽を広げよう。", adviceExample: "ええと、丁寧に言うなら、「あの、すみません」と、自分の声を出そう。", weight: 10 },
+
+    { id: "coach_tanuki_facet_q_good", petTypes: ["tanuki"], answerType: "good", facets: ["question"], text: "気さくに質問を飛ばして、場の主導権を握ったドン！ 上等だ。", adviceExample: "おっと、この手もあるドン。「それ、どうなん？」と、気楽に聞いてみよう。", weight: 10 },
+    { id: "coach_tanuki_facet_emp_good", petTypes: ["tanuki"], answerType: "good", facets: ["empathy"], text: "相手の心に寄り添って、笑いと温かさを両方積めたドン。お手柄だ！", adviceExample: "おっと、この手もあるドン。「わかるわかる！」から、一声励まそう。", weight: 10 },
+    { id: "coach_tanuki_facet_sd_short", petTypes: ["tanuki"], answerType: "short", facets: ["self_disclose"], text: "短くても本音が出れば、お調子者の価値が上がるドン。今日は実入りだ。", adviceExample: "おっと、この手もあるドン。「俺は、〜が好きなんだ」と、短く打ち明けよう。", weight: 10 },
+    { id: "coach_tanuki_facet_av_bad", petTypes: ["tanuki"], answerType: "bad", facets: ["avoid"], text: "避けっぱなしは、天狗の恥ドン。振り返って一声、気の利いたのを返そう。", adviceExample: "おっと、この手もあるドン。「また今度！」と、逃げる前に挨拶を置こう。", weight: 10 }
   ];
+
+  /** 関係段階（stranger〜partner）ごとの助言（各ペット15件）。“今回のポイント”を種ごと・段階ごとに。
+   *  改善例（adviceExample）は共通の型＋種ごとの口調（adviceText）で生成する。 */
+  const RELATION_POINT = {
+    rabbit: {
+      stranger: { good: "出会ったばかりでも、優しい返しができて好印象を残せたよ。", short: "出会ったばかりの短い返しは、失礼にはならない。安心していいよ。", bad: "出会ったばかりでぎこちなくても、次があるよ。今日は縁ができただけでも一歩。" },
+      familiar: { good: "ちょっと打ち解けてきて、話が続いたね。肩の力が抜けてきた証拠だよ。", short: "仲良くなりかけても、短い返しで大丈夫。続けることが優しさになるよ。", bad: "打ち解けかけの時期に会話を避けると、心が離れる。一度だけ寄り添おう。" },
+      connected: { good: "心が通ってきて、正直な話ができたね。それが一番温かい道だよ。", short: "気心が知れて、短い返しも通じ合えるようになったね。それで十分だよ。", bad: "心が通っても避けたら悲しくなる。その一歩を踏み出そう。" },
+      trusted: { good: "信頼の中では、素直さがいちばん効くよ。今日も真摯に話せてた。", short: "信頼関係なら短い返しも許される。むしろ正直でいいんだよ。", bad: "信頼があるからこそ、曖昧な返しは残念がられる。正直でいこう。" },
+      partner: { good: "大切な仲間になれて、言葉が届きやすくなったね。その関係が宝物だよ。", short: "パートナーなら短くても気持ちは伝わる。あとは続けることだね。", bad: "大切な仲間への無反応は、一番寂しい。いつもの優しさを返そう。" }
+    },
+    fox: {
+      stranger: { good: "出会ったばかりで端的に話せたのは利口だ。まずは様子見が基本。", short: "初対面では短く無難に済ませるのが賢明だ。今日はそれで良い。", bad: "初対面のミスは次から修正すれば損はない。不明分を覚えておけ。" },
+      familiar: { good: "少し関係が見えてきた。距離感を保ちつつ、正直も交ぜると良い。", short: "なじみかけでも短い返しで十分。無理に話す必要はない。", bad: "なじみかけで避けると先の情報を失う。損だ。会話は続けるが得。" },
+      connected: { good: "信頼が働き始めた。対等な会話でさらに深く見えてきた。", short: "気心が知れれば短い返しでも意図は伝わる。効率は上がる。", bad: "信頼が働く段階で曖昧は誤解を招く。明確に返すことだ。" },
+      trusted: { good: "信頼された分は率直さで返すのが筋だ。今日は正しく動けた。", short: "信頼があるなら短くても頼れる。余計な飾りはいらない。", bad: "信頼している相手にそらすような返しは不要だ。実直であれ。" },
+      partner: { good: "対等な仲間として、言葉が最短で通じるようになった。それこそ最強だ。", short: "パートナーとは短い言葉で足りる。無駄を省けたのは美徳だ。", bad: "大切な間柄で無視するようでは位が下がる。誠実さを保て。" }
+    },
+    bearcub: {
+      stranger: { good: "初対面で元気に挨拶できて、好印象を蹴り出したぞ！ その調子だ。", short: "初対面の短い挨拶は、ハキハキ言えば十分。不安になるな！", bad: "初対面でしょんぼりしてたら、相手も困っちゃうぞ。笑顔を借してくれ。" },
+      familiar: { good: "なじみが出て元気に話せて、廊下まで明るかったぞ！", short: "仲良くなりかけでも短く返れば十分だ。あとは笑顔でいい！", bad: "打ち解けかけで黙ると、君の元気も届かなくなっちゃうぞ。声を出せ！" },
+      connected: { good: "心が通って、本音で笑い合えたぞ！ それがいちばんだ。", short: "気心が知れて、短い返しも通じるようになったな。それでいいんだ。", bad: "心が通っても黙り込むと響かない。無理をせず、声は上げよう。" },
+      trusted: { good: "信頼の中で全力で近づけたな。その熱意が仲間を守るんだ。", short: "信頼された分、短い返しでも「任せろ！」で通じるぞ。", bad: "信頼してる相手にしょんぼり返すのは台無しだ。いつも通りでいい。" },
+      partner: { good: "最強の仲間になれて、満開の笑顔が場を照らしてたぞ！", short: "パートナーなら、短くても熱が伝わる。「おう！」で十分だ。", bad: "大事な仲間を横目に黙っちゃダメだぞ。全力の挨拶を返そう。" }
+    },
+    cat: {
+      stranger: { good: "初対面で好奇心を出して、相手も面白がってくれたね。それが猫の魅力だ。", short: "初対面はまず観察。短く反応して、様子を見るのが猫流だ。", bad: "初対面で糸を引っ込めると、会話が始まらない。一度は針を出そう。" },
+      familiar: { good: "なじみが出て、探り探りでも会話ができたね。少しずつ捕まえてる。", short: "なじみが出ても短く完了するのが賢い。また様子を見に行ける。", bad: "興味があるのに黙るのは、猫じゃない。鳴けば、餌が来るよ。" },
+      connected: { good: "相手の話に興味が生まれて、深く聞けたね。それが心を掴む。", short: "気心が知れれば短い相づちでも通じる。無理に狩る必要はない。", bad: "心が通っているのに何も聞かないのは勿体ない。好奇心を出そう。" },
+      trusted: { good: "信頼の上で遠慮なく聞けて、確実に踏み込めたね。いよいよ捕まえた。", short: "信頼があるなら短くても質問は響く。聞きたいことは聞いていい。", bad: "信頼してる相手の話に無関心な姿勢は、猫として失格。耳を向けよう。" },
+      partner: { good: "大切な仲間と何でも気軽に聞き合える関係になったね。贅沢だよ。", short: "パートナーとはひと言で通じ合える。それが一番の猫流だ。", bad: "本当に大事な相手を無視するのは、猫でもありえない。首を傾げよう。" }
+    },
+    bird: {
+      stranger: { good: "初対面で慎重に話せて、好印象を守れた。次の一手を待つ鳥流だ。", short: "初対面では短く安全に。無理に飛び出す必要はない。", bad: "初対面で巣に引っ込むと、何も始まらない。一度だけ羽を鳴らそう。" },
+      familiar: { good: "少しずつ近づいて、堅実に距離を詰められたね。その調子だ。", short: "なじみが出ても短く安全な返しで十分。ゆっくり進めて。", bad: "打ち解けかけの相手を避けるとまた一から。勇気をひとかけら。" },
+      connected: { good: "心がつながって、肩の力が抜けた会話ができたね。信頼は少しずつ。", short: "気心が知れれば短い返しでも安心できる。急がず、どっしりと。", bad: "心が通ったのに萎縮すると、紡いだ糸が切れる。深呼吸を。" },
+      trusted: { good: "信頼の中で安心して話せるようになった。急がなくて大丈夫だよ。", short: "信頼があるなら短い返しでも、あなたの誠実さは伝わる。", bad: "信頼した相手に黙り込むのは辛いこと。少しだけ飛んでみよう。" },
+      partner: { good: "大切な仲間と風を切って飛べるようになった。それが鳥の幸せだ。", short: "パートナーならひと言で安心を渡せる。それが堅実な絆だ。", bad: "大事な仲間を無視するのは、鳥として悲しい。必ず羽を返そう。" }
+    },
+    tanuki: {
+      stranger: { good: "初対面で笑わせて、場を温めたドン！ 初対面から儲けもんだ。", short: "初対面でも気楽に返せば十分ドン。肩の力抜いて行こう。", bad: "初対面でだんまりだと、お調子者の看板に傷が付くドン。一本ぐっと！" },
+      familiar: { good: "なじみが出て軽口を叩き合えるようになったドン！ 上出来だ。", short: "仲良くなりかけでも短く気軽に返せば十分ドン。堅苦しくなるな。", bad: "打ち解けかけで黙ると、せっかくのノリが抜けるドン。続きを言おう。" },
+      connected: { good: "心が通って、本音の軽口も受け止めてもらえたドン！ 最高だ。", short: "気心が知れれば短い一言でも笑いにできるドン。それがお前だ。", bad: "心が通ったのに知らん顔は、お調子者の悪手ドン。返しを忘れるな。" },
+      trusted: { good: "信頼された分、実もコメも返せたドン。お前はただの道化じゃないな。", short: "信頼してる相手には短くても真剣が伝わるドン。気負わなくていい。", bad: "信頼にかけて、ふざけて済ませるのは逆効果ドン。たまには真面目だ。" },
+      partner: { good: "最強の仲間と、笑いと本音を両方分け合えるドン！ それこそ天狗の友だ。", short: "パートナーとは、にっと一つの笑いで通じるドン。それが最高だ。", bad: "大事な仲間を横に、通り過ぎるのは天狗の恥ドン。一声かけよう。" }
+    }
+  };
+
+  /** 関係段階別の種別助言を生成（各ペット 5段階×3分類＝15件） */
+  function buildRelationAdvice() {
+    const out = [];
+    Object.keys(RELATION_POINT).forEach(function (speciesId) {
+      const table = RELATION_POINT[speciesId];
+      RELATION_LEVELS.forEach(function (lv) {
+        const col = table[lv];
+        if (!col) return;
+        ["good", "short", "bad"].forEach(function (at) {
+          if (!col[at]) return;
+          out.push({
+            id: "coach_" + speciesId + "_rel_" + lv + "_" + at,
+            petTypes: [speciesId], coachTypes: [], growthStages: [], petConditions: [],
+            answerType: at, facets: [], sceneTags: [], relationLevels: [lv], petRelationLevels: [],
+            purpose: "feedback", text: col[at], adviceExample: adviceText(speciesId, at), weight: 10
+          });
+        });
+      });
+    });
+    return out;
+  }
 
   function build() {
     const out = [];
@@ -391,7 +491,7 @@
       purpose: "fallback", text: "自分のペースで話せたのがよかったよ。次もその調子！", weight: 10
     });
 
-    return out.concat(EXTRA_ADVICE);
+    return out.concat(EXTRA_ADVICE, buildRelationAdvice());
   }
 
   const KE_COACH_SPEECH = build();

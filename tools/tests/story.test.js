@@ -179,12 +179,18 @@ test("アドバイスは「今回のポイント＋改善例」を持ち、種�
   assert.ok(r.advice.text && r.advice.text.length > 0, "ポイント（text）がある");
   assert.ok(r.advice.example && r.advice.example.length > 0, "改善例（example）がある");
 
-  // 種が違っても「改善例」の核（オウム返し→共感）は変わらない（口調のみ変化）
+  // 種ごとの助言は「今回のポイント」が異なり、改善例は空でない（口調は種で変化）
   const aRabbit = DIAG.pick({ petType: "rabbit", coachType: "gentle", stage: "child", answerType: "bad" });
   const aTanuki = DIAG.pick({ petType: "tanuki", coachType: "playful", stage: "child", answerType: "bad" });
   assert.ok(aRabbit.id !== aTanuki.id, "口調（point）が種で区別される");
-  assert.ok(aRabbit.example.indexOf("オウム返し") >= 0);
-  assert.ok(aTanuki.example.indexOf("オウム返し") >= 0);
+  assert.ok(aRabbit.example && aRabbit.example.length > 0);
+  assert.ok(aTanuki.example && aTanuki.example.length > 0);
+  // 生成ループ産の「改善例」は種の口調（形容）のみ変わり、内容の核（オウム返し）は共通
+  const hasInvariant = (sp) => globalThis.KE_COACH_SPEECH.some((e) =>
+    e.petTypes && e.petTypes[0] === sp && e.answerType === "bad" &&
+    e.adviceExample && e.adviceExample.indexOf("オウム返し") >= 0);
+  assert.ok(hasInvariant("rabbit"), "うさぎの生成例に核がある");
+  assert.ok(hasInvariant("tanuki"), "たぬきの生成例に核がある");
 });
 
 test("練習モード（ストーリー回合含む）で記憶・きずな度・クエスト日付は変化しない", () => {
