@@ -16,7 +16,8 @@ test("種類＋回答分類（tier1）で抽選される", () => {
   const r = D.pick({ petType: "rabbit", coachType: "gentle", stage: "child", answerType: "good" });
   assert.ok(r.text);
   assert.equal(r.tier, 1);
-  assert.ok(r.id.indexOf("coach_rabbit_fb_") === 0);
+  // tier1 の候補はうさぎ専用の助言（生成ループ産 fb / facet専用 adv の双方）
+  assert.ok(r.id.indexOf("coach_rabbit") === 0);
 });
 
 test("未知の種類ならフォールバック段階（tier3以上）へ落ちる", () => {

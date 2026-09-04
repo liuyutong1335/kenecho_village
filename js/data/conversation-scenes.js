@@ -921,6 +921,401 @@
           ]
         }
       ]
+    },
+
+    /* ============ 拡張バッチ2（feat/dialogue-content-expansion） ============
+     * 各カテゴリを増量（daily 12 / work 11 / food 10 ＝ 計33件）。
+     * 話題・性格・関係段階のバリエーションを広げる。 */
+
+    {
+      id: "scn_024", title: "近所の花壇", category: "daily", npcId: "npc_hanada", background: "outdoor",
+      tags: ["daily", "neighbor", "garden"],
+      context: "夕方、近所の花壇に水をやる花田さんに会いました。",
+      rounds: [
+        {
+          npcLine: "まあ、こんばんは。花壇を見てくれてるの？", npcExpression: "smile",
+          answers: [
+            { text: "はい、花の色がきれいで、足を止めてました。", type: "good", npcReply: "そう言ってもらえると、手入れした甲斐があるわね。", npcExpression: "happy", explanation: "相手の持ち物や成果を褒めると、関係は和む。", nextHint: "好きな花の話を振ると続く。", weight: 10 },
+            { text: "こんばんは。", type: "short", npcReply: "こんばんは。お散歩がてら？", npcExpression: "smile", explanation: "短い挨拶でも、近所づきあいは育つ。", nextHint: "天気や花のひと言を添えると続く。", weight: 10 },
+            { text: "（足早に通り過ぎる）", type: "bad", npcReply: "あら、忙しそうね。", npcExpression: "neutral", explanation: "挨拶を返さないと、相手は気を遣う。", nextHint: "短くても返すことが大切。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "このバラ、もうすぐ満開でね。今週末がたぶん見頃よ。", npcExpression: "smile",
+          answers: [
+            { text: "見頃、ぜひ見に来ます。週末の何時ごろがいいですか？", type: "good", npcReply: "朝の9時ごろが、いい光が当たるのよ。", npcExpression: "happy", explanation: "具体的な時間を聞くと、約束に近づく。", nextHint: "「花の名前一覧」を聞くと深まる。", weight: 10 },
+            { text: "楽しみにしてます。", type: "short", npcReply: "うん、待ってるからね。", npcExpression: "smile", explanation: "短いが、相手は気力を得る。", nextHint: "「何の花が好き？」と返すと続く。", weight: 10 },
+            { text: "花はあまり詳しくないんです。", type: "bad", npcReply: "あら、そう？ 見てるだけでも癒されるわよ。", npcExpression: "neutral", explanation: "興味のなさを出すと、相手は話を畳みがち。", nextHint: "「それでもきれいだと思います」と続けられる。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "よかったら、一株、分けてあげようか？", npcExpression: "smile",
+          answers: [
+            { text: "ありがとうございます！ 今度の日曜に、一緒にお世話できませんか？", type: "good", npcReply: "まあ、うれしい。そうしましょう。", npcExpression: "happy", explanation: "好意を受け、さらに一歩踏み込むと、交流が育つ。", nextHint: "実際に一緒に楽しむと信頼になる。", weight: 10 },
+            { text: "ありがとうございます。", type: "short", npcReply: "どういたしまして。育てるの、楽しいわよ。", npcExpression: "smile", explanation: "感謝だけでも、相手は喜ぶ。", nextHint: "育て方の質問を足すと続く。", weight: 10 },
+            { text: "いらないです。", type: "short", npcReply: "あら…、そう。気が向いたら、また声かけてね。", npcExpression: "neutral", explanation: "断っても、代わりに「また」を残せば失礼でない。", nextHint: "「機会があればお願いします」と添えると良い。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "もう暗くなってきたから、今日はこれで。またね。", npcExpression: "smile",
+          answers: [
+            { text: "はい、ありがとうございます。週末にまた来ます。", type: "good", npcReply: "約束よ。楽しみにしてるわ。", npcExpression: "happy", explanation: "再会を約束すると、近所の縁が続く。", nextHint: "大事に育てる気持ちを伝えると良い。", weight: 10 },
+            { text: "またお会いしましょう。", type: "short", npcReply: "またね。気をつけて。", npcExpression: "smile", explanation: "短くても、自然な別れ。", nextHint: "「お互い」を添えると温かい。", weight: 10 },
+            { text: "（挨拶もせず去る）", type: "bad", npcReply: "…。（少し残念そう）", npcExpression: "neutral", explanation: "黙って去ると、相手は言葉を失う。", nextHint: "一言返すだけで印象が変わる。", weight: 10 }
+          ]
+        }
+      ]
+    },
+    {
+      id: "scn_025", title: "公園の日なた", category: "daily", npcId: "npc_kato", background: "outdoor",
+      tags: ["daily", "park", "relax"],
+      context: "昼下がり、公園のベンチで隣り合わせた陽気な加藤さんと話しました。",
+      rounds: [
+        {
+          npcLine: "こんにちは！ 今日は暑いけど、ここは涼しいでしょ？", npcExpression: "humorous",
+          answers: [
+            { text: "そうですね。木陰が気持ちよくて、のんびりしてました。", type: "good", npcReply: "いいねえ。ここは知る人ぞ知る特等席なんだ。", npcExpression: "happy", explanation: "気持ちを共有すると、相手も打ち解ける。", nextHint: "「何度も来てるの？」と聞くと続く。", weight: 10 },
+            { text: "こんにちは、そうですね。", type: "short", npcReply: "気持ちいいでしょ。風が通ると最高だよ。", npcExpression: "smile", explanation: "相づちでも、居心地は共有される。", nextHint: "「どこが特等席？」と聞くと弾む。", weight: 10 },
+            { text: "（無言で席を立つ）", type: "bad", npcReply: "あれ、行っちゃった。まあいいか。", npcExpression: "neutral", explanation: "無視は、気さくな相手にも寂しい印象。", nextHint: "返事ひとつで場が和む。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "ここはね、野良猫の『タマ』に会えるんだ。ほら、あっち。", npcExpression: "humorous",
+          answers: [
+            { text: "本当だ！ タマって、いつもここにいるんですか？", type: "good", npcReply: "夕方はだいたいここだな。人なつっこいんだよ。", npcExpression: "happy", explanation: "相手の話の中心に興味を向けると、話が弾む。", nextHint: "タマの話を続けると、仲良くなれる。", weight: 10 },
+            { text: "へえ、かわいいですね。", type: "short", npcReply: "でしょ？ 気が向いたら撫でてもいいよ。", npcExpression: "smile", explanation: "短くても、相手の話題は受け止められる。", nextHint: "「名前つけたの？」と聞くと続く。", weight: 10 },
+            { text: "猫は苦手です。", type: "short", npcReply: "あらら。じゃあ、鳥の話にしようか。", npcExpression: "humorous", explanation: "断っても、相手は別の話題を差し出せる。", nextHint: "話を畳む代わりに新話題を受けよう。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "こうやってのんびりが、いちばん大事だと思うんだ。", npcExpression: "neutral",
+          answers: [
+            { text: "わかります。何もしない時間って、案外大事ですよね。", type: "good", npcReply: "そうそう！ わかってくれる人がいて嬉しいよ。", npcExpression: "happy", explanation: "価値観に共感すると、距離が縮まる。", nextHint: "自分の過ごし方を添えると深まる。", weight: 10 },
+            { text: "そうですね。", type: "short", npcReply: "そうそう。急がなくていいよ。", npcExpression: "smile", explanation: "短い同意でも、相手は満足する。", nextHint: "「あなたは何してるの？」と返すと続く。", weight: 10 },
+            { text: "時間がもったいないです。", type: "short", npcReply: "おっと、考え方は人それぞれだね。", npcExpression: "neutral", explanation: "反対意見は、話を閉じさせがち。", nextHint: "相手の価値をまず認めると良い。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "そろそろ行くね。また会ったら声かけて。", npcExpression: "smile",
+          answers: [
+            { text: "はい、また。タマにも会いに来ます。", type: "good", npcReply: "おう、待ってるよ。タマは逃げないから！", npcExpression: "happy", explanation: "再訪の約束を、話題と結びつけて残せる。", nextHint: "実際に来ると、常連になれる。", weight: 10 },
+            { text: "はい、また。", type: "short", npcReply: "またね。いい休日を。", npcExpression: "smile", explanation: "短い別れでも、相手は気持ちよく帰れる。", nextHint: "「お互い」を添えると温かい。", weight: 10 },
+            { text: "（黙って去る）", type: "bad", npcReply: "…（名残惜しそうに背を見送る）", npcExpression: "neutral", explanation: "返事をしないと、相手は途方に暮れる。", nextHint: "一言返すだけで次につながる。", weight: 10 }
+          ]
+        }
+      ]
+    },
+    {
+      id: "scn_026", title: "引っ越してきた縁", category: "daily", npcId: "npc_nakamura", background: "outdoor",
+      tags: ["daily", "talk", "neighborhood"],
+      context: "近所でよく会う中村さんに、この辺りに来たてだと話しかけられました。",
+      rounds: [
+        {
+          npcLine: "あの、この辺りに、お引っ越しされたんですか？", npcExpression: "curious",
+          answers: [
+            { text: "はい、最近です。まだ道に慣れていなくて。", type: "good", npcReply: "ああ、じゃあ近くのお店とか、まだ知らないですよね。", npcExpression: "curious", explanation: "自分の状況を話すと、相手は助けに入りやすい。", nextHint: "「何があるんですか？」と返すと続く。", weight: 10 },
+            { text: "はい、引っ越してきました。", type: "short", npcReply: "そうなんですね。慣れないうちは大変ですよね。", npcExpression: "smile", explanation: "短くても、話のきっかけにはなる。", nextHint: "困っていることを添えると助けを得やすい。", weight: 10 },
+            { text: "なんでですか？", type: "bad", npcReply: "あ、いや、聞き方が変でしたか？ すみません。", npcExpression: "neutral", explanation: "詰め寄る返しは、相手を委縮させる。", nextHint: "まず返してから、聞き返すと良い。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "この辺はね、裏道にいいパン屋さんがあるんですよ。", npcExpression: "curious",
+          answers: [
+            { text: "それ、どこにあるんですか？ 教えてもらえますか？", type: "good", npcReply: "あそこの路地を入ったとこの、白い建物ですよ。", npcExpression: "happy", explanation: "具体的に尋ねると、相手は案内したくなる。", nextHint: "「名前は？」と聞くと記憶にも残る。", weight: 10 },
+            { text: "へえ、そうなんですね。", type: "short", npcReply: "よかったら、一度行ってみてください。", npcExpression: "smile", explanation: "短い相づちでも、情報は受け止められる。", nextHint: "「行ってみます」と続けると弾む。", weight: 10 },
+            { text: "パンはあまり食べないです。", type: "short", npcReply: "あら、そうですか…。他に何かお好きですか？", npcExpression: "neutral", explanation: "話題を閉じる代わりに、相手は別のを探す。", nextHint: "好きなものを伝えると会話が続く。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "住み始めて、何か困ってることはあります？", npcExpression: "curious",
+          answers: [
+            { text: "実は、ゴミの出し方がまだよくわからなくて…。", type: "good", npcReply: "ああ、じゃあ次に会ったときに、一緒に確認しましょ。", npcExpression: "smile", explanation: "具体的な困りごとに答えると、助けを得やすい。", nextHint: "感謝を伝えると、さらに心を開く。", weight: 10 },
+            { text: "特にないです。", type: "short", npcReply: "それなら安心です。", npcExpression: "smile", explanation: "短いが、相手の気遣いは解ける。", nextHint: "「ありがとう」を添えると好印象。", weight: 10 },
+            { text: "教えてもらわなくて大丈夫です。", type: "short", npcReply: "そうですか…。それでは、また。", npcExpression: "neutral", explanation: "助けを断ると、相手は距離を置く。", nextHint: "「相談します」と一度受け取ると良い。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "あ、時間ですね。また何かあれば、声をかけてくださいね。", npcExpression: "smile",
+          answers: [
+            { text: "ありがとうございます。ゴミの件、ぜひお願いします。", type: "good", npcReply: "ええ、覚えてますよ。ではまた。", npcExpression: "happy", explanation: "約束を預けると、相手も頼りにされる喜びを得る。", nextHint: "次の約束の場を決めると続く。", weight: 10 },
+            { text: "はい、お時間ありがとうございました。", type: "short", npcReply: "いえいえ。お気をつけて。", npcExpression: "smile", explanation: "感謝とともに自然に別れられる。", nextHint: "「またお会いしましょう」を添えると良い。", weight: 10 },
+            { text: "（会釈だけして去る）", type: "bad", npcReply: "…（少し気にかかる）", npcExpression: "neutral", explanation: "言葉なく去ると、相手は腑に落ちない。", nextHint: "一言返すだけで、縁が続く。", weight: 10 }
+          ]
+        }
+      ]
+    },
+    {
+      id: "scn_027", title: "資料の二重チェック", category: "work", npcId: "npc_yamada", background: "office",
+      tags: ["work", "documents", "daytime"],
+      context: "午後、山田さんに資料の数値の再確認をお願いしました。",
+      rounds: [
+        {
+          npcLine: "資料、拝見したよ。内容はいいけど、最後の数値だけ確認したい。", npcExpression: "neutral",
+          answers: [
+            { text: "あ、そこ、私も自信がなくて。出典を確認しました。", type: "good", npcReply: "そう言ってくれると安心だ。出典、どこに載せた？", npcExpression: "smile", explanation: "自信のなさを正直に言うと、相手は助けに入れる。", nextHint: "出典のページを共有すると進む。", weight: 10 },
+            { text: "はい、確認します。", type: "short", npcReply: "うん、急がないから。今のうちだね。", npcExpression: "neutral", explanation: "短い承諾でも、相手は安心する。", nextHint: "どの数値にするか明示すると良い。", weight: 10 },
+            { text: "大丈夫です、ちゃんとやりました。", type: "short", npcReply: "…そう言われても、万が一があるからな。", npcExpression: "neutral", explanation: "「大丈夫」だけでは、根拠が伝わらない。", nextHint: "根拠をひとつ示すと納得される。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "数値が1箇所違ってた。ここの、チェックした？", npcExpression: "neutral",
+          answers: [
+            { text: "すみません、見落としてました。正しく直します。", type: "good", npcReply: "見つかってよかった。直したら見せて。", npcExpression: "smile", explanation: "指摘を受け入れると、確認はスムーズに。", nextHint: "直した根拠も添えると信頼。", weight: 10 },
+            { text: "直します。", type: "short", npcReply: "うん。じゃあ直したら連絡して。", npcExpression: "neutral", explanation: "短くても、速やかな対応は伝わる。", nextHint: "「◯時までに直します」と添えると良い。", weight: 10 },
+            { text: "たぶん間違ってないです。", type: "bad", npcReply: "いや、ここ、計算が合わないよ。もう一度見て。", npcExpression: "troubled", explanation: "ミスを認めないと、相手の時間を奪う。", nextHint: "いったん受け止めてから確認しよう。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "二重チェックはね、間違いを探すためじゃなく、『お互いを守る』ためなんだ。", npcExpression: "neutral",
+          answers: [
+            { text: "なるほど。確かに、自分だけだと気づけないものですね。", type: "good", npcReply: "そう。そういう意識が、結局みんなを助けるんだよ。", npcExpression: "smile", explanation: "相手の考えに納得を示すと、信頼は深まる。", nextHint: "自分の気づいた点を一言返すと良い。", weight: 10 },
+            { text: "そうですね。", type: "short", npcReply: "うん、わかってくれたかな。", npcExpression: "neutral", explanation: "短い同意だけでは、理解度が見えにくい。", nextHint: "意味を一言復唱すると伝わる。", weight: 10 },
+            { text: "チェックするのが面倒です。", type: "bad", npcReply: "…いや、面倒だとは思ってほしくないな。", npcExpression: "troubled", explanation: "本音を出すのは大事だが、仕事の場では損に。", nextHint: "「大事だとわかりました」と受けると良い。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "直せたね。これで提出できるよ。お疲れさま。", npcExpression: "smile",
+          answers: [
+            { text: "ありがとうございます。次は最初から丁寧に確認します。", type: "good", npcReply: "その調子。またあとで見るよ。", npcExpression: "smile", explanation: "学びを宣言すると、相手も引き続き任せられる。", nextHint: "実際に次に活かすと信頼。", weight: 10 },
+            { text: "お疲れさまです。", type: "short", npcReply: "お疲れさま。気をつけて帰ってね。", npcExpression: "neutral", explanation: "短い労いでも、仕事は締まる。", nextHint: "成果を一言添えると好印象。", weight: 10 },
+            { text: "（何も言わずに去る）", type: "bad", npcReply: "…（首をかしげる）", npcExpression: "neutral", explanation: "締めの言葉が無いと、働きが報われない。", nextHint: "「ありがとう」だけで十分。", weight: 10 }
+          ]
+        }
+      ]
+    },
+    {
+      id: "scn_028", title: "退勤前のひとこと", category: "work", npcId: "npc_sato", background: "office",
+      tags: ["work", "closing", "evening"],
+      context: "退勤前、佐藤さんに明日の段取りを確認されました。",
+      rounds: [
+        {
+          npcLine: "今日は早めに上がれる？ 明日の朝イチの用意、もうした？", npcExpression: "neutral",
+          answers: [
+            { text: "はい、資料はもう机の上に置いてます。朝は確認だけで大丈夫です。", type: "good", npcReply: "おー、抜かりないね。それなら安心だ。", npcExpression: "happy", explanation: "準備済みを具体的に伝えると、相手は安心する。", nextHint: "明日の確認事項も添えると良い。", weight: 10 },
+            { text: "だいたい終わりました。", type: "short", npcReply: "そう？ じゃあ無理せず上がって。", npcExpression: "smile", explanation: "短くても、完了感は伝わる。", nextHint: "残りがある場合は添えると良い。", weight: 10 },
+            { text: "明日のことは明日考えます。", type: "short", npcReply: "…あら、まあ、気持ちはわかるけど。", npcExpression: "neutral", explanation: "投げ遣りな返しは、相手を不安にする。", nextHint: "一つでも確認事項を言うと安心される。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "明日は朝から打ち合わせがあるから、資料だけは置いといてね。", npcExpression: "neutral",
+          answers: [
+            { text: "はい、表紙に明日の日付を入れて置いておきます。", type: "good", npcReply: "助かるわ。じゃあ朝イチに確認するね。", npcExpression: "smile", explanation: "布石を踏んで準備すると、信頼が高まる。", nextHint: "場所も言っておくと親切。", weight: 10 },
+            { text: "了解です。", type: "short", npcReply: "うん、よろしくね。", npcExpression: "smile", explanation: "短い承諾でも、役割は伝わる。", nextHint: "「置き場所はこの棚です」と足すと親切。", weight: 10 },
+            { text: "忘れたらすみません。", type: "bad", npcReply: "ええっ、それは困るな…。", npcExpression: "troubled", explanation: "覚束ない返しは、信頼を揺らす。", nextHint: "「忘れないよう書いておきます」と切り替えると良い。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "今日、疲れてるでしょ。休みなさいよ。", npcExpression: "caring",
+          answers: [
+            { text: "ありがとうございます。実は少し眠くて…。お言葉に甘えます。", type: "good", npcReply: "無理は禁物よ。明日に備えて早めに休んでね。", npcExpression: "caring", explanation: "体調を隠さず伝えると、相手は気遣う心を温める。", nextHint: "明日の予定を確認すると安心。", weight: 10 },
+            { text: "ありがとうございます。", type: "short", npcReply: "どういたしまして。また明日ね。", npcExpression: "smile", explanation: "短くても、気遣いは受け止められる。", nextHint: "「明日もよろしく」を添えると良い。", weight: 10 },
+            { text: "まだやることあります。", type: "short", npcReply: "うーん、それが明日に響くから考えどころだね。", npcExpression: "neutral", explanation: "頑張りは伝わるが、無理は次日に響く。", nextHint: "「◯時までに片付けます」と区切ると良い。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "じゃあ、私はもう行くね。あ、明日の打ち合わせ、がんばろう！", npcExpression: "smile",
+          answers: [
+            { text: "はい、お疲れさまでした。明日、よろしくお願いします。", type: "good", npcReply: "うん、よろしく！ 気をつけて帰ってね。", npcExpression: "happy", explanation: "別れ際のねぎらいと明日の約束で、締まりが良い。", nextHint: "明日の予定を一言添えると好印象。", weight: 10 },
+            { text: "お疲れさまです。", type: "short", npcReply: "おつかれさま。また明日。", npcExpression: "smile", explanation: "短くても、労い合えば自然に締まる。", nextHint: "「ありがとう」を添えると温かい。", weight: 10 },
+            { text: "（黙って席を立つ）", type: "bad", npcReply: "…あれ？ じゃあ、また明日。", npcExpression: "neutral", explanation: "締めの言葉がないと、相手は不安が残る。", nextHint: "一言返すだけで働きが輝く。", weight: 10 }
+          ]
+        }
+      ]
+    },
+    {
+      id: "scn_029", title: "ミーティングでの発言", category: "work", npcId: "npc_tanaka", background: "office",
+      tags: ["work", "meeting", "daytime"],
+      context: "ミーティングで、田中さんに発言を促されました。",
+      rounds: [
+        {
+          npcLine: "どう思う？ みんなの意見、聞きたいから。", npcExpression: "neutral",
+          answers: [
+            { text: "私は、最初の案がいいと思います。理由は、時間が短いからです。", type: "good", npcReply: "具体的だな。そう言われると意見が立つ。", npcExpression: "smile", explanation: "結論と理由をセットで言うと、意見として立つ。", nextHint: "比較対象を添えると、さらに明確。", weight: 10 },
+            { text: "いいと思います。", type: "short", npcReply: "いい？ どこが？", npcExpression: "neutral", explanation: "味方のない評価は、再質問を招く。", nextHint: "根拠をひとつ足すと伝わる。", weight: 10 },
+            { text: "特にないです。", type: "short", npcReply: "…じゃあ次、行くぞ。", npcExpression: "neutral", explanation: "無言は、チャンスを逃す。", nextHint: "小さくでも、感じたことを言おう。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "理由を、もう一言でいいので短く言って。", npcExpression: "neutral",
+          answers: [
+            { text: "手間は増えますが、確実性が増すからです。", type: "good", npcReply: "それでいい。その一言があるのと無いのとでは違う。", npcExpression: "smile", explanation: "一言で理由を言えると、説得力が増す。", nextHint: "数値で補足すると、さらに強い。", weight: 10 },
+            { text: "理由は…、うーん。", type: "short", npcReply: "言い切れないなら、それはまだ決められてないってことだよ。", npcExpression: "neutral", explanation: "曖昧さは、判断を預けさせてしまう。", nextHint: "先に結論を仮置きすると話せる。", weight: 10 },
+            { text: "（黙る）", type: "bad", npcReply: "…。時間を止めるのが得意なわけじゃないよ？", npcExpression: "neutral", explanation: "沈黙は、周囲のペースを乱す。", nextHint: "「考え中です」と一言あると安心。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "じゃあ、その案で進める。できたら今週中だ。", npcExpression: "neutral",
+          answers: [
+            { text: "はい、今週の金曜までにまとめます。", type: "good", npcReply: "金曜ね。OK。終わったらすぐ回して。", npcExpression: "smile", explanation: "期日を具体化すると、相手も段取りできる。", nextHint: "報告の手段も決めると効率的。", weight: 10 },
+            { text: "了解です。", type: "short", npcReply: "うん、よろしく。", npcExpression: "neutral", explanation: "短い承諾でも、役割は決まる。", nextHint: "「◯時までに」を添えると良い。", weight: 10 },
+            { text: "もう少し時間くれませんか。", type: "short", npcReply: "どれくらい？ 具体的に。", npcExpression: "neutral", explanation: "要求だけでは、根拠を問われる。", nextHint: "「◯日の午後までなら」と範囲を示すと良い。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "今日は発言、良かった。次も頼む。", npcExpression: "neutral",
+          answers: [
+            { text: "ありがとうございます。次は持ち帰り資料も作ります。", type: "good", npcReply: "それは助かる。用意してきて。", npcExpression: "smile", explanation: "感謝と次の提供をセットにすると、評価が続く。", nextHint: "実際に用意すると、信頼が育つ。", weight: 10 },
+            { text: "ありがとうございます。", type: "short", npcReply: "うん、お疲れ。", npcExpression: "neutral", explanation: "短くても、ねぎらいは受け取れる。", nextHint: "「次もがんばります」を添えると好印象。", weight: 10 },
+            { text: "（何も言わず）", type: "bad", npcReply: "…えーと。じゃあ解散。", npcExpression: "neutral", explanation: "評価への反応がないと、対話が冷える。", nextHint: "「ありがとう」だけで十分。", weight: 10 }
+          ]
+        }
+      ]
+    },
+    {
+      id: "scn_030", title: "週末の散歩の誘い", category: "work", npcId: "npc_sato", background: "outdoor",
+      tags: ["work", "schedule", "relax"],
+      context: "退勤時に、佐藤さんが週末の散歩に誘ってくれました。",
+      rounds: [
+        {
+          npcLine: "今週末、何か予定ある？ 良かったら一緒に散歩でも。", npcExpression: "smile",
+          answers: [
+            { text: "土曜の午前なら大丈夫です。散歩、いいですね。", type: "good", npcReply: "やった。じゃあ、午前9時に駅前で？", npcExpression: "happy", explanation: "空いている時間を示すと、予定が固まる。", nextHint: "集合場所を決めると進む。", weight: 10 },
+            { text: "空いてますよ。", type: "short", npcReply: "じゃあ土曜に、どこか行こうか。", npcExpression: "smile", explanation: "短い承諾でも、誘いは成立する。", nextHint: "「どこに行く？」と返すと弾む。", weight: 10 },
+            { text: "人と会うのはちょっと…。", type: "short", npcReply: "あら…。じゃあ、また今度、気が向いたときに。", npcExpression: "neutral", explanation: "断っても、理由を添えれば失礼でない。", nextHint: "「また今度」を残すと、縁は続く。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "どっち方面が好き？ 川沿いとか、公園とか。", npcExpression: "smile",
+          answers: [
+            { text: "川沿いが好きです。景色が広くて気持ちいいので。", type: "good", npcReply: "いいね、川沿いは自分も好き。じゃあ土曜は川沿いコースにしよう。", npcExpression: "happy", explanation: "好みを伝えると、相手も一緒に楽しめる。", nextHint: "道中の予定も話すと続く。", weight: 10 },
+            { text: "どっちでも。", type: "short", npcReply: "んー、じゃあ川沿いにしとくね。", npcExpression: "smile", explanation: "任せても成立するが、好みは残る。", nextHint: "「ある景色が好き」と添えると良い。", weight: 10 },
+            { text: "道は疲れるので嫌です。", type: "short", npcReply: "じゃあ、コーヒーだけでも？ 無理はしないで。", npcExpression: "smile", explanation: "断る代わりに別の形を提案されやすい。", nextHint: "「コーヒーなら」と受け取ると続く。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "楽しみだな。最近、散歩してなかったからさ。", npcExpression: "smile",
+          answers: [
+            { text: "私も、話せる人がいて嬉しいです。最近、家と職場の往復だったので。", type: "good", npcReply: "そうか。たまには外に出ると、気分が変わるよ。", npcExpression: "happy", explanation: "率直な気持ちを開くと、距離が縮まる。", nextHint: "お互いの過ごし方を話すと深まる。", weight: 10 },
+            { text: "楽しみです。", type: "short", npcReply: "うん、お天気だといいね。", npcExpression: "smile", explanation: "短い言葉でも、期待感は伝わる。", nextHint: "「何を期待する？」と聞くと続く。", weight: 10 },
+            { text: "散歩って何が楽しいのか。", type: "short", npcReply: "おっと、それじゃ、何が楽しいか話し合おう。", npcExpression: "humorous", explanation: "素直な疑問も、言葉にすれば話題になる。", nextHint: "相手の楽しみを聞くと良い。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "じゃあ、土曜の朝9時に。駅前の花壇の前ね。", npcExpression: "smile",
+          answers: [
+            { text: "はい、分かりました。楽しみにしてます。", type: "good", npcReply: "私も。じゃあ、また！", npcExpression: "happy", explanation: "具体的な約束を復唱すると、確実になる。", nextHint: "実際に会うと、信頼が深まる。", weight: 10 },
+            { text: "はい、よろしくお願いします。", type: "short", npcReply: "うん、よろしくね。またね。", npcExpression: "smile", explanation: "短くても、約束は成立する。", nextHint: "「忘れないようにします」を添えると良い。", weight: 10 },
+            { text: "（ぼんやり返事）", type: "bad", npcReply: "…聞こえたかな？ まあ、土曜にね。", npcExpression: "neutral", explanation: "気のない返事は、約束が危うくなる。", nextHint: "しっかり返すだけで信頼になる。", weight: 10 }
+          ]
+        }
+      ]
+    },
+    {
+      id: "scn_031", title: "昼どきの定食屋", category: "food", npcId: "npc_hanada", background: "dining",
+      tags: ["food", "lunch", "daily"],
+      context: "昼時、よく来る定食屋の花田さんに、今日のおすすめを聞かれました。",
+      rounds: [
+        {
+          npcLine: "いらっしゃい！ 今日のお昼、どうする？", npcExpression: "smile",
+          answers: [
+            { text: "今日は生姜焼きの気分です。おすすめはあります？", type: "good", npcReply: "じゃあ、今日の生姜焼きはスープがついてるよ！ それにする？", npcExpression: "happy", explanation: "気分を伝えて聞くと、店主も合わせやすい。", nextHint: "「それでお願いします」と続けると良い。", weight: 10 },
+            { text: "いつものお願いします。", type: "short", npcReply: "はいよ、いつものね！", npcExpression: "smile", explanation: "常連らしい短い注文も、十分通じる。", nextHint: "「今日も元気出そう」を添えると喜ばれる。", weight: 10 },
+            { text: "（メニューを見て黙る）", type: "bad", npcReply: "…決まったら言ってね。", npcExpression: "neutral", explanation: "固まっていると、店主は気を遣う。", nextHint: "「まだ決めてます」と一言返すと良い。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "今日の生姜焼き、ちょっとだけ辛めに出来上がってるよ。", npcExpression: "smile",
+          answers: [
+            { text: "じゃあ、たまごをひとつお願いします。辛いのが少し苦手で。", type: "good", npcReply: "あいよ、たまごサービスしとくね。", npcExpression: "caring", explanation: "苦手を伝えると、相手は対応してくれる。", nextHint: "「助かります」を添えると良い。", weight: 10 },
+            { text: "それで大丈夫です。", type: "short", npcReply: "ん、じゃあそのまま行くね。", npcExpression: "smile", explanation: "短い承諾でも、注文は通じる。", nextHint: "体調の話を添えると会話になる。", weight: 10 },
+            { text: "辛いのは食べられません。", type: "short", npcReply: "あら、じゃあ辛さは抜いておこうか？", npcExpression: "caring", explanation: "断る代わりに要望を伝えると、解決しやすい。", nextHint: "「お願いします」で整う。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "ここのところ、仕事落ち着いてきた？", npcExpression: "smile",
+          answers: [
+            { text: "今日は午前で山が越えたので、ほっとしてます。", type: "good", npcReply: "そりゃよかった。ちゃんと食べて回復しなね。", npcExpression: "smile", explanation: "近況を伝えると、相手は気持ちよく寄り添う。", nextHint: "「応援ありがとう」と返すと温かい。", weight: 10 },
+            { text: "ぼちぼちです。", type: "short", npcReply: "ぼちぼち、ね。無理はしないでよ。", npcExpression: "smile", explanation: "短いながら、気遣いは受け取れる。", nextHint: "「ありがとう」を添えると良い。", weight: 10 },
+            { text: "話せる状態じゃないです。", type: "bad", npcReply: "…そうか。じゃあ黙って食べるのを応援しとく。", npcExpression: "neutral", explanation: "頑なに閉じると、相手も戸惑う。", nextHint: "「疲れてるだけ」と添えると伝わる。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "ごちそうさま、またね。今度、新作も出るから。", npcExpression: "smile",
+          answers: [
+            { text: "楽しみにしてます。また来ますね。", type: "good", npcReply: "うん、待ってるよ。新作、見に来てね。", npcExpression: "happy", explanation: "再来を約束すると、常連になれる。", nextHint: "実際に来ると、関係が深まる。", weight: 10 },
+            { text: "ごちそうさまでした。", type: "short", npcReply: "はいよ、またいつでも。", npcExpression: "smile", explanation: "短い締めでも、店主は満足そう。", nextHint: "「おいしかった」を添えると好印象。", weight: 10 },
+            { text: "（お金を置いて去る）", type: "bad", npcReply: "…あいよ。お気をつけて。", npcExpression: "neutral", explanation: "気配りに無反応だと、寂しい離れ方になる。", nextHint: "顔を見て一言あいさつすると良い。", weight: 10 }
+          ]
+        }
+      ]
+    },
+    {
+      id: "scn_032", title: "新メニューの試食", category: "food", npcId: "npc_konno", background: "dining",
+      tags: ["food", "new", "daytime"],
+      context: "昼下がり、今野さんに新メニューの試食を勧められました。",
+      rounds: [
+        {
+          npcLine: "お、いいところに！ 今週の新作『にら玉』、試食しない？", npcExpression: "bright",
+          answers: [
+            { text: "新作、楽しみにしてました。いただきます！", type: "good", npcReply: "おー、いいね！ じゃあ今日のサービスだ！", npcExpression: "happy", explanation: "期待を表すと、相手は張り切って応える。", nextHint: "感想を具体的に伝えると喜ばれる。", weight: 10 },
+            { text: "すすめられたら断れないので。", type: "short", npcReply: "はは、正直だね。じゃあ勝手に置くよ。", npcExpression: "humorous", explanation: "軽いノリで乗れば、店主も嬉しい。", nextHint: "「楽しみ」を添えると弾む。", weight: 10 },
+            { text: "今日は食欲がないので。", type: "short", npcReply: "あら…。じゃあ次回にとっておくよ。", npcExpression: "neutral", explanation: "断っても、理由があれば失礼ではない。", nextHint: "「また今度お願いします」を添えると良い。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "にら玉はね、たまごの半熟がポイントなんだ。", npcExpression: "bright",
+          answers: [
+            { text: "半熟、どうやってうまく作るんですか？", type: "good", npcReply: "フライパンを火からあげて、余熱で仕上げるのがコツさ。", npcExpression: "happy", explanation: "作り方に興味を示すと、店主は教えがいを感じる。", nextHint: "「家で試してみます」と続けると良い。", weight: 10 },
+            { text: "へえ、そうなんですね。", type: "short", npcReply: "でしょ？ 家でも試してみな。", npcExpression: "smile", explanation: "短い相づちでも、話題は受け止められる。", nextHint: "「時間のあるときに」と返すと続く。", weight: 10 },
+            { text: "半熟は生っぽくて嫌です。", type: "short", npcReply: "おっと、それならしっかり火を通すよ。好みは大事！", npcExpression: "smile", explanation: "好みを伝えると、相手も合わせられる。", nextHint: "「お願いします」で整う。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "味、どう？ 辛さは抑えたけど、どうかな。", npcExpression: "curious",
+          answers: [
+            { text: "すごくおいしいです。にらの香りとたまご、合ってます。", type: "good", npcReply: "よっしゃ、その言葉が欲しかった！ 今週の推しにしよう。", npcExpression: "happy", explanation: "具体的な感想は、相手の胸に響く。", nextHint: "「また食べに来ます」を添えると良い。", weight: 10 },
+            { text: "おいしいです。", type: "short", npcReply: "それでいい、シンプルにそれでいいよ！", npcExpression: "happy", explanation: "短い感想でも、相手は満足する。", nextHint: "どこがおいしいか、足すとさらに良い。", weight: 10 },
+            { text: "正直、口に合いませんでした。", type: "short", npcReply: "おっと、そうか。じゃあ次は別の味で研究するよ。", npcExpression: "neutral", explanation: "正直な感想は挑戦的だが、交流にはなる。", nextHint: "「好みはこうです」と具体化すると良い。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "今日はありがとね。また新作できたら呼ぶから。", npcExpression: "bright",
+          answers: [
+            { text: "はい、楽しみにしてます。また来ますね。", type: "good", npcReply: "おう、狙って来てね！", npcExpression: "happy", explanation: "再来を約束すると、新作を楽しみにできる。", nextHint: "実際に来ると、常連に育てられる。", weight: 10 },
+            { text: "ごちそうさまでした。", type: "short", npcReply: "はいよ、またね。", npcExpression: "smile", explanation: "短くても、新しい出会いが生まれる。", nextHint: "「おいしかった」を添えると好印象。", weight: 10 },
+            { text: "（黙って会計）", type: "bad", npcReply: "…また来てくれよな。", npcExpression: "neutral", explanation: "気配りに無反応だと、店主は名残惜しい。", nextHint: "顔を見て一言あいさつすると良い。", weight: 10 }
+          ]
+        }
+      ]
+    },
+    {
+      id: "scn_033", title: "甘味処のひととき", category: "food", npcId: "npc_kato", background: "dining",
+      tags: ["food", "sweets", "shopping"],
+      context: "買い物帰りに、甘味処の前で加藤さんに呼び止められました。",
+      rounds: [
+        {
+          npcLine: "あ、買い物帰り？ 一緒に甘味どう？ ここ、絶品だから。", npcExpression: "humorous",
+          answers: [
+            { text: "あんみつ、いいですね。少し休みたい気分だったので。", type: "good", npcReply: "いい選択！ 私もさっき、これでひと息ついたところだよ。", npcExpression: "happy", explanation: "気分を伝えると、相手も一緒に過ごしやすい。", nextHint: "「何がおすすめ？」と聞くと弾む。", weight: 10 },
+            { text: "じゃあ、お願いします。", type: "short", npcReply: "ようこそ！ 席、取っておくね。", npcExpression: "smile", explanation: "軽い承諾でも、ひとときが始まる。", nextHint: "「何がおいしい？」と聞くと続く。", weight: 10 },
+            { text: "甘いものは苦手です。", type: "short", npcReply: "おっと、じゃあ団子は？ 塩味のもあるよ。", npcExpression: "humorous", explanation: "断る代わりに別の形を提案されやすい。", nextHint: "「それなら」と受け取ると続く。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "ここのクリームあんみつ、冷たいのと温かいのがあるんだ。", npcExpression: "humorous",
+          answers: [
+            { text: "どっちが人気なんですか？", type: "good", npcReply: "断然、温かい方が人気かな。ほっこりするんだよ。", npcExpression: "happy", explanation: "人気を聞くと、相手も語りたくなる。", nextHint: "「じゃあ温かいので」と続けると自然。", weight: 10 },
+            { text: "じゃあ、温かいので。", type: "short", npcReply: "了解、温かいひとつ！ 私も合わせてもらおう。", npcExpression: "happy", explanation: "短い選択でも、注文は成立する。", nextHint: "「どんな味？」と聞くと弾む。", weight: 10 },
+            { text: "考えてからにします。", type: "short", npcReply: "考えるのも、いいけど冷めるよー！ 冗談。", npcExpression: "humorous", explanation: "迷っても、相手は軽く受け止める。", nextHint: "「じゃあ、こっちで」と決めると続く。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "仕事はどう？ たまの息抜き、大事だよね。", npcExpression: "humorous",
+          answers: [
+            { text: "そうですね、今日はもう休むと決めてきたので。", type: "good", npcReply: "その決断、正解！ 甘いものは人生の潤滑油だよ。", npcExpression: "happy", explanation: "リラックスする決断を共有すると、場が和む。", nextHint: "「あなたはどう？」と返すと続く。", weight: 10 },
+            { text: "そうですね。", type: "short", npcReply: "でしょ？ 甘味は争いのない平和だ。", npcExpression: "smile", explanation: "短い同意でも、居心地は共有される。", nextHint: "「何を楽しみに？」と聞くと弾む。", weight: 10 },
+            { text: "働かないといけないので。", type: "short", npcReply: "休むのも仕事のうちだよ。心を休めるんだ。", npcExpression: "neutral", explanation: "頑なな返しには、相手も言葉を選ぶ。", nextHint: "「たまには休みます」と受けると良い。", weight: 10 }
+          ]
+        },
+        {
+          npcLine: "さて、そろそろ行こうか。また何か話したいときに来てよ。", npcExpression: "smile",
+          answers: [
+            { text: "はい、ありがとうございます。また来ますね。", type: "good", npcReply: "おう、待ってるよ。次は抹茶の話でもしよう！", npcExpression: "happy", explanation: "再訪を約束すると、続きが生まれる。", nextHint: "実際に来ると、話が弾む。", weight: 10 },
+            { text: "ごちそうさまでした。", type: "short", npcReply: "はいよ、またね。", npcExpression: "smile", explanation: "短い締めでも、甘味の余韻は残る。", nextHint: "「おいしかった」を添えると好印象。", weight: 10 },
+            { text: "（黙って立ち去る）", type: "bad", npcReply: "…あれ、急いでたのかな。また今度ね。", npcExpression: "neutral", explanation: "黙って去ると、相手は置いて行かれる。", nextHint: "一言返すだけで、次につながる。", weight: 10 }
+          ]
+        }
+      ]
     }
   ];
 
@@ -1068,7 +1463,58 @@
     "scn_023:0:0": { f: "question" }, "scn_023:0:1": { f: "onward" }, "scn_023:0:2": { f: "avoid" },
     "scn_023:1:0": { f: "self_disclose" }, "scn_023:1:1": { f: "onward" }, "scn_023:1:2": { f: "avoid" },
     "scn_023:2:0": { f: "empathy" }, "scn_023:2:1": { f: "onward" }, "scn_023:2:2": { f: "avoid" },
-    "scn_023:3:0": { f: "promise", p: "また来週、定食屋に来る約束" }, "scn_023:3:1": { f: "natural_close" }, "scn_023:3:2": { f: "avoid" }
+    "scn_023:3:0": { f: "promise", p: "また来週、定食屋に来る約束" }, "scn_023:3:1": { f: "natural_close" }, "scn_023:3:2": { f: "avoid" },
+
+    /* ---- バッチ2（scn_024〜033）facets ---- */
+    "scn_024:0:0": { f: "empathy" }, "scn_024:0:1": { f: "onward" }, "scn_024:0:2": { f: "avoid" },
+    "scn_024:1:0": { f: "question" }, "scn_024:1:1": { f: "onward" }, "scn_024:1:2": { f: "avoid" },
+    "scn_024:2:0": { f: "question" }, "scn_024:2:1": { f: "onward" }, "scn_024:2:2": { f: "polite_decline" },
+    "scn_024:3:0": { f: "promise", p: "週末に花壇のバラを見に来る約束" }, "scn_024:3:1": { f: "natural_close" }, "scn_024:3:2": { f: "avoid" },
+
+    "scn_025:0:0": { f: "self_disclose" }, "scn_025:0:1": { f: "onward" }, "scn_025:0:2": { f: "avoid" },
+    "scn_025:1:0": { f: "question" }, "scn_025:1:1": { f: "onward" }, "scn_025:1:2": { f: "polite_decline" },
+    "scn_025:2:0": { f: "empathy" }, "scn_025:2:1": { f: "onward" }, "scn_025:2:2": { f: "avoid" },
+    "scn_025:3:0": { f: "promise", p: "公園のタマに会いに来る約束" }, "scn_025:3:1": { f: "natural_close" }, "scn_025:3:2": { f: "avoid" },
+
+    "scn_026:0:0": { f: "self_disclose" }, "scn_026:0:1": { f: "onward" }, "scn_026:0:2": { f: "avoid" },
+    "scn_026:1:0": { f: "question" }, "scn_026:1:1": { f: "onward" }, "scn_026:1:2": { f: "self_disclose" },
+    "scn_026:2:0": { f: "self_disclose" }, "scn_026:2:1": { f: "onward" }, "scn_026:2:2": { f: "polite_decline" },
+    "scn_026:3:0": { f: "promise", p: "ゴミ出しルールを教えてもらう約束" }, "scn_026:3:1": { f: "natural_close" }, "scn_026:3:2": { f: "avoid" },
+
+    "scn_027:0:0": { f: "self_disclose" }, "scn_027:0:1": { f: "onward" }, "scn_027:0:2": { f: "avoid" },
+    "scn_027:1:0": { f: "self_disclose" }, "scn_027:1:1": { f: "onward" }, "scn_027:1:2": { f: "avoid" },
+    "scn_027:2:0": { f: "question" }, "scn_027:2:1": { f: "onward" }, "scn_027:2:2": { f: "avoid" },
+    "scn_027:3:0": { f: "promise", p: "次回から最初から丁寧に確認する約束" }, "scn_027:3:1": { f: "natural_close" }, "scn_027:3:2": { f: "avoid" },
+
+    "scn_028:0:0": { f: "self_disclose" }, "scn_028:0:1": { f: "onward" }, "scn_028:0:2": { f: "avoid" },
+    "scn_028:1:0": { f: "self_disclose" }, "scn_028:1:1": { f: "onward" }, "scn_028:1:2": { f: "avoid" },
+    "scn_028:2:0": { f: "self_disclose" }, "scn_028:2:1": { f: "onward" }, "scn_028:2:2": { f: "avoid" },
+    "scn_028:3:0": { f: "promise", p: "明日の打ち合わせをよろしくお願いする約束" }, "scn_028:3:1": { f: "natural_close" }, "scn_028:3:2": { f: "avoid" },
+
+    "scn_029:0:0": { f: "self_disclose" }, "scn_029:0:1": { f: "onward" }, "scn_029:0:2": { f: "avoid" },
+    "scn_029:1:0": { f: "self_disclose" }, "scn_029:1:1": { f: "onward" }, "scn_029:1:2": { f: "avoid" },
+    "scn_029:2:0": { f: "promise" }, "scn_029:2:1": { f: "onward" }, "scn_029:2:2": { f: "polite_decline" },
+    "scn_029:3:0": { f: "promise", p: "次のミーティングに資料を持ち帰る約束" }, "scn_029:3:1": { f: "natural_close" }, "scn_029:3:2": { f: "avoid" },
+
+    "scn_030:0:0": { f: "self_disclose" }, "scn_030:0:1": { f: "onward" }, "scn_030:0:2": { f: "polite_decline" },
+    "scn_030:1:0": { f: "self_disclose" }, "scn_030:1:1": { f: "onward" }, "scn_030:1:2": { f: "polite_decline" },
+    "scn_030:2:0": { f: "self_disclose" }, "scn_030:2:1": { f: "onward" }, "scn_030:2:2": { f: "avoid" },
+    "scn_030:3:0": { f: "promise", p: "土曜の朝9時、駅前の花壇で散歩の約束" }, "scn_030:3:1": { f: "natural_close" }, "scn_030:3:2": { f: "avoid" },
+
+    "scn_031:0:0": { f: "self_disclose" }, "scn_031:0:1": { f: "onward" }, "scn_031:0:2": { f: "avoid" },
+    "scn_031:1:0": { f: "self_disclose" }, "scn_031:1:1": { f: "onward" }, "scn_031:1:2": { f: "polite_decline" },
+    "scn_031:2:0": { f: "self_disclose" }, "scn_031:2:1": { f: "onward" }, "scn_031:2:2": { f: "avoid" },
+    "scn_031:3:0": { f: "promise", p: "新作の定食を食べに定食屋に来る約束" }, "scn_031:3:1": { f: "natural_close" }, "scn_031:3:2": { f: "avoid" },
+
+    "scn_032:0:0": { f: "self_disclose" }, "scn_032:0:1": { f: "onward" }, "scn_032:0:2": { f: "polite_decline" },
+    "scn_032:1:0": { f: "question" }, "scn_032:1:1": { f: "onward" }, "scn_032:1:2": { f: "polite_decline" },
+    "scn_032:2:0": { f: "self_disclose" }, "scn_032:2:1": { f: "onward" }, "scn_032:2:2": { f: "self_disclose" },
+    "scn_032:3:0": { f: "promise", p: "新しいメニューを試しに定食屋に来る約束" }, "scn_032:3:1": { f: "natural_close" }, "scn_032:3:2": { f: "avoid" },
+
+    "scn_033:0:0": { f: "self_disclose" }, "scn_033:0:1": { f: "onward" }, "scn_033:0:2": { f: "polite_decline" },
+    "scn_033:1:0": { f: "question" }, "scn_033:1:1": { f: "onward" }, "scn_033:1:2": { f: "onward" },
+    "scn_033:2:0": { f: "self_disclose" }, "scn_033:2:1": { f: "onward" }, "scn_033:2:2": { f: "avoid" },
+    "scn_033:3:0": { f: "promise", p: "また甘味処で加藤さんと会う約束" }, "scn_033:3:1": { f: "natural_close" }, "scn_033:3:2": { f: "avoid" }
   };
 
   /** 回答へ facet を適用（facet 付与・type 上書き・promiseNote 追加） */
