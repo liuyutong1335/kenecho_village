@@ -134,7 +134,46 @@
   function getAnswerMeta(db, answer) {
     const rules = globalThis.KE_RELATIONSHIP_RULES;
     const meta = rules.answerTypes[answer.type] || {};
-    return { type: answer.type, label: meta.label || answer.type, delta: meta.delta != null ? meta.delta : 0, explanation: answer.explanation, nextHint: answer.nextHint };
+    return { type: answer.type, label: meta.label || answer.type, delta: meta.delta != null ? meta.delta : 0, explanation: answer.explanation, nextHint: answer.nextHint, facet: answer.facet || null };
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* ストーリー枠（導入・展開・応答・締め）                                 */
+  /* ------------------------------------------------------------------ */
+
+  /** rounds のインデックス → 役割キー（STORY.ROLES: open/develop/respond/close） */
+  function roundRole(roundIndex) {
+    const roles = C.STORY && C.STORY.ROLES;
+    if (!roles || roles.length === 0) return "open";
+    return roles[roundIndex] || roles[roles.length - 1];
+  }
+
+  /**
+   * ターンに使う回合を決定する。ストーリー枠の条件に合う候補を KE_DIALOGUE.pickStoryRound が
+   * 重み付きで抽選し、無ければ正規の回合（scene.rounds[n]）へフォールバックする。
+   * opts: { db, prevFacet, recentIds, rng }（relationLevel は db から導出）
+   */
+  function resolveRound(scene, roundIndex, opts) {
+    const o = opts || {};
+    const fallback = scene.rounds[roundIndex];
+    if (!fallback) return { source: "none", round: null, role: roundRole(roundIndex), id: null };
+    const npc = getNpcById(scene.npcId) || {};
+    let relationLevel = null;
+    if (o.db && REL.getRelationshipLevelKey) {
+      const bond = REL.getNpcBond(o.db, scene.npcId);
+      if (bond != null) relationLevel = REL.getRelationshipLevelKey(bond);
+    }
+    const picked = DIAG.pickStoryRound({
+      role: roundRole(roundIndex),
+      scene: scene,
+      npc: npc,
+      relationLevel: relationLevel,
+      prevFacet: o.prevFacet != null ? o.prevFacet : null,
+      recentIds: o.recentIds || [],
+      rng: o.rng,
+      fallbackRound: fallback
+    });
+    return { source: picked.source, round: picked.round, role: roundRole(roundIndex), id: picked.id };
   }
 
   /* ------------------------------------------------------------------ */
@@ -177,8 +216,28 @@
     return { ok: true, answer: answer, meta: meta, roundNpcLine: round.npcLine, isBonus: roundIndex >= base.length };
   }
 
+  /** ストーリー枠で解決済みの練習4ターン（ボーナス含まない）を返す */
+  function buildPracticeRounds(scene, opts) {
+    const out = [];
+    for (let i = 0; i < 4; i++) out.push(resolveRound(scene, i, opts || {}));
+    return out;
+  }
+
+  /** 任意の回合オブジェクト（ストーリー枠を含む）の1問を評価する。データは一切変更しない */
+  function evaluateRoundAnswer(round, answerIndex) {
+    if (!round || !round.answers) return { ok: false };
+    const answer = round.answers[answerIndex];
+    if (!answer) return { ok: false };
+    const meta = getAnswerMeta(null, answer);
+    return { ok: true, answer: answer, meta: meta, roundNpcLine: round.npcLine, facet: answer.facet || null, isBonus: false };
+  }
+
   const KE_CONVERSATION = {
     getScenes,
+    roundRole,
+    resolveRound,
+    buildPracticeRounds,
+    evaluateRoundAnswer,
     getSceneById,
     getNpcById,
     isConversationUnlocked,

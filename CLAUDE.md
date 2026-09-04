@@ -36,6 +36,7 @@ js/data/                … データ（スポット使用禁止、UI描画へ�
   pet-coach-speech.js   … コーチ台詞（150〜180件）
   npc-data.js           … 8名の架空NPC
   conversation-scenes.js… 会話シーン20件（クエスト＋練習用）
+  story-lines.js        … ストーリー枠の台詞（導入/展開/応答/締めのミニ回合プール）
   relationship-rules.js … きずな度・関係段階のルール定義
   animation-manifest.js … アニメーション動作一覧（フレーム数・fps・優先順位）
   pixel-art/pets.js     … ペットのピクセル定義（共通ボディ＋種類別アクセサリ＋表情）

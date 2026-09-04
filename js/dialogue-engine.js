@@ -60,8 +60,8 @@
     if (candidates.length === 0) candidates = pool.filter((e) => e.purpose === "fallback");
     candidates = applyRecentAvoid(candidates, c.recentIds);
     const chosen = U.pickWeighted(candidates);
-    if (!chosen) return { id: null, text: "", tier: 0 };
-    return { id: chosen.id, text: chosen.text, tier: 0 };
+    if (!chosen) return { id: null, text: "", tier: 0, example: null };
+    return { id: chosen.id, text: chosen.text, tier: 0, example: chosen.adviceExample || null };
   }
 
   function pick(ctx) {
@@ -101,8 +101,8 @@
     }
     candidates = applyRecentAvoid(candidates, c.recentIds);
     const chosen = U.pickWeighted(candidates);
-    if (!chosen) return { id: null, text: "", tier: 0 };
-    return { id: chosen.id, text: chosen.text, tier: tier };
+    if (!chosen) return { id: null, text: "", tier: 0, example: null };
+    return { id: chosen.id, text: chosen.text, tier: tier, example: chosen.adviceExample || null };
   }
 
   /** 直近ID一覧を更新（最大 keep 件） */
@@ -113,9 +113,77 @@
     return arr.slice(-max);
   }
 
+  /** タグ交差（line.tags 未指定は全タグで有効） */
+  function tagOverlap(list, tags) {
+    if (!Array.isArray(list) || list.length === 0) return true;
+    if (!Array.isArray(tags)) return false;
+    return tags.some(function (t) { return list.indexOf(t) >= 0; });
+  }
+
+  /**
+   * ストーリー枠の回合を重み付きで抽選する（KE_STORY_LINES）。
+   * ctx: {
+   *   role,                    // open|develop|respond|close
+   *   scene,                   // 対象シーン（category/tags 参照）
+   *   npc,                     // NPC（personality 参照）
+   *   relationLevel,           // 関係段階キー or null
+   *   prevFacet,               // 直前の回答 facet or null
+   *   recentIds,               // 連続回避用（KE_STORY_LINES の id）
+   *   rng,                     // 抽選用 [0,1) 関数（テストで固定）
+   *   fallbackRound            // 候補が無いときの正規回合（scene.rounds[n]）
+   * }
+   * 戻り値: { source: "story"|"scene"|"none", round, id }
+   *  - 条件に合う候補だけを場面・NPC・関係段階・直前の選択で絞り込み、
+   *  - 同じ台詞（正規回合と同一）と直近使用IDを避け、
+   *  - データ側の weight に条件一致ボーナス（KE_CONFIG.STORY.WEIGHT_BONUS）を加算して抽選する。
+   */
+  function pickStoryRound(ctx) {
+    const c = ctx || {};
+    const pool = globalThis.KE_STORY_LINES || [];
+    const C = globalThis.KE_CONFIG;
+    const S = C && C.STORY;
+    const bonus = (S && S.WEIGHT_BONUS) || { category: 6, personality: 6, relation: 4, facet: 6, topic: 4 };
+    const defaultWeight = (S && S.DEFAULT_WEIGHT) || 10;
+    const scene = c.scene || {};
+    const npc = c.npc || {};
+    const recent = Array.isArray(c.recentIds) ? c.recentIds : [];
+    const fallbackNpcLine = c.fallbackRound ? c.fallbackRound.npcLine : null;
+    const none = c.fallbackRound ? { source: "scene", round: c.fallbackRound, id: null } : { source: "none", round: null, id: null };
+
+    const scored = [];
+    for (let i = 0; i < pool.length; i++) {
+      const e = pool[i];
+      if (e.role !== c.role) continue;
+      if (!matches({ sceneCategories: e.sceneCategories }, "sceneCategories", scene.category)) continue;
+      if (!tagOverlap(e.tags, scene.tags)) continue;
+      if (!matches({ personalities: e.personalities }, "personalities", npc.personality)) continue;
+      if (!matches({ relationLevels: e.relationLevels }, "relationLevels", c.relationLevel)) continue;
+      // 直前の選択に依存する台詞（前の選択が無い、またはfacet不一致なら除外）
+      if (e.requiresPrev && c.prevFacet == null) continue;
+      if (Array.isArray(e.prevFacets) && e.prevFacets.length > 0 && e.prevFacets.indexOf(c.prevFacet) < 0) continue;
+      // 同じ台詞・直近使用IDは避ける
+      if (fallbackNpcLine && e.npcLine === fallbackNpcLine) continue;
+      if (recent.indexOf(e.id) >= 0) continue;
+
+      let w = Number.isFinite(e.weight) && e.weight > 0 ? e.weight : defaultWeight;
+      if (matches({ sceneCategories: e.sceneCategories }, "sceneCategories", scene.category)) w += bonus.category;
+      if (matches({ personalities: e.personalities }, "personalities", npc.personality)) w += bonus.personality;
+      if (matches({ relationLevels: e.relationLevels }, "relationLevels", c.relationLevel)) w += bonus.relation;
+      if (Array.isArray(e.prevFacets) && e.prevFacets.indexOf(c.prevFacet) >= 0) w += bonus.facet;
+      if (tagOverlap(e.tags, scene.tags)) w += bonus.topic;
+      scored.push({ entry: e, weight: w, e: e });
+    }
+
+    if (scored.length === 0) return none;
+    const chosen = U.pickWeighted(scored, c.rng);
+    if (!chosen) return none;
+    return { source: "story", round: chosen.entry, id: chosen.entry.id };
+  }
+
   const KE_DIALOGUE = {
     pick: pick,
-    pushRecent: pushRecent
+    pushRecent: pushRecent,
+    pickStoryRound: pickStoryRound
   };
 
   if (globalThis) globalThis.KE_DIALOGUE = KE_DIALOGUE;
