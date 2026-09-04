@@ -30,8 +30,8 @@ const FLOORS = {
   totalScenes: 60,
   byCategory: { daily: 20, work: 20, food: 20 },
   storyPerRoleCategory: 2,
-  adviceTotal: 164,
-  advicePerSpecies: 22 // 助言拡張（feat/dialogue-content-expansion）で 300/各ペット50 を目指す
+  adviceTotal: 218,
+  advicePerSpecies: 31 // 助言拡張（feat/dialogue-content-expansion）で 300/各ペット50 を目指す
 };
 
 const CATEGORIES = ["daily", "work", "food"];

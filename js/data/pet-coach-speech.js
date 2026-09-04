@@ -216,7 +216,69 @@
 
     // tanuki（お調子者型）
     { id: "coach_tanuki_adv_selfgood_001", petTypes: ["tanuki"], coachTypes: [], growthStages: [], petConditions: [], answerType: "good", facets: ["self_disclose"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "脱線しながらも自分の話で場を和ませて、見事に掴んでたドン！ それがお前の魅力だ。", adviceExample: "おっと、この手もあるドン。笑いのあとに「でも本気でやってるドンよ」と本音をひとつ入れると、味が出るドン。", weight: 10 },
-    { id: "coach_tanuki_adv_promise_001", petTypes: ["tanuki"], coachTypes: [], growthStages: [], petConditions: [], answerType: "short", facets: ["promise"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "約束まで言って、お調子者が急に頼もしく見えたドン！ そのまま守れば信頼もゲットだ。", adviceExample: "おっと、この手もあるドン。約束したら「ちゃんとやるからな」と一言添えると、はずれないドンよ。", weight: 10 }
+    { id: "coach_tanuki_adv_promise_001", petTypes: ["tanuki"], coachTypes: [], growthStages: [], petConditions: [], answerType: "short", facets: ["promise"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "約束まで言って、お調子者が急に頼もしく見えたドン！ そのまま守れば信頼もゲットだ。", adviceExample: "おっと、この手もあるドン。約束したら「ちゃんとやるからな」と一言添えると、はずれないドンよ。", weight: 10 },
+
+    /* ============ 文脈別助言（職場・日常・食事 × good/short/bad） ============
+     * 場面と回答分類に応じた、種ごとの口調で独立した内容の助言。要件「各ペット50件以上」へ。 */
+    { id: "coach_rabbit_ctx_work_good", petTypes: ["rabbit"], answerType: "good", sceneTags: ["work"], text: "職場で具体的な報告ができて、信頼を積めたね。優しい口調のまま、数字も添えると完璧よ。", adviceExample: "たとえば、「3時までに、ここまで終わりました」と、状況を添えると頼もしくなる。", weight: 10 },
+    { id: "coach_rabbit_ctx_work_short", petTypes: ["rabbit"], answerType: "short", sceneTags: ["work"], text: "職場の短い返しでも、結論さえ言えれば大丈夫。あとは、少しだけ締めの言葉を足そう。", adviceExample: "たとえば、「はい、◯時までに直します、ありがとう」と笑顔を添えると良い。", weight: 10 },
+    { id: "coach_rabbit_ctx_work_bad", petTypes: ["rabbit"], answerType: "bad", sceneTags: ["work"], text: "職場では理由を伴わない返しほど、誤解を招きやすいの。今日は寄り添い方を学べたね。", adviceExample: "たとえば、まず「そうですね」と受けてから、理由をひとつ添えてみよう。", weight: 10 },
+    { id: "coach_rabbit_ctx_daily_good", petTypes: ["rabbit"], answerType: "good", sceneTags: ["daily"], text: "日常のふれあいで自分のことを話せて、温かい空気になったね。そういう正直さを大切に。", adviceExample: "たとえば、好きな花や散歩の話を、ひとつだけ開けてみるといいよ。", weight: 10 },
+    { id: "coach_rabbit_ctx_daily_short", petTypes: ["rabbit"], answerType: "short", sceneTags: ["daily"], text: "日常の短い会話でも、返しただけで安心を渡せるのよ。ひと声だけでも十分だよ。", adviceExample: "たとえば、「こんにちは、いい天気ですね」と、相づちをひとつ添えよう。", weight: 10 },
+    { id: "coach_rabbit_ctx_daily_bad", petTypes: ["rabbit"], answerType: "bad", sceneTags: ["daily"], text: "近所の会話を避けると、縁が減ってしまうの。今日は、それに気づけただけでも進歩よ。", adviceExample: "たとえば、立ち止まって「おはよう」とだけ返してみよう。それだけでも変わる。", weight: 10 },
+    { id: "coach_rabbit_ctx_food_good", petTypes: ["rabbit"], answerType: "good", sceneTags: ["food"], text: "お店の人に気分を伝えて、楽しく過ごせたね。食卓の縁は、こうして生まれるのよ。", adviceExample: "たとえば、「今日はさっぱりしたものが欲しくて」と、理由を添えてみよう。", weight: 10 },
+    { id: "coach_rabbit_ctx_food_short", petTypes: ["rabbit"], answerType: "short", sceneTags: ["food"], text: "食事の場の短い注文でも、気持ちは十分届くのよ。あとは感謝をひとつ。", adviceExample: "たとえば、「ありがとう、楽しみにしてます」と添えると、店主も嬉しい。", weight: 10 },
+    { id: "coach_rabbit_ctx_food_bad", petTypes: ["rabbit"], answerType: "bad", sceneTags: ["food"], text: "お店の人の気配りを無視すると、縁が逃げていくの。今日は返す大切さを見られたね。", adviceExample: "たとえば、注文の前に「お世話になります」と一言だけでも、空気が変わるよ。", weight: 10 },
+
+    { id: "coach_fox_ctx_work_good", petTypes: ["fox"], answerType: "good", sceneTags: ["work"], text: "職場の報告を結論から言えて、短く通じたのは理想的だ。その切れ味を忘れるな。", adviceExample: "例えば、「◯時までに直します。次に◯をします」と、続きも先回りしよう。", weight: 10 },
+    { id: "coach_fox_ctx_work_short", petTypes: ["fox"], answerType: "short", sceneTags: ["work"], text: "職場で短く済ませるのは効率的だが、行き先が見えないと相手は迷う。", adviceExample: "例えば、「◯をしました。次に◯をします」と、次を補うと完璧だ。", weight: 10 },
+    { id: "coach_fox_ctx_work_bad", petTypes: ["fox"], answerType: "bad", sceneTags: ["work"], text: "職場で投げた返しは、後に自分へ返ってくる。ミスは先回りで防ごう。", adviceExample: "例えば、「今のうちに◯だけ確認します」と、立て直しを一つ言おう。", weight: 10 },
+    { id: "coach_fox_ctx_daily_good", petTypes: ["fox"], answerType: "good", sceneTags: ["daily"], text: "日常で的確に返せるのは、頭の良さの証だ。無理に話を増やさなくて構わない。", adviceExample: "例えば、「そうですね、風が気持ちいいです」と、一言で十分共感できる。", weight: 10 },
+    { id: "coach_fox_ctx_daily_short", petTypes: ["fox"], answerType: "short", sceneTags: ["daily"], text: "日常の短い返しは、失礼にはならない。むしろ、そっけなさが印象を残すこともある。", adviceExample: "例えば、「こんにちは」だけで、相手は返しやすい。そこから話が始まれば十分だ。", weight: 10 },
+    { id: "coach_fox_ctx_daily_bad", petTypes: ["fox"], answerType: "bad", sceneTags: ["daily"], text: "日常で相手を避けるのは得策ではない。居合わせた縁は、流れに任せてよい。", adviceExample: "例えば、会釈だけでも、今日の縁は損ねずに済む。", weight: 10 },
+    { id: "coach_fox_ctx_food_good", petTypes: ["fox"], answerType: "good", sceneTags: ["food"], text: "食事の場で好みを伝えるのは、遠慮でも失礼でもない。店員は案内しやすくなる。", adviceExample: "例えば、「あっさりでお願いします」と、方向で注文を整えよう。", weight: 10 },
+    { id: "coach_fox_ctx_food_short", petTypes: ["fox"], answerType: "short", sceneTags: ["food"], text: "食事の短い注文は、形式さえ守れば十分成立する。締めの言葉だけ添えよう。", adviceExample: "例えば、「ごちそうさまでした」だけでも、店主は満足する。", weight: 10 },
+    { id: "coach_fox_ctx_food_bad", petTypes: ["fox"], answerType: "bad", sceneTags: ["food"], text: "食事の場で無視すると、情報も味も遠ざかる。目の前の相手に目を向けよう。", adviceExample: "例えば、「おすすめをください」と、会話を一つ交わすと楽しい。", weight: 10 },
+
+    { id: "coach_bearcub_ctx_work_good", petTypes: ["bearcub"], answerType: "good", sceneTags: ["work"], text: "職場で元気に返せて、場が明るくなったぞ！ その勢いに結果も伴えば最強だ。", adviceExample: "こうしてみよう。返事のあとに「◯時までにやります！」と締めると、頼もしく見える。", weight: 10 },
+    { id: "coach_bearcub_ctx_work_short", petTypes: ["bearcub"], answerType: "short", sceneTags: ["work"], text: "職場の短い返しも、ハキハキ言えば十分だ。あとは「やります」の一言だな。", adviceExample: "こうしてみよう。「了解です、今からやります！」と、動きを足すと◎。", weight: 10 },
+    { id: "coach_bearcub_ctx_work_bad", petTypes: ["bearcub"], answerType: "bad", sceneTags: ["work"], text: "職場で黙り込むと、相手が困ってしまうぞ。借りは、一言で返せば十分だ。", adviceExample: "こうしてみよう。「すみません、◯がわかりません。教えてください」と、勇気を出そう。", weight: 10 },
+    { id: "coach_bearcub_ctx_daily_good", petTypes: ["bearcub"], answerType: "good", sceneTags: ["daily"], text: "日常で明るく話せて、周りを照らしたぞ！ その元気は、みんなのお日様だ。", adviceExample: "こうしてみよう。笑顔で「こんにちは！」と、声の大きさも届けよう。", weight: 10 },
+    { id: "coach_bearcub_ctx_daily_short", petTypes: ["bearcub"], answerType: "short", sceneTags: ["daily"], text: "日常の短い挨拶でも、元気さは十分伝わってる。あとひとつ、今日の話を足すと弾むな。", adviceExample: "こうしてみよう。「いい天気だね！」のひと言を足すと、会話が始まるぞ。", weight: 10 },
+    { id: "coach_bearcub_ctx_daily_bad", petTypes: ["bearcub"], answerType: "bad", sceneTags: ["daily"], text: "日常で通り過ぎると、せっかくの出会いが消えるぞ。勇気を出して、一言だ！", adviceExample: "こうしてみよう。立ち止まらずとも「どうも！」と手を振るだけで十分だ。", weight: 10 },
+    { id: "coach_bearcub_ctx_food_good", petTypes: ["bearcub"], answerType: "good", sceneTags: ["food"], text: "食事で元気に注文して、店主も嬉しそうだったぞ！ 食べるも食うも、楽しんで。", adviceExample: "こうしてみよう。「おすすめ、ください！」と、思い切って聞くと弾むぞ。", weight: 10 },
+    { id: "coach_bearcub_ctx_food_short", petTypes: ["bearcub"], answerType: "short", sceneTags: ["food"], text: "食事の短い注文は、元気さで十分伝わる。あとは「うまい！」を言うだけだな。", adviceExample: "こうしてみよう。「うまい！」を添えると、店主の目が輝くぞ。", weight: 10 },
+    { id: "coach_bearcub_ctx_food_bad", petTypes: ["bearcub"], answerType: "bad", sceneTags: ["food"], text: "食事でだんまりだと、おいしさまで逃げていくぞ。食卓は、声が命だ。", adviceExample: "こうしてみよう。「今日は何がおすすめ？」と、聞くだけで会話が始まる。", weight: 10 },
+
+    { id: "coach_cat_ctx_work_good", petTypes: ["cat"], answerType: "good", sceneTags: ["work"], text: "職場で好奇心のまま聞いて、道を開けたね。聞くことは、探すことの近道だ。", adviceExample: "試しに、「それは、どういう理由で？」と、ひとつ深掘りすると面白い。", weight: 10 },
+    { id: "coach_cat_ctx_work_short", petTypes: ["cat"], answerType: "short", sceneTags: ["work"], text: "職場の短い返しでも、あなたの目がキラッとしてたよ。興味は、声に出すと届く。", adviceExample: "試しに、「それ、詳しく知りたいです」と、一言足してみよう。", weight: 10 },
+    { id: "coach_cat_ctx_work_bad", petTypes: ["cat"], answerType: "bad", sceneTags: ["work"], text: "職場でそっけないと、チャンスを見逃してしまう。今日は、それに気づけたね。", adviceExample: "試しに、「もう一度、説明してもらえますか？」と、聞き直せば良い。", weight: 10 },
+    { id: "coach_cat_ctx_daily_good", petTypes: ["cat"], answerType: "good", sceneTags: ["daily"], text: "日常で興味を持って話せて、好奇心が輝いてたよ。その目線は、宝を探してる。", adviceExample: "試しに、「それ、どうやって始めたの？」と、相手の物語を聞いてみよう。", weight: 10 },
+    { id: "coach_cat_ctx_daily_short", petTypes: ["cat"], answerType: "short", sceneTags: ["daily"], text: "日常の短い返しでも、目が語ってたよ。もうちょっとだけ、針を出しても良かったな。", adviceExample: "試しに、「へえ、それで？」を、ひとつ足すと続きやすい。", weight: 10 },
+    { id: "coach_cat_ctx_daily_bad", petTypes: ["cat"], answerType: "bad", sceneTags: ["daily"], text: "日常で避けると、好奇心のアンテナが静かになる。今日は出会いを逃したな。", adviceExample: "試しに、通り過ぎる前に「おはよう」だけでも、耳が生き返る。", weight: 10 },
+    { id: "coach_cat_ctx_food_good", petTypes: ["cat"], answerType: "good", sceneTags: ["food"], text: "食事でお店のことを聞けて、食の世界が広がったね。それが良い狩りだ。", adviceExample: "試しに、「それは、どうやって作るの？」と、店主に聞いてみよう。", weight: 10 },
+    { id: "coach_cat_ctx_food_short", petTypes: ["cat"], answerType: "short", sceneTags: ["food"], text: "食事での短い注文も、あなたの興味で美味しくなる。あとひとつ、聞いてみよう。", adviceExample: "試しに、「おすすめは？」と聞くと、店主も話したくなる。", weight: 10 },
+    { id: "coach_cat_ctx_food_bad", petTypes: ["cat"], answerType: "bad", sceneTags: ["food"], text: "食事の場で無視すると、未知の味に気づけないよ。前に進もう。", adviceExample: "試しに、黙らず「今月の新作は？」と、嗅覚を働かせよう。", weight: 10 },
+
+    { id: "coach_bird_ctx_work_good", petTypes: ["bird"], answerType: "good", sceneTags: ["work"], text: "職場で慎重に言葉を選べて、堅実だった。急がば回れ、その調子でいい。", adviceExample: "ええと、丁寧に言うなら、「確認して、◯時までにご連絡します」と、余裕を見せよう。", weight: 10 },
+    { id: "coach_bird_ctx_work_short", petTypes: ["bird"], answerType: "short", sceneTags: ["work"], text: "職場の短い返しも、慎重に選んできたね。返した後に、根拠を一つ足そう。", adviceExample: "ええと、丁寧に言うなら、「はい、◯を確認しました」と、確認済みを添えると安心。", weight: 10 },
+    { id: "coach_bird_ctx_work_bad", petTypes: ["bird"], answerType: "bad", sceneTags: ["work"], text: "職場で黙るのは、慎重さとは別物よ。言いたいことを、小さくでも出して。", adviceExample: "ええと、丁寧に言うなら、「少し時間をください」と、一文だけ伝えよう。", weight: 10 },
+    { id: "coach_bird_ctx_daily_good", petTypes: ["bird"], answerType: "good", sceneTags: ["daily"], text: "日常で安心できる範囲で話せて、堅実に距離をちぢめたね。急がないのが一番だ。", adviceExample: "ええと、丁寧に言うなら、「私も、ここが好きです」と、ひとつだけ正直に。", weight: 10 },
+    { id: "coach_bird_ctx_daily_short", petTypes: ["bird"], answerType: "short", sceneTags: ["daily"], text: "日常の短い返しでも、一歩前に出たのは大きいね。次は、もう一寸だけ。", adviceExample: "ええと、丁寧に言うなら、「こんにちは。いい日ですね」と、天気を添えよう。", weight: 10 },
+    { id: "coach_bird_ctx_daily_bad", petTypes: ["bird"], answerType: "bad", sceneTags: ["daily"], text: "日常で引いてしまうのは、鳥の癖だから仕方ない。でも、一度だけ顔を上げよう。", adviceExample: "ええと、丁寧に言うなら、「おはようございます」とだけ、まず返してみて。", weight: 10 },
+    { id: "coach_bird_ctx_food_good", petTypes: ["bird"], answerType: "good", sceneTags: ["food"], text: "食事の場で無理なく頼めて、形式も整ってたね。堅実な注文は、店主も喜ぶ。", adviceExample: "ええと、丁寧に言うなら、「定番でお願いします」と、安心できる選び方をしよう。", weight: 10 },
+    { id: "coach_bird_ctx_food_short", petTypes: ["bird"], answerType: "short", sceneTags: ["food"], text: "食事の短い注文も、作法さえあれば失礼ではない。安心して頼ってよ。", adviceExample: "ええと、丁寧に言うなら、「おすすめをいただけますか」と、聞いてみよう。", weight: 10 },
+    { id: "coach_bird_ctx_food_bad", petTypes: ["bird"], answerType: "bad", sceneTags: ["food"], text: "食事でだんまりだと、気配りも味も逃げてしまう。小さな一言から始めよう。", adviceExample: "ええと、丁寧に言うなら、「ちょっと悩んでます」と、迷いから話すのも手だよ。", weight: 10 },
+
+    { id: "coach_tanuki_ctx_work_good", petTypes: ["tanuki"], answerType: "good", sceneTags: ["work"], text: "職場で気を利かせて返せて、場がぱっと明るくなったドン！ 頭が回ってたな。", adviceExample: "おっと、この手もあるドン。「◯を終えました、次は◯に手をつけます」と、先読みで行こう。", weight: 10 },
+    { id: "coach_tanuki_ctx_work_short", petTypes: ["tanuki"], answerType: "short", sceneTags: ["work"], text: "職場の短い返しも、笑顔を忘れなければ十分ドン。あと一言、締めを足すと好印象だ。", adviceExample: "おっと、この手もあるドン。「了解です、任された！」と、意気込みを添えよう。", weight: 10 },
+    { id: "coach_tanuki_ctx_work_bad", petTypes: ["tanuki"], answerType: "bad", sceneTags: ["work"], text: "職場でさぼると借りが残るドン。返すのは、笑いでなく誠意だドンよ。", adviceExample: "おっと、この手もあるドン。「すまん！ 今から直すから」と、元気に謝ろう。", weight: 10 },
+    { id: "coach_tanuki_ctx_daily_good", petTypes: ["tanuki"], answerType: "good", sceneTags: ["daily"], text: "日常で人を笑わせて、日々を盛り上げられたドン！ それがお前の役回りだ。", adviceExample: "おっと、この手もあるドン。笑いのあとに、ちょっとだけ本音を足すと味が出るドン。", weight: 10 },
+    { id: "coach_tanuki_ctx_daily_short", petTypes: ["tanuki"], answerType: "short", sceneTags: ["daily"], text: "日常の短い返しでも、ノリは伝わってたドン。あとは、続きを待つ余裕だ。", adviceExample: "おっと、この手もあるドン。「またな！」と、気軽に別れの一言を添えよう。", weight: 10 },
+    { id: "coach_tanuki_ctx_daily_bad", petTypes: ["tanuki"], answerType: "bad", sceneTags: ["daily"], text: "日常で知らん顔してると、お調子者の株が下がるドン。声はかけとくものだ。", adviceExample: "おっと、この手もあるドン。「おーい！」と、一声かけるだけで株は上がる。", weight: 10 },
+    { id: "coach_tanuki_ctx_food_good", petTypes: ["tanuki"], answerType: "good", sceneTags: ["food"], text: "食事で場を楽しませて、料理もふえて、もう最高ドン！ 食卓の名人だな。", adviceExample: "おっと、この手もあるドン。「おかわり！」の一言で、店主も笑うドン。" , weight: 10 },
+    { id: "coach_tanuki_ctx_food_short", petTypes: ["tanuki"], answerType: "short", sceneTags: ["food"], text: "食事の短い注文も、にんまり笑えば、もう一丁前ドン。あとは味を褒めるだけだ。", adviceExample: "おっと、この手もあるドン。「うまい！」を添えると、お代わりも無料になるかもドン。", weight: 10 },
+    { id: "coach_tanuki_ctx_food_bad", petTypes: ["tanuki"], answerType: "bad", sceneTags: ["food"], text: "食事でだんまりは、お調子者の根城が寂しくなるドン。食卓は笑いで満たそう。", adviceExample: "おっと、この手もあるドン。「今日の一押しは？」と聞くだけで、場が咲くドン。", weight: 10 }
   ];
 
   function build() {
