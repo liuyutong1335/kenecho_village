@@ -1733,10 +1733,13 @@
     function buildQuestion(sc) {
       const round = (currentRound && currentRound.round) || sc.rounds[0];
       if (!round) return el("p", { class: "field-hint", text: "会話を準備できませんでした。もう一度お試しください。" });
-      const box = el("div", { class: "conv-box", "aria-live": "polite" }, [
-        el("span", { class: "nameplate", text: CONV.getNpcById(sc.npcId).displayName }),
-        el("p", { class: "conv-bubble", text: round.npcLine })
-      ]);
+      // 前回の記憶（約束・返事待ち・誤解）に応じた挨拶を前置き
+      const MEM = globalThis.KE_NPC_MEMORY;
+      const greeting = MEM ? MEM.getNextGreeting(db, sc.npcId) : null;
+      const boxChildren = [el("span", { class: "nameplate", text: CONV.getNpcById(sc.npcId).displayName })];
+      if (greeting) boxChildren.push(el("p", { class: "conv-bubble conv-bubble--memo", text: greeting }));
+      boxChildren.push(el("p", { class: "conv-bubble", text: round.npcLine }));
+      const box = el("div", { class: "conv-box", "aria-live": "polite" }, boxChildren);
       const choices = el("div", { class: "conv-choices" }, [el("p", { class: "field-hint", text: "あなたの返答を選んでください（分類は表示しません）。" })]);
       round.answers.forEach(function (a, i) {
         choices.append(el("button", { type: "button", class: "btn btn--primary conv-choice", text: a.text, onclick: function () {
@@ -2076,6 +2079,19 @@
         statBox("最終会話日", state.lastTalkedAt || "—")
       ]),
       el("p", { class: "field-hint", text: "次の会話のヒント：" + npc.nextHint }),
+      (function memoryCard() {
+        const MEM = globalThis.KE_NPC_MEMORY;
+        if (!MEM) return el("p", { class: "field-hint", text: "会話の記憶はありません。" });
+        const sum = MEM.getMemorySummary(db, npc.id);
+        const rows = [];
+        if (sum.topics.length) rows.push(el("p", { text: "最近の話題：" + sum.topics.map(function (t) { return t.topic; }).join("・") }));
+        if (sum.pendingPromises.length) rows.push(el("p", { text: "約束（待ち）：" + sum.pendingPromises.map(function (p) { return p.text; }).join("／") }));
+        if (sum.expectations.length) rows.push(el("p", { text: "期待（状態）：" + sum.expectations.map(function (e) { return e.text; }).join("／") }));
+        if (sum.misunderstandings.length) rows.push(el("p", { text: "未解決の誤解：" + sum.misunderstandings.map(function () { return "話がぎこちなく終わった"; }).join("／") }));
+        if (sum.nextGreeting) rows.push(el("p", { class: "field-hint", text: "次回の挨拶：" + sum.nextGreeting }));
+        if (rows.length === 0) return el("p", { class: "field-hint", text: "このNPCとの会話はまだ覚えがありません。会話を重ねると、ここに記憶が残ります。" });
+        return el("div", { class: "card" }, [el("h3", { text: "会話の記憶" })].concat(rows));
+      })(),
       el("div", { class: "form-actions" }, [
         el("button", { type: "button", class: "btn btn--ghost", text: "会話クエストへ", onclick: function () {
           overlay.remove();
