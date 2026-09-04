@@ -1669,7 +1669,7 @@
       const status = CONV.getQuestStatus(db, today);
       return el("section", { class: "panel conv-panel", "aria-labelledby": "questTitle" }, [
         el("h1", { id: "questTitle", text: "今日の会話クエスト：" + sc.title }),
-        el("p", { class: "field-hint", text: status.done ? "今日のきずな度は更新済みです。再プレイでは更新されません。" : "今日のクエストです。きずな度が更新されます。" }),
+        el("p", { class: "field-hint", text: status.done ? "今日のきずな度は更新済みです。再プレイでは更新されません。" : "今日のクエストです（導入・1ターン）。きずな度が更新されます。" }),
         el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--ghost btn--sm", text: "会話練習モードへ", onclick: renderPracticeScreen })]),
         el("div", { class: "conv-bg bg-" + sc.background, "aria-hidden": "true" }),
         el("div", { class: "conv-stage", "aria-label": "会話のようす" }, [
@@ -1725,7 +1725,8 @@
         ]),
         el("div", { class: "card result-card result-advice" }, [
           el("h3", { text: db.currentPet.name + " のアドバイス" }),
-          el("p", { text: r.advice.text || "" })
+          el("p", { text: "今回のポイント：" + (r.advice.text || "") }),
+          el("p", { class: "field-hint", text: r.advice.example ? "改善例：" + r.advice.example : "" })
         ])
       ]);
       const actions = el("div", { class: "form-actions" }, [
@@ -1751,7 +1752,7 @@
     const DB = globalThis.KE_DB;
     const CONV = globalThis.KE_CONVERSATION;
     const SPR = globalThis.KE_SPRITE;
-    const st = { phase: "select", scene: null, idx: 0, goodCount: 0, bonusRound: null, bonusPlayed: false, last: null };
+    const st = { phase: "select", scene: null, idx: 0, goodCount: 0, bonusRound: null, bonusPlayed: false, last: null, resolved: [], prevFacet: null };
     clear(root);
     const db = DB.get();
 
@@ -1775,11 +1776,22 @@
       st.bonusRound = null;
       st.bonusPlayed = false;
       st.last = null;
+      st.resolved = [];
+      st.prevFacet = null;
       drawPlay();
     }
 
-    function effectiveRounds() {
-      return CONV.practiceRounds(st.scene).concat(st.bonusRound ? [st.bonusRound] : []);
+    /** 練習の総ターン数（基本4ターン＋ボーナスがあれば1） */
+    function totalTurns() {
+      return 4 + (st.bonusRound ? 1 : 0);
+    }
+
+    /** 現在ターンに使う回合を解決する（ストーリー枠の抽選、無ければ正規回合へフォールバック済み） */
+    function currentTurn() {
+      if (st.bonusRound && st.idx >= 4) return { source: "bonus", round: st.bonusRound, role: "close", id: null };
+      const res = st.resolved[st.idx] || CONV.resolveRound(st.scene, st.idx, { db: DB.get(), prevFacet: st.prevFacet });
+      st.resolved[st.idx] = res;
+      return res;
     }
 
     function drawSelect() {
@@ -1813,10 +1825,12 @@
       clear(root);
       const sc = st.scene;
       const npc = CONV.getNpcById(sc.npcId) || { displayName: sc.npcId };
-      const rounds = effectiveRounds();
-      const finished = st.idx >= rounds.length;
+      const turn = currentTurn();
+      const round = turn.round;
+      const total = totalTurns();
+      const finished = st.idx >= total;
 
-      if (finished) {
+      if (finished || !round) {
         root.append(el("section", { class: "panel", "aria-labelledby": "practiceTitle" }, [
           el("h1", { id: "practiceTitle", text: "練習おつかれさまでした！" }),
           el("p", { class: "lead", text: "「会話が続きやすい」を「" + st.goodCount + "回」選びました。" }),
@@ -1831,10 +1845,10 @@
         return;
       }
 
-      const round = rounds[st.idx];
-      const isBonusTurn = st.bonusRound && st.idx >= CONV.practiceRounds(sc).length;
+      const isBonusTurn = turn.source === "bonus";
+      const roleLabel = (C.STORY && C.STORY.ROLE_LABELS && C.STORY.ROLE_LABELS[turn.role]) || "";
       const panel = el("section", { class: "panel conv-panel", "aria-labelledby": "practiceTitle" }, [
-        el("h1", { id: "practiceTitle", text: "会話練習：" + sc.title + "（" + (st.idx + 1) + " / " + rounds.length + "ターン" + (isBonusTurn ? "・ボーナス" : "") + "）" }),
+        el("h1", { id: "practiceTitle", text: "会話練習：" + sc.title + "（" + (st.idx + 1) + " / " + total + "ターン／「" + roleLabel + "」" + (isBonusTurn ? "・ボーナス" : "") + "）" }),
         el("div", { class: "conv-bg bg-" + sc.background, "aria-hidden": "true" }),
         el("div", { class: "conv-stage", "aria-label": "会話のようす" }, [
           el("div", { class: "conv-char conv-char--user", "aria-label": "あなた" }, [SPR.canvasTag(SPR.renderUserAvatar((db.profile && db.profile.gender) || "male", 3), "あなた", "sprite-canvas conv-avatar conv-avatar--user"), el("span", { class: "nameplate", text: "あなた" })]),
@@ -1855,9 +1869,10 @@
       const wrap = el("div", { class: "conv-choices" }, [el("p", { class: "field-hint", text: "返答を選んでください（分類は表示しません）。" })]);
       round.answers.forEach(function (a, i) {
         wrap.append(el("button", { type: "button", class: "btn btn--primary conv-choice", text: a.text, onclick: function () {
-          const ev = CONV.evaluatePracticeAnswer(st.scene, st.idx, i);
+          const ev = CONV.evaluateRoundAnswer(round, i);
           if (!ev.ok) { showErrorNotice("回答を評価できませんでした。"); return; }
           if (ev.meta.type === "good") st.goodCount += 1;
+          st.prevFacet = ev.meta.facet || null;
           st.last = ev;
           drawPlay();
         } }));
@@ -1886,7 +1901,8 @@
         ]),
         el("div", { class: "card result-card result-advice" }, [
           el("h3", { text: pet.name + " のアドバイス" }),
-          el("p", { text: advice.text })
+          el("p", { text: "今回のポイント：" + (advice.text || "") }),
+          el("p", { class: "field-hint", text: advice.example ? "改善例：" + advice.example : "" })
         ]),
         el("div", { class: "form-actions" }, [
           el("button", { type: "button", class: "btn btn--primary", text: "次の返答へ", onclick: function () {
