@@ -1502,6 +1502,8 @@
     globalThis.KE_PET.markRecovered(db);
     // 未会いのNPCと出会う（発見登録し、今回のクエストのシーン優先に反映）
     const metNpc = CONV.meetNewNpc(db);
+    // 時間帯・天気に合う場面を決めて固定（会話開始の条件。途中で時刻が変わっても切替しない）
+    if (globalThis.KE_OUTING) globalThis.KE_OUTING.startOutingState(db, new Date());
     globalThis.KE_DB.save();
     if (metNpc) {
       showNotice("村で「" + metNpc.displayName + "」と出会った！ 早速話しかけてみよう。");
@@ -1687,6 +1689,7 @@
     clear(root);
     const db = DB.get();
     const today = U.todayStr();
+    const outingMeta = globalThis.KE_OUTING ? globalThis.KE_OUTING.getOutingMeta(db, today) : null;
 
     if (!CONV.isConversationUnlocked(db)) {
       root.append(el("section", { class: "panel", "aria-labelledby": "questTitle" }, [
@@ -1696,7 +1699,7 @@
       ]));
       return;
     }
-    const scene = CONV.pickQuestScene(db);
+    const scene = (outingMeta ? globalThis.KE_OUTING.getTodayScene(db, today) : null) || CONV.pickQuestScene(db);
     if (!scene) {
       root.append(el("section", { class: "panel" }, [
         el("h1", { text: "会話クエスト" }),
@@ -1713,7 +1716,7 @@
       stopSceneAnimations(root);
       clear(root);
       const recents = (db.conversation && db.conversation.recentStoryIds) || [];
-      currentRound = CONV.pickQuestRound(db, sc, recents);
+      currentRound = CONV.pickQuestRound(db, sc, recents, undefined, outingMeta ? outingMeta.weather : null);
       root.append(buildFrame(sc, result));
     }
 
@@ -1722,7 +1725,7 @@
       const status = CONV.getQuestStatus(db, today);
       return el("section", { class: "panel conv-panel", "aria-labelledby": "questTitle" }, [
         el("h1", { id: "questTitle", text: "今日の会話クエスト：" + sc.title }),
-        el("p", { class: "field-hint", text: status.done ? "今日のきずな度は更新済みです。再プレイでは更新されません。" : "今日のクエストです（導入・1ターン）。きずな度が更新されます。" }),
+        el("p", { class: "field-hint", text: (status.done ? "今日のきずな度は更新済みです。再プレイでは更新されません。" : "今日のクエストです（導入・1ターン）。きずな度が更新されます。") + (outingMeta ? "　（時間帯：" + outingMeta.timeBandLabel + "／天気：" + outingMeta.weatherLabel + "）" : "") }),
         el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--ghost btn--sm", text: "会話練習モードへ", onclick: renderPracticeScreen })]),
         mountConvScene(db, sc, { npcMotion: result ? globalThis.KE_NPC_ANIMATION.motionForAnswerType(result.answer.type) : "idle" }),
         el("p", { class: "conv-context", text: sc.context }),
@@ -1777,7 +1780,9 @@
       ]);
       const actions = el("div", { class: "form-actions" }, [
         el("button", { type: "button", class: "btn btn--ghost", text: "もう一度プレイ", onclick: function () {
-          draw(CONV.pickQuestScene(DB.get()) || sc, null);
+          const d2 = DB.get();
+          const today2 = U.todayStr();
+          draw((globalThis.KE_OUTING && globalThis.KE_OUTING.getTodayScene(d2, today2)) || CONV.pickQuestScene(d2) || sc, null);
         } }),
         el("button", { type: "button", class: "btn btn--primary", text: "ペット小屋へ戻る", onclick: function () { if (globalThis.KE_APP) globalThis.KE_APP.navigate("pet"); } })
       ]);
