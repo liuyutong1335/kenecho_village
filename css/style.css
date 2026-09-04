@@ -422,6 +422,9 @@ input:focus, select:focus, button:focus-visible {
   font-size: 13px; font-weight: bold;
 }
 .conv-context { background: var(--paper-light); border-left: 6px solid var(--green-safe); padding: 8px 12px; margin: 8px 0; }
+.conv-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.conv-header h1 { margin: 0; }
+.conv-practice-btn { flex: 0 0 auto; }
 .conv-flow { margin-top: 12px; }
 .conv-box { margin: 10px 0; }
 .conv-bubble { background: #fff; border: var(--border-thin) solid var(--paper-shadow); padding: 12px 14px; margin: 6px 0 0; font-size: 16px; }

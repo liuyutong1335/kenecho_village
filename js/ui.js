@@ -1459,7 +1459,7 @@
       ["体重", weight, weight ? "記録あり" : "未記録"]
     ];
     const bulletin = el("div", { class: "bulletin" }, [
-      el("h3", { text: "今日の記録状況（木製掲示板）" }),
+      el("h3", { text: "今日の記録状況" }),
       el("ul", { class: "checklist" }, bulletItems.map(function (row) {
         return el("li", { class: row[1] ? "check--done" : "check--todo", text: (row[1] ? "✓ " : "… ") + row[0] + "：" + row[2] });
       })),
@@ -1741,9 +1741,11 @@
       const npc = CONV.getNpcById(sc.npcId) || { displayName: sc.npcId };
       const status = CONV.getQuestStatus(db, today);
       return el("section", { class: "panel conv-panel", "aria-labelledby": "questTitle" }, [
-        el("h1", { id: "questTitle", text: "今日の会話クエスト：" + sc.title }),
+        el("div", { class: "conv-header" }, [
+          el("h1", { id: "questTitle", text: "今日の会話クエスト：" + sc.title }),
+          el("button", { type: "button", class: "btn btn--ghost btn--sm conv-practice-btn", text: "会話練習モードへ", onclick: renderPracticeScreen })
+        ]),
         el("p", { class: "field-hint", text: (status.done ? "今日のきずな度は更新済みです。再プレイでは更新されません。" : "今日のクエストです（導入・1ターン）。きずな度が更新されます。") + (outingMeta ? "　（時間帯：" + outingMeta.timeBandLabel + "／天気：" + outingMeta.weatherLabel + "）" : "") }),
-        el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--ghost btn--sm", text: "会話練習モードへ", onclick: renderPracticeScreen })]),
         mountConvScene(db, sc, { npcMotion: result ? globalThis.KE_NPC_ANIMATION.motionForAnswerType(result.answer.type) : "idle" }),
         el("p", { class: "conv-context", text: sc.context }),
         result ? buildResult(sc, npc, result) : buildQuestion(sc)
@@ -2067,7 +2069,7 @@
     const NPC_SPR = globalThis.KE_NPC_SPRITE;
     const npcs = globalThis.KE_NPCS || [];
     const panel = el("section", { class: "panel", "aria-labelledby": "bookTitle" }, [
-      el("h1", { id: "bookTitle", text: "交流ノート（住民手帳）" }),
+      el("h1", { id: "bookTitle", text: "交流ノート" }),
       el("p", { class: "field-hint", text: "村のNPCとの関係を確認できます。出会った人は顔と情報が載ります。" })
     ]);
     const grid = el("div", { class: "species-grid" });
@@ -2145,7 +2147,7 @@
     const SPR = globalThis.KE_SPRITE;
     const species = globalThis.KE_PETS || [];
     const panel = el("section", { class: "panel", "aria-labelledby": "encyTitle" }, [
-      el("h1", { id: "encyTitle", text: "村の生き物図鑑" }),
+      el("h1", { id: "encyTitle", text: "生き物図鑑" }),
       el("p", { class: "field-hint", text: "種類が決まったペットだけが図鑑に登録されます。初めて見つけた日を記録します。" })
     ]);
     const grid = el("div", { class: "species-grid" });
