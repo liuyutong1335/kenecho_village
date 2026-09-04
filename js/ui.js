@@ -37,6 +37,8 @@
   }
 
   function clear(root) {
+    // 会話シーンのループ再生を先に停止（画面遷移でのリーク防止）
+    stopSceneAnimations(root);
     if (root) root.replaceChildren();
   }
 
@@ -1638,6 +1640,44 @@
     return "#7FA650";
   }
 
+  /**
+   * 会話画面の「背景＋人物」合成シーンを組み立て、アニメーションを開始して要素を返す。
+   * st: { npcMotion: "idle"|"talk"|"happy"|"smile"|"shy"|"troubled"|"neutral" }
+   * 返した要素には __sceneStop を付与し、再描画前に停止できるようにする（ループ停止）。
+   */
+  function mountConvScene(db, scene, st) {
+    const CONV_SCENE = globalThis.KE_CONV_SCENE;
+    const pet = db.currentPet;
+    const npc = globalThis.KE_CONVERSATION.getNpcById(scene.npcId) || { displayName: scene.npcId };
+    const box = el("div", { class: "conv-scene", "aria-label": "会話のようす（" + scene.title + "）" });
+    const frame = el("div", { class: "conv-scene-frame", "aria-hidden": "true" });
+    box.append(frame);
+    const handle = CONV_SCENE.playScene(frame, {
+      background: scene.background || "outdoor",
+      gender: (db.profile && db.profile.gender) || "male",
+      pet: { speciesId: (pet && pet.speciesId) || null, condition: (pet && pet.speciesId) ? globalThis.KE_PET.getCondition(db) : null },
+      npcId: scene.npcId,
+      npcMotion: (st && st.npcMotion) || "idle",
+      scale: 3
+    }, { aria: "あなたとペットと" + npc.displayName + "の会話" });
+    box.__sceneStop = function () { try { if (handle && handle.stop) handle.stop(); } catch (e) { /* noop */ } };
+    box.append(el("div", { class: "conv-captions" }, [
+      el("span", { class: "cap-nameplate cap-user", text: "あなた" }),
+      el("span", { class: "cap-nameplate cap-pet", text: (pet && pet.name) || "ペット" }),
+      el("span", { class: "cap-nameplate cap-npc", text: npc.displayName })
+    ]));
+    return box;
+  }
+
+  /** 会話シーンのループ再生をすべて停止（再描画前のリーク防止） */
+  function stopSceneAnimations(rootEl) {
+    if (!rootEl || !rootEl.querySelectorAll) return;
+    const scns = rootEl.querySelectorAll(".conv-scene");
+    for (let i = 0; i < scns.length; i++) {
+      if (scns[i].__sceneStop) { try { scns[i].__sceneStop(); } catch (e) { /* noop */ } }
+    }
+  }
+
   function renderQuestScreen() {
     const root = refs.appRoot;
     const DB = globalThis.KE_DB;
@@ -1670,6 +1710,7 @@
 
     /** シーンを表示する。クエストの回合はストーリー枠から抽選（直近使用を避けて外出ごとに変化） */
     function draw(sc, result) {
+      stopSceneAnimations(root);
       clear(root);
       const recents = (db.conversation && db.conversation.recentStoryIds) || [];
       currentRound = CONV.pickQuestRound(db, sc, recents);
@@ -1683,18 +1724,7 @@
         el("h1", { id: "questTitle", text: "今日の会話クエスト：" + sc.title }),
         el("p", { class: "field-hint", text: status.done ? "今日のきずな度は更新済みです。再プレイでは更新されません。" : "今日のクエストです（導入・1ターン）。きずな度が更新されます。" }),
         el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--ghost btn--sm", text: "会話練習モードへ", onclick: renderPracticeScreen })]),
-        el("div", { class: "conv-bg bg-" + sc.background, "aria-hidden": "true" }),
-        el("div", { class: "conv-stage", "aria-label": "会話のようす" }, [
-          el("div", { class: "conv-char conv-char--user", "aria-label": "あなた" }, [SPR.canvasTag(SPR.renderUserAvatar((db.profile && db.profile.gender) || "male", 3), "あなた", "sprite-canvas conv-avatar conv-avatar--user"), el("span", { class: "nameplate", text: "あなた" })]),
-          el("div", { class: "conv-char conv-char--pet", "aria-label": db.currentPet.name }, [
-            SPR.canvasTag(SPR.renderPet(speciesColorOf(db), 3), db.currentPet.name + "（一緒にいる）", "sprite-canvas conv-avatar"),
-            el("span", { class: "nameplate", text: db.currentPet.name })
-          ]),
-          el("div", { class: "conv-char conv-char--npc", "aria-label": npc.displayName }, [
-            SPR.canvasTag(SPR.renderSilhouette("#5a554e", 3), npc.displayName, "sprite-canvas conv-avatar"),
-            el("span", { class: "nameplate", text: npc.displayName })
-          ])
-        ]),
+        mountConvScene(db, sc, { npcMotion: result ? globalThis.KE_NPC_ANIMATION.motionForAnswerType(result.answer.type) : "idle" }),
         el("p", { class: "conv-context", text: sc.context }),
         result ? buildResult(sc, npc, result) : buildQuestion(sc)
       ]);
@@ -1808,6 +1838,7 @@
     }
 
     function drawSelect() {
+      stopSceneAnimations(root);
       clear(root);
       const scenes = CONV.getScenes();
       const panel = el("section", { class: "panel", "aria-labelledby": "practiceTitle" }, [
@@ -1835,6 +1866,7 @@
     }
 
     function drawPlay() {
+      stopSceneAnimations(root);
       clear(root);
       const sc = st.scene;
       const npc = CONV.getNpcById(sc.npcId) || { displayName: sc.npcId };
@@ -1862,12 +1894,7 @@
       const roleLabel = (C.STORY && C.STORY.ROLE_LABELS && C.STORY.ROLE_LABELS[turn.role]) || "";
       const panel = el("section", { class: "panel conv-panel", "aria-labelledby": "practiceTitle" }, [
         el("h1", { id: "practiceTitle", text: "会話練習：" + sc.title + "（" + (st.idx + 1) + " / " + total + "ターン／「" + roleLabel + "」" + (isBonusTurn ? "・ボーナス" : "") + "）" }),
-        el("div", { class: "conv-bg bg-" + sc.background, "aria-hidden": "true" }),
-        el("div", { class: "conv-stage", "aria-label": "会話のようす" }, [
-          el("div", { class: "conv-char conv-char--user", "aria-label": "あなた" }, [SPR.canvasTag(SPR.renderUserAvatar((db.profile && db.profile.gender) || "male", 3), "あなた", "sprite-canvas conv-avatar conv-avatar--user"), el("span", { class: "nameplate", text: "あなた" })]),
-          el("div", { class: "conv-char conv-char--pet", "aria-label": db.currentPet.name }, [SPR.canvasTag(SPR.renderPet(speciesColorOf(db), 3), db.currentPet.name, "sprite-canvas conv-avatar"), el("span", { class: "nameplate", text: db.currentPet.name })]),
-          el("div", { class: "conv-char conv-char--npc", "aria-label": npc.displayName }, [SPR.canvasTag(SPR.renderSilhouette("#5a554e", 3), npc.displayName, "sprite-canvas conv-avatar"), el("span", { class: "nameplate", text: npc.displayName })])
-        ]),
+        mountConvScene(db, sc, { npcMotion: st.last ? globalThis.KE_NPC_ANIMATION.motionForAnswerType(st.last.meta.type) : "idle" }),
         el("p", { class: "conv-context", text: st.idx === 0 ? sc.context : "会話は続いています…" }),
         el("div", { class: "conv-box", "aria-live": "polite" }, [
           el("span", { class: "nameplate", text: npc.displayName }),

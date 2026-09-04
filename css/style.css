@@ -428,6 +428,29 @@ input:focus, select:focus, button:focus-visible {
 .result-bond { font-weight: bold; color: var(--grass-dark); }
 .result-advice { border-left: 6px solid var(--sun); }
 
+/* ===== 会話シーン（背景＋人物を合成した動的画） ===== */
+.conv-scene { margin-bottom: 12px; }
+.conv-scene-frame {
+  border: var(--border-thin) solid var(--wood-dark);
+  background: var(--sky);
+  line-height: 0;
+}
+.conv-scene-frame canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.conv-captions { position: relative; height: 0; }
+.cap-nameplate {
+  position: absolute;
+  top: -38px;
+  display: inline-block;
+  padding: 2px 10px;
+  background: var(--wood-dark);
+  color: var(--paper-light);
+  font-size: 13px;
+  font-weight: bold;
+}
+.cap-user { left: 5%; }
+.cap-pet { left: 34%; }
+.cap-npc { left: 68%; }
+
 /* ===== 思い出・旅立ち ===== */
 .departure-area { margin-top: 10px; border-top: 2px dashed var(--orange-warn); padding-top: 8px; }
 .memory-card { margin-top: 14px; }

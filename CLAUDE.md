@@ -40,6 +40,7 @@ js/data/                … データ（スポット使用禁止、UI描画へ�
   relationship-rules.js … きずな度・関係段階のルール定義
   animation-manifest.js … アニメーション動作一覧（フレーム数・fps・優先順位）
   pixel-art/pets.js     … ペットのピクセル定義（共通ボディ＋種類別アクセサリ＋表情）
+  pixel-art/npcs.js     … NPC8名のピクセル定義（chibi人型・ボディ/髪型/配色/エプロン/メガネ）
 js/db.js                … localStorage統一スキーマ・保存/復元/隔離/初期化
 js/health.js            … BMI/基礎代謝・食事/運動/睡眠/体重のCRUD・目標・健康スコア/EXP
 js/pet-game.js          … 卵/成長/孵化/種類決定/図鑑/思い出/旅立ち/次世代
@@ -48,6 +49,9 @@ js/dialogue-engine.js   … コーチ台詞の抽選・フォールバック・�
 js/conversation-game.js … 会話クエスト（1ターン）/練習モード（4ターン+ボーナス）
 js/sprite.js            … ピクセル定義→Canvas描画・モーション合成・シルエット表現
 js/animation.js         … アニメ再生・優先順位制御・prefers-reduced-motion対応
+js/npc-sprite.js        … NPC描画（ピクセル定義→Canvas・表情フレーム・expression→face）
+js/npc-animation.js     … NPCアニメーション再生（既存再生コアを読み取り利用）
+js/conv-scene.js        … 会話シーン合成描画（背景＋人物を1枚に・呼吸/talkアニメ）
 js/ui.js                … 画面生成・トップバー・モーダル・通知・フォーム検証・初期設定・各画面
 js/app.js               … 起動・初期設定フロー・画面遷移・イベント配線（最後に読み込む）
 tools/tests/            … Node標準テスト（node --test）
