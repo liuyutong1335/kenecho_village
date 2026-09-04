@@ -78,7 +78,7 @@
       petMemories: [],
       petEncyclopedia: {}, // speciesId -> { discovered, discoveredAt }
       relationships: { pet: {}, npcs: {} }, // pet: gen -> {bond, questsCompleted} / npcs: npcId -> {bond, conversations, lastTalkedAt, unlockedEvents}
-      conversation: { dailyQuestDate: null, dailyQuestCompleted: false, recentDialogueIds: [], unlockedSceneIds: [] },
+      conversation: { dailyQuestDate: null, dailyQuestCompleted: false, recentDialogueIds: [], unlockedSceneIds: [], recentStoryIds: [], lastOutingNpcId: null },
       relationshipHistory: [] // { at, key, delta, from, to, why }
     };
   }
