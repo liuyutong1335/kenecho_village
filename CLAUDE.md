@@ -37,6 +37,7 @@ js/data/                … データ（スポット使用禁止、UI描画へ�
   npc-data.js           … 8名の架空NPC
   conversation-scenes.js… 会話シーン20件（クエスト＋練習用）
   story-lines.js        … ストーリー枠の台詞（導入/展開/応答/締めのミニ回合プール）
+  story-small-promise.js… 短編物語「小さな約束」データ（4章・3択2ターン・約束ルート・結末A/B）
   relationship-rules.js … きずな度・関係段階のルール定義
   animation-manifest.js … アニメーション動作一覧（フレーム数・fps・優先順位）
   pixel-art/pets.js     … ペットのピクセル定義（共通ボディ＋種類別アクセサリ＋表情）
@@ -49,6 +50,7 @@ js/npc-memory.js        … NPC別の会話記憶（話題・約束・期待・�
 js/outings.js           … 外出の時間帯・天気・場面選択（時間帯境界・天気抽選・安全場面・固定条件）
 js/dialogue-engine.js   … コーチ台詞の抽選・フォールバック・連続回避
 js/conversation-game.js … 会話クエスト（1ターン）/練習モード（4ターン+ボーナス）
+js/story-small-promise.js … 短編物語ロジック（KE_STORY：進行/日次枠共有/きずな度/読み返し/独立デモ）
 js/sprite.js            … ピクセル定義→Canvas描画・モーション合成・シルエット表現
 js/animation.js         … アニメ再生・優先順位制御・prefers-reduced-motion対応
 js/npc-sprite.js        … NPC描画（ピクセル定義→Canvas・表情フレーム・expression→face）

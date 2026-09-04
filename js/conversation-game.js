@@ -106,7 +106,9 @@
     const npc = getNpcById(scene.npcId) || { id: scene.npcId, displayName: scene.npcId };
     REL.ensureNpc(db, scene.npcId);
     const d = today || U.todayStr();
-    const firstToday = (db.conversation || {}).dailyQuestDate !== d;
+    // 短編物語「小さな約束」が今日の日次スロットを使用している日は、クエストの本編更新を行わない
+    const storyUsedToday = !!(globalThis.KE_STORY && globalThis.KE_STORY.isDailyUsedByStory && globalThis.KE_STORY.isDailyUsedByStory(db, d));
+    const firstToday = (db.conversation || {}).dailyQuestDate !== d && !storyUsedToday;
 
     const updates = {
       npc: null,

@@ -80,7 +80,8 @@
       relationships: { pet: {}, npcs: {} }, // pet: gen -> {bond, questsCompleted} / npcs: npcId -> {bond, conversations, lastTalkedAt, unlockedEvents}
       conversation: { dailyQuestDate: null, dailyQuestCompleted: false, recentDialogueIds: [], unlockedSceneIds: [], recentStoryIds: [], lastOutingNpcId: null, outing: null },
       relationshipHistory: [], // { at, key, delta, from, to, why }
-      npcMemory: {} // "<profileId>:<npcId>" -> NpcMemory（NPC別の会話記憶・約束・期待。世代を超えて維持）
+      npcMemory: {}, // "<profileId>:<npcId>" -> NpcMemory（NPC別の会話記憶・約束・期待。世代を超えて維持）
+      storyProgress: null // 短編物語「小さな約束」の進行（profileId に紐づく章・ターン・選択・約束・結末）
     };
   }
 
@@ -137,6 +138,8 @@
     out.conversation = data.conversation && typeof data.conversation === "object" ? Object.assign({}, defaultData().conversation, data.conversation) : defaultData().conversation;
     out.relationshipHistory = Array.isArray(data.relationshipHistory) ? data.relationshipHistory : [];
     out.npcMemory = data.npcMemory && typeof data.npcMemory === "object" && !Array.isArray(data.npcMemory) ? data.npcMemory : {};
+    // 短編物語（オプション）。旧セーブ（storyProgress なし）でも安全に null のまま維持する
+    out.storyProgress = data.storyProgress && typeof data.storyProgress === "object" && !Array.isArray(data.storyProgress) ? data.storyProgress : null;
     return out;
   }
 

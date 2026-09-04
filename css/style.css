@@ -477,6 +477,13 @@ input:focus, select:focus, button:focus-visible {
 }
 .memory-photo .sprite-canvas { width: auto; height: auto; }
 
+/* ===== 短編物語「小さな約束」(feat/story-small-promise) ===== */
+.story-entrance { margin-top: 0; margin-bottom: 14px; background: var(--paper-light); }
+.story-entrance h2 { margin-top: 0; font-size: 18px; }
+.memory-card--story { border-left: 6px solid var(--sun); }
+.memory-card--story h2 { color: var(--wood-dark); }
+.conv-bubble--reply { color: var(--ink-sub); background: #f2efe6; }
+
 /* ===== ホーム ===== */
 .home-layout { display: flex; gap: 20px; flex-wrap: wrap; align-items: stretch; }
 .home-char { flex: 0 0 auto; background: var(--paper-light); border: var(--border-thin) solid var(--paper-shadow); padding: 16px; text-align: center; }
