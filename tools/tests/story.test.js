@@ -80,7 +80,7 @@ test("全シーンの全回答に有効な facet が付与されている（20�
       });
     });
   });
-  assert.equal(count, 20 * 4 * 3);
+  assert.equal(count, SCENES.length * 4 * 3, "全シーンの全回合3択すべてに有効なfacetが付与される");
 });
 
 test("丁寧な断り（polite_decline）は type を bad にしない（断罪しない）", () => {

@@ -30,11 +30,11 @@ function dbRevealed() {
 }
 
 /* ---- データ整合 ---- */
-test("シーン20件・ID一意・NPC参照が有効・分類内訳（日常8/仕事6/食事6）", () => {
+test("シーン20件以上・ID一意・NPC参照が有効・分類内訳（各20件を目指す）", () => {
   const scenes = globalThis.KE_SCENES;
-  assert.equal(scenes.length, 20);
+  assert.ok(scenes.length >= 20, "20件以上（現: " + scenes.length + "）。feat/dialogue-content-expansion で各カテゴリ20件＝計60件を目指す");
   const ids = new Set(scenes.map((s) => s.id));
-  assert.equal(ids.size, 20);
+  assert.equal(ids.size, scenes.length, "シーンID一意");
   const npcIds = new Set(globalThis.KE_NPCS.map((n) => n.id));
   scenes.forEach((s) => {
     assert.ok(npcIds.has(s.npcId), "NPC参照不正: " + s.npcId + " in " + s.id);
@@ -43,9 +43,9 @@ test("シーン20件・ID一意・NPC参照が有効・分類内訳（日常8/�
     s.rounds.forEach((r) => r.answers.forEach((a) => assert.ok(["good", "short", "bad"].indexOf(a.type) >= 0)));
   });
   const count = (cat) => scenes.filter((s) => s.category === cat).length;
-  assert.equal(count("daily"), 8);
-  assert.equal(count("work"), 6);
-  assert.equal(count("food"), 6);
+  assert.ok(count("daily") >= 8, "日常8件以上（現: " + count("daily") + "）");
+  assert.ok(count("work") >= 6, "仕事6件以上（現: " + count("work") + "）");
+  assert.ok(count("food") >= 6, "食事6件以上（現: " + count("food") + "）");
 });
 
 test("獲得したNPCのシーンだけが利用可能になる", () => {

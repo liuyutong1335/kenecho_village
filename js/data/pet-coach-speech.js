@@ -190,6 +190,35 @@
     return (ADVICE_LEAD[speciesId] || "たとえば、") + ADVICE_EXAMPLE[at];
   }
 
+  /** ペット種別・facet に対応する専用助言（feat/dialogue-content-expansion 版）。
+   *  生成ループ産とは別に、選択の型（facet）に合う助言を明示的に用意する。
+   *  text＝今回のポイント / adviceExample＝改善例（種ごとの口調）。 */
+  const EXTRA_ADVICE = [
+    // rabbit（優しい型）
+    { id: "coach_rabbit_adv_selfgood_001", petTypes: ["rabbit"], coachTypes: [], growthStages: [], petConditions: [], answerType: "good", facets: ["self_disclose"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "自分のことを言葉にできて、優しく受け止めてもらえたね。そういう正直さが、関係を育てるんだよ。", adviceExample: "たとえば、「実は〜で…」と、失敗や弱さも少し見せると、相手はもっと近くに居ようと思ってくれるよ。", weight: 10 },
+    { id: "coach_rabbit_adv_shortq_001", petTypes: ["rabbit"], coachTypes: [], growthStages: [], petConditions: [], answerType: "short", facets: ["question"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "短い返しでも質問を添えられたね。相手に「話していいよ」というやさしい合図になるんだ。", adviceExample: "たとえば、「お店はこっちで合ってる？」と、相手のことについてひとつ聞き返すと、会話がやんわり続くよ。", weight: 10 },
+
+    // fox（冷静型）
+    { id: "coach_fox_adv_question_001", petTypes: ["fox"], coachTypes: [], growthStages: [], petConditions: [], answerType: "good", facets: ["question"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "質問で効率的に相手の情報を引き出せた。会話を前に進められるときは、遠慮せず聞くのが得策だ。", adviceExample: "例えば、「具体的には、どれくらい？」と、結論を急がず大切な数字や状況を引き出してみよう。", weight: 10 },
+    { id: "coach_fox_adv_decline_001", petTypes: ["fox"], coachTypes: [], growthStages: [], petConditions: [], answerType: "short", facets: ["polite_decline"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "丁寧に断ることで、失わずに済んだ。断りは減点ではなく、次の選択肢を残す技術だ。", adviceExample: "例えば、「今回は遠慮します。◯日なら空いています」と、代案をひとつ添えると、相手はより納得しやすい。", weight: 10 },
+
+    // bearcub（元気型）
+    { id: "coach_bearcub_adv_selfgood_001", petTypes: ["bearcub"], coachTypes: [], growthStages: [], petConditions: [], answerType: "good", facets: ["self_disclose"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "元気いっぱい自分の話をして、場の空気を温めてくれた！ その勢いは大きな武器だ。", adviceExample: "こうしてみよう。勢いだけじゃなく、自分がいちばん楽しいと思った瞬間をひとつ足すと、もっと弾むよ。", weight: 10 },
+    { id: "coach_bearcub_adv_promise_001", petTypes: ["bearcub"], coachTypes: [], growthStages: [], petConditions: [], answerType: "short", facets: ["promise"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "短いなかにも「次」の約束を込められて、頼もしさが出たぞ！", adviceExample: "こうしてみよう。「◯曜日にやろう！」と、日時を決めると約束がぐっと強くなる。", weight: 10 },
+
+    // cat（好奇心型）
+    { id: "coach_cat_adv_question_001", petTypes: ["cat"], coachTypes: [], growthStages: [], petConditions: [], answerType: "good", facets: ["question"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "聞きたかったことを、ちゃんと聞けたね。好奇心を出してOK。相手も聞かれて嬉しいものだよ。", adviceExample: "試しに、理由まで「それ、どうして？」と重ねて聞くと、話題がさらに掘り下がるよ。", weight: 10 },
+    { id: "coach_cat_adv_onward_001", petTypes: ["cat"], coachTypes: [], growthStages: [], petConditions: [], answerType: "short", facets: ["onward"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "短くても興味の匂いは伝わってた。でも、もうちょっとだけ針を出しても良かったね。", adviceExample: "試しに、相手の言葉に「へえ、それで？」をひとつ足すと、好奇心が伝わって続きやすいよ。", weight: 10 },
+
+    // bird（慎重型）
+    { id: "coach_bird_adv_safe_001", petTypes: ["bird"], coachTypes: [], growthStages: [], petConditions: [], answerType: "good", facets: ["self_disclose"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "安心できる範囲で自分のことを話せて、堅実だった。焦らず少しずつが、長い目では一番速い。", adviceExample: "ええと、丁寧に言うなら、相手の興味に合わせて「自分が大事にしていること」をひとつだけ伝えてみよう。", weight: 10 },
+    { id: "coach_bird_adv_decline_001", petTypes: ["bird"], coachTypes: [], growthStages: [], petConditions: [], answerType: "short", facets: ["polite_decline"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "無理せず丁寧に言葉を選べて、敬意を保てた。慎重さは、失礼とは別物だからね。", adviceExample: "ええと、丁寧に言うなら、「その日は行けませんが、また声をかけてください」と、窓を開けておくのが安心だよ。", weight: 10 },
+
+    // tanuki（お調子者型）
+    { id: "coach_tanuki_adv_selfgood_001", petTypes: ["tanuki"], coachTypes: [], growthStages: [], petConditions: [], answerType: "good", facets: ["self_disclose"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "脱線しながらも自分の話で場を和ませて、見事に掴んでたドン！ それがお前の魅力だ。", adviceExample: "おっと、この手もあるドン。笑いのあとに「でも本気でやってるドンよ」と本音をひとつ入れると、味が出るドン。", weight: 10 },
+    { id: "coach_tanuki_adv_promise_001", petTypes: ["tanuki"], coachTypes: [], growthStages: [], petConditions: [], answerType: "short", facets: ["promise"], sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "約束まで言って、お調子者が急に頼もしく見えたドン！ そのまま守れば信頼もゲットだ。", adviceExample: "おっと、この手もあるドン。約束したら「ちゃんとやるからな」と一言添えると、はずれないドンよ。", weight: 10 }
+  ];
+
   function build() {
     const out = [];
     const push = function (e) { out.push(e); };
@@ -300,7 +329,7 @@
       purpose: "fallback", text: "自分のペースで話せたのがよかったよ。次もその調子！", weight: 10
     });
 
-    return out;
+    return out.concat(EXTRA_ADVICE);
   }
 
   const KE_COACH_SPEECH = build();

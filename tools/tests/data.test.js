@@ -54,11 +54,10 @@ test("npc データが8名・id重複なし", () => {
   assert.equal(new Set(ids).size, 8);
 });
 
-test("コーチ台詞が100〜300件（目標150〜180）・フォールバックあり・ID一意", () => {
+test("コーチ台詞が目標150件以上（拡張後は各ペット50件以上を目指す）・フォールバックあり・ID一意", () => {
   const S = load("pet-coach-speech.js");
   assert.equal(Array.isArray(S), true);
-  assert.ok(S.length >= 100 && S.length <= 300, "件数 100〜300（現: " + S.length + "）");
-  assert.ok(S.length >= 150, "目標150件以上（現: " + S.length + "）");
+  assert.ok(S.length >= 150, "目標150件以上（現: " + S.length + "）。feat/dialogue-content-expansion で300件超を目指す");
   const fallback = S.filter((s) => s.purpose === "fallback");
   assert.ok(fallback.length >= 1);
   const ids = new Set(S.map((s) => s.id));
@@ -92,7 +91,7 @@ test("NPCの sceneIds がシーンIDと一致し、全20シーンが割当済み
       assigned.add(sid);
     });
   });
-  assert.equal(assigned.size, 20, "全20シーンが割当済み");
+  assert.equal(assigned.size, sceneIds.size, "全シーン（現 " + sceneIds.size + " 件）がNPCへ割当済み");
 });
 
 test("ピクセル定義が6種のアクセサリと表情フレームを持つ", () => {

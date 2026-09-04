@@ -24,7 +24,7 @@
     },
     {
       id: "npc_konno", displayName: "今野さん", role: "明るい店員",
-      personality: "bright", speechStyle: "cheerful", sceneIds: ["scn_007", "scn_008"],
+      personality: "bright", speechStyle: "cheerful", sceneIds: ["scn_007", "scn_008", "scn_023"],
       spriteId: "npc_konno", initialBond: 40,
       intro: "いつも元気な声で迎えてくれる、商店街のパン屋さん。",
       metPlace: "通勤路のパン屋で朝のパンを買ったとき",
@@ -40,7 +40,7 @@
     },
     {
       id: "npc_tanaka", displayName: "田中さん", role: "簡潔に話す上司",
-      personality: "concise", speechStyle: "brief", sceneIds: ["scn_003", "scn_004"],
+      personality: "concise", speechStyle: "brief", sceneIds: ["scn_003", "scn_004", "scn_022"],
       spriteId: "npc_tanaka", initialBond: 40,
       intro: "必要なことだけを短く伝える、さっぱりした上司。",
       metPlace: "配属初日の夜に声をかけられた",
@@ -48,7 +48,7 @@
     },
     {
       id: "npc_suzuki", displayName: "鈴木さん", role: "人見知りの近所の住人",
-      personality: "shy", speechStyle: "quiet", sceneIds: ["scn_013", "scn_014", "scn_015", "scn_016"],
+      personality: "shy", speechStyle: "quiet", sceneIds: ["scn_013", "scn_014", "scn_015", "scn_016", "scn_021"],
       spriteId: "npc_suzuki", initialBond: 40,
       intro: "気持ちは優しいけれど、自分から話すのが苦手な住人。",
       metPlace: "朝、家の前に立っているのを見かけた",
