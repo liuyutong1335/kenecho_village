@@ -799,6 +799,152 @@
     }
   ];
 
+  /* ====================================================================
+   * 回答 facet 付与（会話スキル拡張）
+   * 各回答に「会話の型」facet（KE_CONFIG.ANSWER_FACETS）を割り当てる。
+   * good/short/bad（きずな度軸）とは別軸。抽選・連続性・NPC記憶・表示に使う。
+   * key = "sceneId:roundIndex:answerIndex"、値 { f: facet, t?: type上書き, p?: promiseNote }。
+   * 丁寧な断り（polite_decline かつ対案がある場合）は type を bad にしない（断罪しない）。
+   * ==================================================================== */
+  const AUGMENTS = {
+    /* ---- scn_001 朝の相談（sato/work） ---- */
+    "scn_001:0:0": { f: "self_disclose" }, "scn_001:0:1": { f: "onward" }, "scn_001:0:2": { f: "avoid" },
+    "scn_001:1:0": { f: "self_disclose" }, "scn_001:1:1": { f: "onward" }, "scn_001:1:2": { f: "avoid" },
+    "scn_001:2:0": { f: "onward" }, "scn_001:2:1": { f: "onward" }, "scn_001:2:2": { f: "avoid" },
+    "scn_001:3:0": { f: "promise", p: "夕方のコーヒーの誘いを承諾した" }, "scn_001:3:1": { f: "polite_decline" }, "scn_001:3:2": { f: "polite_decline", t: "short" },
+
+    /* ---- scn_002 報告のしかた（sato/work） ---- */
+    "scn_002:0:0": { f: "self_disclose" }, "scn_002:0:1": { f: "onward" }, "scn_002:0:2": { f: "avoid" },
+    "scn_002:1:0": { f: "self_disclose" }, "scn_002:1:1": { f: "onward" }, "scn_002:1:2": { f: "avoid" },
+    "scn_002:2:0": { f: "onward" }, "scn_002:2:1": { f: "onward" }, "scn_002:2:2": { f: "avoid" },
+    "scn_002:3:0": { f: "self_disclose" }, "scn_002:3:1": { f: "onward" }, "scn_002:3:2": { f: "avoid" },
+
+    /* ---- scn_003 進捗の確認（tanaka/work） ---- */
+    "scn_003:0:0": { f: "self_disclose" }, "scn_003:0:1": { f: "onward" }, "scn_003:0:2": { f: "avoid" },
+    "scn_003:1:0": { f: "self_disclose" }, "scn_003:1:1": { f: "onward" }, "scn_003:1:2": { f: "avoid" },
+    "scn_003:2:0": { f: "onward" }, "scn_003:2:1": { f: "onward" }, "scn_003:2:2": { f: "avoid" },
+    "scn_003:3:0": { f: "promise", p: "明日の確認をよろしく頼んだ" }, "scn_003:3:1": { f: "natural_close" }, "scn_003:3:2": { f: "avoid" },
+
+    /* ---- scn_004 会議後のひと言（tanaka/work） ---- */
+    "scn_004:0:0": { f: "self_disclose" }, "scn_004:0:1": { f: "onward" }, "scn_004:0:2": { f: "avoid" },
+    "scn_004:1:0": { f: "self_disclose" }, "scn_004:1:1": { f: "avoid" }, "scn_004:1:2": { f: "avoid" },
+    "scn_004:2:0": { f: "empathy" }, "scn_004:2:1": { f: "onward" }, "scn_004:2:2": { f: "polite_decline", t: "short" },
+    "scn_004:3:0": { f: "self_disclose" }, "scn_004:3:1": { f: "onward" }, "scn_004:3:2": { f: "avoid" },
+
+    /* ---- scn_005 タスクの引き継ぎ（yamada/work） ---- */
+    "scn_005:0:0": { f: "self_disclose" }, "scn_005:0:1": { f: "onward" }, "scn_005:0:2": { f: "avoid" },
+    "scn_005:1:0": { f: "self_disclose" }, "scn_005:1:1": { f: "onward" }, "scn_005:1:2": { f: "avoid" },
+    "scn_005:2:0": { f: "promise", p: "明日の朝までに優先順をまとめる約束" }, "scn_005:2:1": { f: "onward" }, "scn_005:2:2": { f: "avoid" },
+    "scn_005:3:0": { f: "promise", p: "明日の朝、まとめた資料を送る約束" }, "scn_005:3:1": { f: "natural_close" }, "scn_005:3:2": { f: "avoid" },
+
+    /* ---- scn_006 帰り支度の気遣い（yamada/work） ---- */
+    "scn_006:0:0": { f: "promise", p: "荷物を持ってあげる約束" }, "scn_006:0:1": { f: "empathy" }, "scn_006:0:2": { f: "avoid" },
+    "scn_006:1:0": { f: "empathy" }, "scn_006:1:1": { f: "onward" }, "scn_006:1:2": { f: "avoid" },
+    "scn_006:2:0": { f: "self_disclose" }, "scn_006:2:1": { f: "empathy" }, "scn_006:2:2": { f: "avoid" },
+    "scn_006:3:0": { f: "onward" }, "scn_006:3:1": { f: "natural_close" }, "scn_006:3:2": { f: "avoid" },
+
+    /* ---- scn_007 パンのおすすめ（konno/food） ---- */
+    "scn_007:0:0": { f: "onward" }, "scn_007:0:1": { f: "onward" }, "scn_007:0:2": { f: "avoid" },
+    "scn_007:1:0": { f: "self_disclose" }, "scn_007:1:1": { f: "onward" }, "scn_007:1:2": { f: "avoid" },
+    "scn_007:2:0": { f: "self_disclose" }, "scn_007:2:1": { f: "onward" }, "scn_007:2:2": { f: "avoid" },
+    "scn_007:3:0": { f: "promise", p: "また来店して常連になると約束" }, "scn_007:3:1": { f: "promise", p: "また来店の約束" }, "scn_007:3:2": { f: "avoid" },
+
+    /* ---- scn_008 朝の会話（konno/food） ---- */
+    "scn_008:0:0": { f: "onward" }, "scn_008:0:1": { f: "onward" }, "scn_008:0:2": { f: "avoid" },
+    "scn_008:1:0": { f: "self_disclose" }, "scn_008:1:1": { f: "onward" }, "scn_008:1:2": { f: "avoid" },
+    "scn_008:2:0": { f: "onward" }, "scn_008:2:1": { f: "onward" }, "scn_008:2:2": { f: "avoid" },
+    "scn_008:3:0": { f: "promise", p: "明日も来てホットで注文すると約束" }, "scn_008:3:1": { f: "promise", p: "また明日来ると約束" }, "scn_008:3:2": { f: "avoid" },
+
+    /* ---- scn_009 栄養バランス（hanada/food） ---- */
+    "scn_009:0:0": { f: "onward" }, "scn_009:0:1": { f: "onward" }, "scn_009:0:2": { f: "avoid" },
+    "scn_009:1:0": { f: "self_disclose" }, "scn_009:1:1": { f: "onward" }, "scn_009:1:2": { f: "avoid" },
+    "scn_009:2:0": { f: "self_disclose" }, "scn_009:2:1": { f: "onward" }, "scn_009:2:2": { f: "avoid" },
+    "scn_009:3:0": { f: "promise", p: "また来店の約束" }, "scn_009:3:1": { f: "natural_close" }, "scn_009:3:2": { f: "avoid" },
+
+    /* ---- scn_010 残業が続く日（hanada/food） ---- */
+    "scn_010:0:0": { f: "self_disclose" }, "scn_010:0:1": { f: "onward" }, "scn_010:0:2": { f: "avoid" },
+    "scn_010:1:0": { f: "self_disclose" }, "scn_010:1:1": { f: "onward" }, "scn_010:1:2": { f: "self_disclose" },
+    "scn_010:2:0": { f: "onward" }, "scn_010:2:1": { f: "onward" }, "scn_010:2:2": { f: "avoid" },
+    "scn_010:3:0": { f: "self_disclose" }, "scn_010:3:1": { f: "promise", p: "早く帰ると約束" }, "scn_010:3:2": { f: "avoid" },
+
+    /* ---- scn_011 昼ごはんの誘い（kato/food） ---- */
+    "scn_011:0:0": { f: "question" }, "scn_011:0:1": { f: "onward" }, "scn_011:0:2": { f: "avoid" },
+    "scn_011:1:0": { f: "onward" }, "scn_011:1:1": { f: "onward" }, "scn_011:1:2": { f: "avoid" },
+    "scn_011:2:0": { f: "onward" }, "scn_011:2:1": { f: "onward" }, "scn_011:2:2": { f: "avoid" },
+    "scn_011:3:0": { f: "promise", p: "次にランチスポットを見つける約束" }, "scn_011:3:1": { f: "onward" }, "scn_011:3:2": { f: "avoid" },
+
+    /* ---- scn_012 休日の趣味談義（nakamura/food） ---- */
+    "scn_012:0:0": { f: "question" }, "scn_012:0:1": { f: "onward" }, "scn_012:0:2": { f: "avoid" },
+    "scn_012:1:0": { f: "empathy" }, "scn_012:1:1": { f: "onward" }, "scn_012:1:2": { f: "avoid" },
+    "scn_012:2:0": { f: "promise", p: "写真スポットに行く約束" }, "scn_012:2:1": { f: "polite_decline" }, "scn_012:2:2": { f: "avoid" },
+    "scn_012:3:0": { f: "promise", p: "土曜の朝の待ち合わせを約束" }, "scn_012:3:1": { f: "onward" }, "scn_012:3:2": { f: "avoid" },
+
+    /* ---- scn_013 朝のあいさつ（suzuki/daily） ---- */
+    "scn_013:0:0": { f: "onward" }, "scn_013:0:1": { f: "onward" }, "scn_013:0:2": { f: "avoid" },
+    "scn_013:1:0": { f: "empathy" }, "scn_013:1:1": { f: "onward" }, "scn_013:1:2": { f: "avoid" },
+    "scn_013:2:0": { f: "question" }, "scn_013:2:1": { f: "onward" }, "scn_013:2:2": { f: "avoid" },
+    "scn_013:3:0": { f: "empathy" }, "scn_013:3:1": { f: "promise", p: "また明日あいさつする約束" }, "scn_013:3:2": { f: "avoid" },
+
+    /* ---- scn_014 ゴミ出しの日（suzuki/daily） ---- */
+    "scn_014:0:0": { f: "question" }, "scn_014:0:1": { f: "onward" }, "scn_014:0:2": { f: "avoid" },
+    "scn_014:1:0": { f: "empathy" }, "scn_014:1:1": { f: "onward" }, "scn_014:1:2": { f: "avoid" },
+    "scn_014:2:0": { f: "question" }, "scn_014:2:1": { f: "onward" }, "scn_014:2:2": { f: "avoid" },
+    "scn_014:3:0": { f: "promise", p: "また会ったら声をかけ合う約束" }, "scn_014:3:1": { f: "onward" }, "scn_014:3:2": { f: "avoid" },
+
+    /* ---- scn_015 天気の話（suzuki/daily） ---- */
+    "scn_015:0:0": { f: "onward" }, "scn_015:0:1": { f: "onward" }, "scn_015:0:2": { f: "avoid" },
+    "scn_015:1:0": { f: "self_disclose" }, "scn_015:1:1": { f: "onward" }, "scn_015:1:2": { f: "avoid" },
+    "scn_015:2:0": { f: "self_disclose" }, "scn_015:2:1": { f: "onward" }, "scn_015:2:2": { f: "avoid" },
+    "scn_015:3:0": { f: "empathy" }, "scn_015:3:1": { f: "onward" }, "scn_015:3:2": { f: "avoid" },
+
+    /* ---- scn_016 花壇の話（suzuki/daily） ---- */
+    "scn_016:0:0": { f: "question" }, "scn_016:0:1": { f: "onward" }, "scn_016:0:2": { f: "avoid" },
+    "scn_016:1:0": { f: "question" }, "scn_016:1:1": { f: "empathy" }, "scn_016:1:2": { f: "avoid" },
+    "scn_016:2:0": { f: "empathy" }, "scn_016:2:1": { f: "onward" }, "scn_016:2:2": { f: "avoid" },
+    "scn_016:3:0": { f: "promise", p: "いただいた花を大切に飾ると約束" }, "scn_016:3:1": { f: "onward" }, "scn_016:3:2": { f: "avoid" },
+
+    /* ---- scn_017 帰り道の話（kato/daily） ---- */
+    "scn_017:0:0": { f: "self_disclose" }, "scn_017:0:1": { f: "onward" }, "scn_017:0:2": { f: "avoid" },
+    "scn_017:1:0": { f: "self_disclose" }, "scn_017:1:1": { f: "onward" }, "scn_017:1:2": { f: "avoid" },
+    "scn_017:2:0": { f: "promise", p: "金曜に焼き鳥屋へ行く約束" }, "scn_017:2:1": { f: "onward" }, "scn_017:2:2": { f: "avoid" },
+    "scn_017:3:0": { f: "promise", p: "金曜の駅前の待ち合わせを約束" }, "scn_017:3:1": { f: "onward" }, "scn_017:3:2": { f: "avoid" },
+
+    /* ---- scn_018 週末の誘い（kato/daily） ---- */
+    "scn_018:0:0": { f: "question" }, "scn_018:0:1": { f: "onward" }, "scn_018:0:2": { f: "avoid" },
+    "scn_018:1:0": { f: "question" }, "scn_018:1:1": { f: "onward" }, "scn_018:1:2": { f: "avoid" },
+    "scn_018:2:0": { f: "promise", p: "土曜の昼の駅前を約束" }, "scn_018:2:1": { f: "onward" }, "scn_018:2:2": { f: "avoid" },
+    "scn_018:3:0": { f: "onward" }, "scn_018:3:1": { f: "onward" }, "scn_018:3:2": { f: "avoid" },
+
+    /* ---- scn_019 ジムの声かけ（nakamura/daily） ---- */
+    "scn_019:0:0": { f: "question" }, "scn_019:0:1": { f: "onward" }, "scn_019:0:2": { f: "avoid" },
+    "scn_019:1:0": { f: "onward" }, "scn_019:1:1": { f: "onward" }, "scn_019:1:2": { f: "avoid" },
+    "scn_019:2:0": { f: "self_disclose" }, "scn_019:2:1": { f: "onward" }, "scn_019:2:2": { f: "avoid" },
+    "scn_019:3:0": { f: "promise", p: "マシンの使い方を教わる約束" }, "scn_019:3:1": { f: "onward" }, "scn_019:3:2": { f: "avoid" },
+
+    /* ---- scn_020 新しく始めたこと（nakamura/daily） ---- */
+    "scn_020:0:0": { f: "question" }, "scn_020:0:1": { f: "onward" }, "scn_020:0:2": { f: "avoid" },
+    "scn_020:1:0": { f: "empathy" }, "scn_020:1:1": { f: "onward" }, "scn_020:1:2": { f: "avoid" },
+    "scn_020:2:0": { f: "empathy" }, "scn_020:2:1": { f: "onward" }, "scn_020:2:2": { f: "avoid" },
+    "scn_020:3:0": { f: "promise", p: "部屋の写真を見せてもらう約束（機会があれば）" }, "scn_020:3:1": { f: "onward" }, "scn_020:3:2": { f: "avoid" }
+  };
+
+  /** 回答へ facet を適用（facet 付与・type 上書き・promiseNote 追加） */
+  function applyAnswerAugments(scenes) {
+    scenes.forEach(function (s) {
+      s.rounds.forEach(function (round, ri) {
+        (round.answers || []).forEach(function (a, ai) {
+          const aug = AUGMENTS[s.id + ":" + ri + ":" + ai];
+          if (!aug) return;
+          if (aug.f) a.facet = aug.f;
+          if (aug.t) a.type = aug.t;
+          if (aug.p) a.promiseNote = aug.p;
+        });
+      });
+    });
+    return scenes;
+  }
+  applyAnswerAugments(KE_SCENES);
+
   if (globalThis) globalThis.KE_SCENES = KE_SCENES;
   if (typeof module !== "undefined" && module.exports) module.exports = { KE_SCENES };
 })();

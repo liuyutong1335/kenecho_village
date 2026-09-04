@@ -117,6 +117,33 @@
       shy: "人見知り",
       caring: "世話好き",
       humorous: "ユーモア"
+    },
+
+    /** ---- ストーリー枠（導入・展開・応答・締め）----
+     * ROLES: 練習4ターン / クエスト1ターン（open）の役割順。rounds のインデックスと対応。
+     * WEIGHT_BONUS: 抽選時の重み加算の初期案。データ側の weight を基準に条件合致で加算する。
+     */
+    STORY: {
+      ROLES: ["open", "develop", "respond", "close"],
+      ROLE_LABELS: { open: "導入", develop: "展開", respond: "応答", close: "締め" },
+      WEIGHT_BONUS: { category: 6, personality: 6, relation: 4, facet: 6, topic: 4 },
+      DEFAULT_WEIGHT: 10,
+      RECENT_KEEP: 8 // ストーリー枠の連続回避に使う直近ID保持数
+    },
+
+    /** ---- 回答の会話スキル（facet）----
+     * 3択の「内容の型」。good/short/bad（きずな度軸）とは別軸で、会話スキル・記憶・連続性に使う。
+     * 丁寧な断り自体は減点理由にしない（type は文脈と対案の有無で good/short へ振る）。
+     */
+    ANSWER_FACETS: {
+      empathy: "共感",
+      question: "質問",
+      self_disclose: "自己開示",
+      polite_decline: "丁寧な断り",
+      natural_close: "自然な終了",
+      promise: "約束",
+      onward: "会話を続ける",
+      avoid: "回避・そらす"
     }
   };
 
