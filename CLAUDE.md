@@ -45,6 +45,7 @@ js/db.js                … localStorage統一スキーマ・保存/復元/隔�
 js/health.js            … BMI/基礎代謝・食事/運動/睡眠/体重のCRUD・目標・健康スコア/EXP
 js/pet-game.js          … 卵/成長/孵化/種類決定/図鑑/思い出/旅立ち/次世代
 js/relationship.js      … きずな度・会話回数・関係段階・交流ノート集計
+js/npc-memory.js        … NPC別の会話記憶（話題・約束・期待・誤解。世代を越えて維持・練習は読み取り専用）
 js/dialogue-engine.js   … コーチ台詞の抽選・フォールバック・連続回避
 js/conversation-game.js … 会話クエスト（1ターン）/練習モード（4ターン+ボーナス）
 js/sprite.js            … ピクセル定義→Canvas描画・モーション合成・シルエット表現

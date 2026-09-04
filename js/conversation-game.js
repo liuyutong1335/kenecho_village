@@ -128,6 +128,10 @@
       }
       updates.npc = { before: npcRes.before, after: npcRes.after, delta: delta };
       updates.pet = petRes.ok ? { before: petRes.before, after: petRes.after, delta: petRes.delta } : null;
+      // NPC別の会話記憶（話題・約束・期待）を記録（本編・1日1回）
+      if (globalThis.KE_NPC_MEMORY) {
+        globalThis.KE_NPC_MEMORY.recordFromQuest(db, scene.npcId, scene, answer, d);
+      }
     }
 
     // 台詞抽選（重複回避のために recentDialogueIds を更新）

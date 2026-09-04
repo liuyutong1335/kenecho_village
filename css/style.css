@@ -425,6 +425,7 @@ input:focus, select:focus, button:focus-visible {
 .conv-flow { margin-top: 12px; }
 .conv-box { margin: 10px 0; }
 .conv-bubble { background: #fff; border: var(--border-thin) solid var(--paper-shadow); padding: 12px 14px; margin: 6px 0 0; font-size: 16px; }
+.conv-bubble--memo { background: #f3e4bf; border-left: 6px solid var(--sun); color: var(--wood-dark); font-size: 14px; }
 .conv-choices { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
 .conv-choice { text-align: left; }
 .result-card { margin-top: 12px; }
