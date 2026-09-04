@@ -2,7 +2,7 @@
 /*
  * kenecho Village - 会話シーン（KE_SCENES）
  * 全て架空のオリジナル。日常・散歩 / 仕事・職場 / 食事・買い物・交流を8名のNPCへ割り当てる。
- * feat/dialogue-content-expansion で各カテゴリ20件（計60件）へ拡張中（現 23件）。
+ * feat/dialogue-content-expansion により各カテゴリ20件（計60件）へ拡張済み。
  * - クエスト: rounds[0] を1ターンの3択に使う
  * - 練習: rounds を順に4ターン実施。bonus があれば条件成立時（good 2回以上）に1ターン追加
  * 回答: text / type(good|short|bad) / npcReply / npcExpression / explanation / nextHint
