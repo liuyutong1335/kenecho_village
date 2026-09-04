@@ -126,7 +126,7 @@
     STORY: {
       ROLES: ["open", "develop", "respond", "close"],
       ROLE_LABELS: { open: "導入", develop: "展開", respond: "応答", close: "締め" },
-      WEIGHT_BONUS: { category: 6, personality: 6, relation: 4, facet: 6, topic: 4 },
+      WEIGHT_BONUS: { category: 6, personality: 6, relation: 4, facet: 6, topic: 4, timeBand: 6, memory: 6 },
       DEFAULT_WEIGHT: 10,
       RECENT_KEEP: 8 // ストーリー枠の連続回避に使う直近ID保持数
     },

@@ -1727,7 +1727,13 @@
       stopSceneAnimations(root);
       clear(root);
       const recents = (db.conversation && db.conversation.recentStoryIds) || [];
-      currentRound = CONV.pickQuestRound(db, sc, recents, undefined, outingMeta ? outingMeta.weather : null);
+      const MEM2 = globalThis.KE_NPC_MEMORY;
+      currentRound = CONV.pickQuestRound(
+        db, sc, recents, undefined,
+        outingMeta ? outingMeta.weather : null,
+        outingMeta ? outingMeta.timeBand : null,
+        MEM2 ? MEM2.getMemoryKinds(db, sc.npcId) : null
+      );
       root.append(buildFrame(sc, result));
     }
 
@@ -1817,6 +1823,8 @@
     const st = { phase: "select", scene: null, idx: 0, goodCount: 0, bonusRound: null, bonusPlayed: false, last: null, resolved: [], prevFacet: null };
     clear(root);
     const db = DB.get();
+    const today = U.todayStr();
+    const outingMeta = globalThis.KE_OUTING ? globalThis.KE_OUTING.getOutingMeta(db, today) : null;
 
     if (!CONV.isConversationUnlocked(db)) {
       root.append(el("section", { class: "panel" }, [
@@ -1851,7 +1859,14 @@
     /** 現在ターンに使う回合を解決する（ストーリー枠の抽選、無ければ正規回合へフォールバック済み） */
     function currentTurn() {
       if (st.bonusRound && st.idx >= 4) return { source: "bonus", round: st.bonusRound, role: "close", id: null };
-      const res = st.resolved[st.idx] || CONV.resolveRound(st.scene, st.idx, { db: DB.get(), prevFacet: st.prevFacet });
+      const MEM3 = globalThis.KE_NPC_MEMORY;
+      const res = st.resolved[st.idx] || CONV.resolveRound(st.scene, st.idx, {
+        db: DB.get(),
+        prevFacet: st.prevFacet,
+        weather: outingMeta ? outingMeta.weather : null,
+        timeBand: outingMeta ? outingMeta.timeBand : null,
+        memoryKinds: st.scene ? (MEM3 ? MEM3.getMemoryKinds(DB.get(), st.scene.npcId) : null) : null
+      });
       st.resolved[st.idx] = res;
       return res;
     }
@@ -1946,7 +1961,7 @@
         petType: pet.speciesId || null,
         coachType: pet.speciesId ? (globalThis.KE_PETS.find((p) => p.id === pet.speciesId) || {}).coachType : null,
         stage: pet.stage, condition: globalThis.KE_PET.getCondition(db),
-        answerType: ev.meta.type, sceneTag: st.scene.category, purpose: "feedback", recentIds: []
+        answerType: ev.meta.type, facet: ev.meta.facet || null, sceneTag: st.scene.category, purpose: "feedback", recentIds: []
       });
       return el("div", { class: "conv-flow" }, [
         el("div", { class: "conv-box" }, [

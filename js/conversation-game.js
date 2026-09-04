@@ -68,7 +68,7 @@
   }
 
   /** 台詞抽選用の文脈を組み立てる */
-  function buildSpeechContext(db, scene, answerType) {
+  function buildSpeechContext(db, scene, answerType, facet) {
     const pet = db.currentPet;
     const species = pet && pet.speciesId ? (globalThis.KE_PETS || []).find(function (p) { return p.id === pet.speciesId; }) : null;
     const npcBond = REL.getNpcBond(db, scene.npcId);
@@ -81,6 +81,7 @@
       stage: stage,
       condition: globalThis.KE_PET.getCondition(db),
       answerType: answerType,
+      facet: facet || null,
       sceneTag: scene.category,
       npcRelationLevel: npcLevel,
       petRelationLevel: REL.getRelationshipLevelKey && REL.getRelationshipLevelKey(petBond),
@@ -134,8 +135,8 @@
       }
     }
 
-    // 台詞抽選（重複回避のために recentDialogueIds を更新）
-    const ctx = buildSpeechContext(db, scene, answer.type);
+    // 台詞抽選（重複回避のために recentDialogueIds を更新。facet は助言の選択内容対応に使う）
+    const ctx = buildSpeechContext(db, scene, answer.type, answer.facet);
     const chosen = DIAG.pick(ctx);
     if (db.currentPet && chosen.id) {
       db.currentPet.recentDialogueIds = DIAG.pushRecent(db.currentPet.recentDialogueIds, chosen.id, 10);
@@ -179,7 +180,8 @@
   /**
    * ターンに使う回合を決定する。ストーリー枠の条件に合う候補を KE_DIALOGUE.pickStoryRound が
    * 重み付きで抽選し、無ければ正規の回合（scene.rounds[n]）へフォールバックする。
-   * opts: { db, prevFacet, recentIds, rng }（relationLevel は db から導出）
+   * opts: { db, prevFacet, recentIds, rng, weather, timeBand, memoryKinds }
+   * （relationLevel は db から導出）
    */
   function resolveRound(scene, roundIndex, opts) {
     const o = opts || {};
@@ -200,6 +202,8 @@
       recentIds: o.recentIds || [],
       rng: o.rng,
       weather: o.weather || null,
+      timeBand: o.timeBand != null ? o.timeBand : null,
+      memoryKinds: Array.isArray(o.memoryKinds) ? o.memoryKinds : (globalThis.KE_NPC_MEMORY && o.db ? globalThis.KE_NPC_MEMORY.getMemoryKinds(o.db, scene.npcId) : null),
       fallbackRound: fallback
     });
     return { source: picked.source, round: picked.round, role: roundRole(roundIndex), id: picked.id };
@@ -207,10 +211,11 @@
 
   /**
    * クエストに使う回合を選択する（ロール＝オープン）。
-   * 場面・NPC・関係段階に合うストーリー回合を重み付きで抽選し、候補が無ければ正規の rounds[0] へ落とす。
+   * 場面・NPC・関係段階・天気・時間帯・記憶に合うストーリー回合を重み付きで抽選し、
+   * 候補が無ければ正規の rounds[0] へ落とす。
    * 外出を重ねても毎回同じ会話にならないよう、過去に使ったストーリー回合（recentIds）を避ける。
    */
-  function pickQuestRound(db, scene, recentIds, rng, weather) {
+  function pickQuestRound(db, scene, recentIds, rng, weather, timeBand, memoryKinds) {
     const round0 = scene.rounds[0];
     if (!round0) return { source: "none", round: null, id: null };
     const npc = getNpcById(scene.npcId) || {};
@@ -228,6 +233,8 @@
       recentIds: recentIds || [],
       rng: rng,
       weather: weather || null,
+      timeBand: timeBand != null ? timeBand : null,
+      memoryKinds: Array.isArray(memoryKinds) ? memoryKinds : (globalThis.KE_NPC_MEMORY ? globalThis.KE_NPC_MEMORY.getMemoryKinds(db, scene.npcId) : null),
       fallbackRound: round0
     });
   }
