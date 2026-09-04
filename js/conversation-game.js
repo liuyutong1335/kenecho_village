@@ -199,6 +199,7 @@
       prevFacet: o.prevFacet != null ? o.prevFacet : null,
       recentIds: o.recentIds || [],
       rng: o.rng,
+      weather: o.weather || null,
       fallbackRound: fallback
     });
     return { source: picked.source, round: picked.round, role: roundRole(roundIndex), id: picked.id };
@@ -209,7 +210,7 @@
    * 場面・NPC・関係段階に合うストーリー回合を重み付きで抽選し、候補が無ければ正規の rounds[0] へ落とす。
    * 外出を重ねても毎回同じ会話にならないよう、過去に使ったストーリー回合（recentIds）を避ける。
    */
-  function pickQuestRound(db, scene, recentIds, rng) {
+  function pickQuestRound(db, scene, recentIds, rng, weather) {
     const round0 = scene.rounds[0];
     if (!round0) return { source: "none", round: null, id: null };
     const npc = getNpcById(scene.npcId) || {};
@@ -226,6 +227,7 @@
       prevFacet: null,
       recentIds: recentIds || [],
       rng: rng,
+      weather: weather || null,
       fallbackRound: round0
     });
   }
