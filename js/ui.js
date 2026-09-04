@@ -1741,6 +1741,7 @@
       const npc = CONV.getNpcById(sc.npcId) || { displayName: sc.npcId };
       const status = CONV.getQuestStatus(db, today);
       return el("section", { class: "panel conv-panel", "aria-labelledby": "questTitle" }, [
+        storyEntrancePanel(),
         el("div", { class: "conv-header" }, [
           el("h1", { id: "questTitle", text: "今日の会話クエスト：" + sc.title }),
           el("button", { type: "button", class: "btn btn--ghost btn--sm conv-practice-btn", text: "会話練習モードへ", onclick: renderPracticeScreen })
@@ -2127,6 +2128,20 @@
         if (rows.length === 0) return el("p", { class: "field-hint", text: "このNPCとの会話はまだ覚えがありません。会話を重ねると、ここに記憶が残ります。" });
         return el("div", { class: "card" }, [el("h3", { text: "会話の記憶" })].concat(rows));
       })(),
+      (function storyProgressCard() {
+        const ST = globalThis.KE_STORY;
+        if (!ST) return null;
+        const sp = ST.getNotebookProgress(db, npc.id);
+        if (!sp) return null;
+        const rows = [];
+        if (sp.done) rows.push(el("p", { text: "結末「" + (sp.ending && sp.ending.title) + "」で完結しました。" }));
+        else if (sp.started) rows.push(el("p", { text: "第" + sp.completed + "章まで読了。" }));
+        else rows.push(el("p", { text: "まだ物語は始まっていません。" }));
+        if (sp.nextChapterTitle) rows.push(el("p", { class: "field-hint", text: "次の手がかり：" + sp.nextChapterTitle }));
+        if (sp.promise && sp.promise.route) rows.push(el("p", { class: "field-hint", text: "現在の約束：" + (sp.promise.route === "help" ? "散歩会の案内文を手伝う" : "散歩会に参加する") }));
+        if (sp.hint) rows.push(el("p", { class: "field-hint", text: sp.hint }));
+        return el("div", { class: "card" }, [el("h3", { text: "短編物語「" + sp.title + "」の進捗" })].concat(rows));
+      })(),
       el("div", { class: "form-actions" }, [
         el("button", { type: "button", class: "btn btn--ghost", text: "会話クエストへ", onclick: function () {
           overlay.remove();
@@ -2178,11 +2193,29 @@
     const memories = (db.petMemories || []).slice().reverse();
     const panel = el("section", { class: "panel", "aria-labelledby": "memTitle" }, [
       el("h1", { id: "memTitle", text: "思い出（古いアルバム）" }),
-      el("p", { class: "field-hint", text: "旅立ったペットたちの記録です。" })
+      el("p", { class: "field-hint", text: "旅立ったペットたちの記録と、短編物語「小さな約束」の記念カード（物語の思い出）が残ります。" })
     ]);
     if (memories.length === 0) {
-      panel.append(el("p", { class: "lead", text: "まだ思い出はありません。ペットとの時間を重ねると、ここに記録が残ります。" }));
+      panel.append(el("p", { class: "lead", text: "まだペットの思い出はありません。ペットとの時間を重ねると、ここに記録が残ります。" }));
     }
+    (function storyMemoryCard() {
+      const ST = globalThis.KE_STORY;
+      if (!ST) return;
+      const card = ST.getEndingCard(db);
+      if (!card) return;
+      const p = ST.getProgress(db);
+      const companions = (p.companionHistory || []);
+      panel.append(el("article", { class: "card memory-card memory-card--story", "aria-labelledby": "storyMemTitle" }, [
+        el("h2", { id: "storyMemTitle", text: "物語の思い出　…「" + card.storyTitle + "」" }),
+        el("p", { class: "field-hint", text: "結末「" + card.endingTitle + "」　／　" + (card.finishedAt || "—") + "　（旅立ち記録とは別に残る、物語の記念カードです）" }),
+        el("p", { text: card.catchline }),
+        el("p", { class: "field-hint", text: card.summary }),
+        companions.length ? el("div", { class: "list" }, companions.map(function (c) {
+          const sp = c.speciesId ? PET.getSpeciesById(c.speciesId) : null;
+          return el("p", { class: "field-hint", text: "第" + c.chapter + "章の同行：" + c.petName + (sp ? "（" + sp.name + "）" : "") + "・" + (c.generationId || "—") + "　" + (c.date || "") });
+        })) : null
+      ]));
+    })();
     memories.forEach(function (m) {
       const SPR = globalThis.KE_SPRITE;
       const sp = m.speciesId ? PET.getSpeciesById(m.speciesId) : null;
@@ -2317,7 +2350,13 @@
             DB.save();
             renderNextGenerationScreen();
           });
-        } })
+        } }),
+        globalThis.KE_STORY
+          ? el("button", { type: "button", class: "btn btn--primary", text: "短編「小さな約束」をデモ体験（4章連続・保存なし）", onclick: function () {
+            showNotice("デモモードで「小さな約束」をはじめます。本編の保存・きずな度・記録には影響しません。");
+            renderStoryScreen({ demo: true });
+          } })
+          : null
       ])
     ]));
 
@@ -2395,6 +2434,451 @@
     }
   }
 
+  /* ==================================================================== */
+  /* 短編物語「小さな約束」(feat/story-small-promise)                       */
+  /* ==================================================================== */
+
+  function storyNpcOf() {
+    const ST = globalThis.KE_STORY;
+    const npcs = globalThis.KE_NPCS || [];
+    const id = ST && ST.npcIdOf ? ST.npcIdOf() : "npc_sato";
+    const n = npcs.find(function (x) { return x.id === id; });
+    return n || { displayName: id, role: "" };
+  }
+
+  function storyTimebandNote() {
+    return "物語は朝・昼・夕方の外出のときに聞けます。夜・深夜は、また明日の朝〜夕方に続きをどうぞ。";
+  }
+
+  /** 会話クエスト画面に置く「物語の入口」パネル */
+  function storyEntrancePanel() {
+    const ST = globalThis.KE_STORY;
+    if (!ST) return null;
+    const db = globalThis.KE_DB.get();
+    const today = U.todayStr();
+    const st = ST.getStatus(db, today);
+    const npc = storyNpcOf();
+    const title = el("h2", { text: "短編物語「" + st.title + "」" });
+    const rows = [title];
+    let action = null;
+
+    if (st.done) {
+      rows.push(el("p", { class: "field-hint", text: "完結しました。結末は「" + st.ending.title + "」です。思い出の記念カードを見てみましょう。" }));
+      action = el("button", { type: "button", class: "btn btn--primary", text: "物語の思い出を見る", onclick: function () {
+        if (globalThis.KE_APP) globalThis.KE_APP.navigate("memories");
+      } });
+    } else if (st.state === "in_progress") {
+      rows.push(el("p", { class: "field-hint", text: st.bandOk ? "第" + st.chapter + "章「" + st.currentChapterTitle + "」の続きが話せそうだよ。" : storyTimebandNote() }));
+      action = st.canEngage
+        ? el("button", { type: "button", class: "btn btn--primary", text: "話の続きを聞く（第" + st.chapter + "章）", onclick: function () {
+          if (globalThis.KE_APP) globalThis.KE_APP.navigate("story");
+        } })
+        : el("button", { type: "button", class: "btn btn--ghost", text: "会話クエストへ戻る", onclick: function () {
+          if (globalThis.KE_APP) globalThis.KE_APP.navigate("quest");
+        } });
+    } else if (st.state === "between") {
+      rows.push(el("p", { class: "field-hint", text: "第" + st.completedChapters.length + "章まで読み進めています。次は「" + st.nextChapterTitle + "」。" + (st.canEngage ? "" : " " + storyTimebandNote()) }));
+      action = st.canEngage
+        ? el("button", { type: "button", class: "btn btn--primary", text: "第" + (st.completedChapters.length + 1) + "章の続きを聞く", onclick: function () {
+          if (globalThis.KE_APP) globalThis.KE_APP.navigate("story");
+        } })
+        : el("button", { type: "button", class: "btn btn--ghost", text: "会話クエストへ戻る", onclick: function () {
+          if (globalThis.KE_APP) globalThis.KE_APP.navigate("quest");
+        } });
+    } else {
+      const desc = "佐藤さんと交わす、ちいさな約束のお話（全4章・1日1章・朝昼夕）。";
+      let loop = "";
+      if (st.reason === "not_met") loop = " まず通常の外出で「" + npc.displayName + "」と出会ってから、物語に入りましょう。";
+      else if (st.reason === "night_band") loop = " " + storyTimebandNote();
+      else if (st.reason === "quest_today") loop = " 今日はすでに会話クエストを完了しました。物語は明日から進められます。";
+      else if (st.reason === "story_today") loop = " 今日はすでに物語を進めました。明日また聞いてみましょう。";
+      rows.push(el("p", { class: "field-hint", text: desc + loop }));
+      action = st.canEngage
+        ? el("button", { type: "button", class: "btn btn--primary", text: "物語をはじめる（" + npc.displayName + "と）", onclick: function () {
+          if (globalThis.KE_APP) globalThis.KE_APP.navigate("story");
+        } })
+        : el("button", { type: "button", class: "btn btn--ghost", text: st.reason === "not_met" ? "村へ出かける" : "会話クエストへ戻る", onclick: function () {
+          if (globalThis.KE_APP) globalThis.KE_APP.navigate(st.reason === "not_met" ? "pet" : "quest");
+        } });
+    }
+    return el("section", { class: "card story-entrance", "aria-labelledby": "storyEntranceTitle" }, rows.concat(action ? el("div", { class: "form-actions" }, [action]) : []));
+  }
+
+  /** 物語の選択タン（本編/デモ共通）。完了時は再描画して結果へ進む */
+  function storyChoose(chapter, turnIndex, answerIndex, opts) {
+    const o = opts || {};
+    const ST = globalThis.KE_STORY;
+    if (o.demo) {
+      const r = ST.demoChoose(turnIndex, answerIndex);
+      if (!r.ok) { showErrorNotice(r.message || "回答できませんでした。"); return; }
+      renderStoryScreen({ demo: true });
+      return;
+    }
+    const r = ST.chooseAnswer(globalThis.KE_DB.get(), chapter, turnIndex, answerIndex, {});
+    if (!r.ok) { showErrorNotice(r.message || "回答できませんでした。"); return; }
+    renderStoryScreen({});
+  }
+
+  /** 物語画面（本編）。状態に応じて導入/章画面/結果/結末/読み返しを出す */
+  function renderStoryScreen(opts) {
+    const o = opts || {};
+    const root = refs.appRoot;
+    const ST = globalThis.KE_STORY;
+    clear(root);
+    if (!ST) {
+      root.append(el("section", { class: "panel" }, [el("h1", { text: "短編物語" }), el("p", { class: "field-hint", text: "物語データを読み込めませんでした。" })]));
+      return;
+    }
+    if (o.demo) {
+      renderStoryDemo();
+      return;
+    }
+    const db = globalThis.KE_DB.get();
+    const today = U.todayStr();
+    const st = ST.getStatus(db, today);
+    const npc = storyNpcOf();
+    if (st.done) { renderStoryDone(st, npc, {}); return; }
+    if (st.state === "in_progress") {
+      if (!st.canEngage) {
+        // 夜・深夜など、この時間帯では続きを聞けない
+        root.append(el("section", { class: "panel", "aria-labelledby": "storyWaitTitle" }, [
+          el("h1", { id: "storyWaitTitle", text: "第" + st.chapter + "章「" + st.currentChapterTitle + "」" }),
+          el("p", { class: "field-hint", text: storyTimebandNote() }),
+          el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--grey", text: "会話クエストへ戻る", onclick: function () { if (globalThis.KE_APP) globalThis.KE_APP.navigate("quest"); } })])
+        ]));
+        return;
+      }
+      const ts = ST.getTurnState(db, st.chapter, today);
+      renderStoryChapter(st, ts, { db: db });
+      return;
+    }
+    if (st.state === "between") { renderStoryBetween(st, {}); return; }
+    renderStoryOverview(st, npc, {});
+  }
+
+  /** 章のターン表示（本編用） */
+  function renderStoryChapter(st, ts, opts) {
+    const o = opts || {};
+    const root = refs.appRoot;
+    const ST = globalThis.KE_STORY;
+    const npc = storyNpcOf();
+    const chapter = ts.chapter;
+    clear(root);
+    const db = o.db || globalThis.KE_DB.get();
+    const sceneLike = {
+      title: "第" + chapter + "章「" + ts.title + "」",
+      npcId: ST.npcIdOf(),
+      background: (globalThis.KE_STORY_SMALL_PROMISE || {}).background || "outdoor",
+      context: ts.intro
+    };
+    root.append(el("section", { class: "panel conv-panel", "aria-labelledby": "storyChapterTitle" }, [
+      el("div", { class: "conv-header" }, [
+        el("h1", { id: "storyChapterTitle", text: sceneLike.title }),
+        el("span", { class: "species-coach", text: "第" + chapter + "/" + ((globalThis.KE_STORY_SMALL_PROMISE || {}).chapterCount || 4) + "章" })
+      ]),
+      mountConvScene(db, sceneLike, { npcMotion: "idle" }),
+      el("p", { class: "conv-context", text: ts.intro })
+    ]));
+
+    const flow = el("div", { class: "conv-flow" });
+    root.append(flow);
+    if (ts.turn === 0) {
+      const round = ts.round0;
+      if (!round) return;
+      const box = el("div", { class: "conv-box", "aria-live": "polite" }, [
+        el("span", { class: "nameplate", text: npc.displayName }),
+        el("p", { class: "conv-bubble", text: round.npcLine })
+      ]);
+      const choices = el("div", { class: "conv-choices" }, [el("p", { class: "field-hint", text: "あなたの返答を選んでください（分類は表示しません）。" })]);
+      round.answers.forEach(function (a, i) {
+        choices.append(el("button", { type: "button", class: "btn btn--primary conv-choice", text: a.text, onclick: function () { storyChoose(chapter, 0, i, {}); } }));
+      });
+      flow.append(el("div", { class: "conv-flow" }, [box, choices]));
+    } else {
+      const prev = ts.round0 && ts.round0.answers[ts.choice.t1];
+      const round = ts.round1;
+      if (!round) return;
+      const box = el("div", { class: "conv-box", "aria-live": "polite" }, [
+        prev ? el("p", { class: "conv-bubble conv-bubble--memo", text: "（前の返答）あなた：「" + prev.text + "」" }) : null,
+        el("span", { class: "nameplate", text: npc.displayName }),
+        el("p", { class: "conv-bubble", text: round.npcLine })
+      ]);
+      const choices = el("div", { class: "conv-choices" }, [el("p", { class: "field-hint", text: "あなたの返答を選んでください（分類は表示しません）。" })]);
+      round.answers.forEach(function (a, i) {
+        choices.append(el("button", { type: "button", class: "btn btn--primary conv-choice", text: a.text, onclick: function () { storyChoose(chapter, 1, i, {}); } }));
+      });
+      flow.append(el("div", { class: "conv-flow" }, [box, choices]));
+    }
+  }
+
+  /** 章読み返し（完了章のみ。本編状態・報酬は変更しない） */
+  function renderStoryReadback(chapterNo, opts) {
+    const o = opts || {};
+    const root = refs.appRoot;
+    const ST = globalThis.KE_STORY;
+    clear(root);
+    const data = o.demo ? ST.demoReadback(chapterNo) : ST.getReadback(globalThis.KE_DB.get(), chapterNo);
+    if (!data || data.ok === false) {
+      root.append(el("section", { class: "panel" }, [el("h1", { text: "読み返し" }), el("p", { class: "field-hint", text: (data && data.message) || "この章はまだ読み返せません。" }), el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--grey", text: "物語へ戻る", onclick: function () { renderStoryScreen(o); } })])]));
+      return;
+    }
+    const npc = storyNpcOf();
+    const panel = el("section", { class: "panel conv-panel", "aria-labelledby": "storyRbTitle" }, [
+      el("div", { class: "conv-header" }, [el("h1", { id: "storyRbTitle", text: "第" + data.chapter + "章「" + data.title + "」を読み返す" }), el("span", { class: "species-coach", text: "思い出した時間" })]),
+      el("p", { class: "conv-context", text: data.intro })
+    ]);
+    function roundBlock(label, round) {
+      if (!round) return null;
+      return el("div", { class: "conv-box", "aria-live": "polite" }, [
+        el("span", { class: "nameplate", text: npc.displayName }),
+        el("p", { class: "conv-bubble", text: round.npcLine })
+      ]);
+    }
+    panel.append(roundBlock("1ターン目", data.round0));
+    if (data.t1) {
+      panel.append(el("div", { class: "conv-box conv-result" }, [
+        el("span", { class: "nameplate cap-user", text: "あなた" }),
+        el("p", { class: "conv-bubble", text: data.t1.text }),
+        el("p", { class: "conv-bubble conv-bubble--reply", text: "　" + npc.displayName + "：" + data.t1.npcReply })
+      ]));
+    }
+    panel.append(roundBlock("2ターン目", data.round1));
+    if (data.t2) {
+      panel.append(el("div", { class: "conv-box conv-result" }, [
+        el("span", { class: "nameplate cap-user", text: "あなた" }),
+        el("p", { class: "conv-bubble", text: data.t2.text }),
+        el("p", { class: "conv-bubble conv-bubble--reply", text: "　" + npc.displayName + "：" + data.t2.npcReply })
+      ]));
+    }
+    if (data.result && data.result.text) {
+      panel.append(el("div", { class: "card result-card" }, [
+        el("h3", { text: "結び" }),
+        el("p", { text: data.result.text }),
+        data.result.advice ? el("p", { class: "field-hint", text: "ペットの助言：" + data.result.advice.text }) : null
+      ]));
+    }
+    if (data.ending) {
+      panel.append(el("div", { class: "card result-card result-bond" }, [el("p", { text: "結末「" + data.ending.title + "」" })]));
+    }
+    panel.append(el("div", { class: "form-actions" }, [
+      el("button", { type: "button", class: "btn btn--grey", text: "物語へ戻る", onclick: function () { renderStoryScreen(o); } })
+    ]));
+    root.append(panel);
+  }
+
+  /** 章完了後のリザルト（本編）。翌日以降に次の章を開始できる */
+  function renderStoryBetween(st, opts) {
+    const o = opts || {};
+    const root = refs.appRoot;
+    const ST = globalThis.KE_STORY;
+    const npc = storyNpcOf();
+    clear(root);
+    const last = st.completedChapters[st.completedChapters.length - 1];
+    const res = ST.getChapterResult(last, st.promiseRoute);
+    const panel = el("section", { class: "panel", "aria-labelledby": "storyBetweenTitle" }, [
+      el("div", { class: "conv-header" }, [el("h1", { id: "storyBetweenTitle", text: "第" + last + "章を読み終えた" }), el("span", { class: "species-coach", text: ST.chapterData(last) ? ST.chapterData(last).title : "第" + last + "章" })]),
+      res.text ? el("p", { class: "conv-context", text: res.text }) : null,
+      res.advice ? el("div", { class: "card result-card result-advice" }, [
+        el("h3", { text: "ペットの助言" }),
+        el("p", { text: "今回のポイント：" + res.advice.text }),
+        el("p", { class: "field-hint", text: res.advice.example ? "改善例：" + res.advice.example : "" })
+      ]) : null,
+      el("div", { class: "card" }, [
+        el("h3", { text: "読み返せる章" }),
+        el("div", { class: "form-actions" }, st.completedChapters.map(function (c) {
+          return el("button", { type: "button", class: "btn btn--grey btn--sm", text: "第" + c + "章", onclick: function () { renderStoryReadback(c, {}); } });
+        }))
+      ]),
+      el("p", { class: "field-hint", text: st.canEngage ? "次の章をはじめることができます。" : "今日はここまで。明日の朝〜夕方に、また続きを聞きにきてね。" })
+    ]);
+    if (st.canEngage) {
+      panel.append(el("div", { class: "form-actions" }, [
+        el("button", { type: "button", class: "btn btn--primary", text: "第" + (st.completedChapters.length + 1) + "章をはじめる", onclick: function () {
+          var r = globalThis.KE_STORY.startChapter(globalThis.KE_DB.get(), {});
+          if (!r.ok) { showErrorNotice(r.message || "次の章をはじめることができませんでした。"); return; }
+          renderStoryScreen({});
+        } })
+      ]));
+    } else {
+      panel.append(el("div", { class: "form-actions" }, [
+        el("button", { type: "button", class: "btn btn--grey", text: "会話クエストへ戻る", onclick: function () { if (globalThis.KE_APP) globalThis.KE_APP.navigate("quest"); } })
+      ]));
+    }
+    root.append(panel);
+  }
+
+  /** 結末（完結）画面 */
+  function renderStoryDone(st, npc, opts) {
+    const o = opts || {};
+    const root = refs.appRoot;
+    clear(root);
+    const end = st.ending || {};
+    const card = globalThis.KE_STORY.getEndingCard(globalThis.KE_DB.get()) || null;
+    const panel = el("section", { class: "panel", "aria-labelledby": "storyDoneTitle" }, [
+      el("div", { class: "conv-header" }, [el("h1", { id: "storyDoneTitle", text: "物語は完結しました" }), el("span", { class: "species-coach", text: "小さな約束" })]),
+      el("div", { class: "card result-card" }, [
+        el("h3", { text: "結末「" + end.title + "」" }),
+        card && card.catchline ? el("p", { text: card.catchline }) : null,
+        card && card.summary ? el("p", { class: "field-hint", text: card.summary }) : null,
+        card ? el("p", { class: "field-hint", text: "記念カード「物語の思い出」を思い出画面に残しました（" + (card.finishedAt || "") + "）。" }) : null
+      ]),
+      el("div", { class: "card" }, [
+        el("h3", { text: "物語を読み返す" }),
+        el("div", { class: "form-actions" }, (st.completedChapters || []).map(function (c) {
+          return el("button", { type: "button", class: "btn btn--grey btn--sm", text: "第" + c + "章", onclick: function () { renderStoryReadback(c, {}); } });
+        }))
+      ]),
+      el("div", { class: "form-actions" }, [
+        el("button", { type: "button", class: "btn btn--primary", text: "物語の思い出を見る", onclick: function () { if (globalThis.KE_APP) globalThis.KE_APP.navigate("memories"); } }),
+        el("button", { type: "button", class: "btn btn--grey", text: "会話クエストへ戻る", onclick: function () { if (globalThis.KE_APP) globalThis.KE_APP.navigate("quest"); } })
+      ])
+    ]);
+    root.append(panel);
+  }
+
+  /** 未開始の概要画面（本編） */
+  function renderStoryOverview(st, npc, opts) {
+    const o = opts || {};
+    const root = refs.appRoot;
+    clear(root);
+    let desc = "佐藤さんが話したいことから始まる、全4章のちいさな物語。1日1章、朝・昼・夕方に話の続きを聞けます。別れには、結末が2つあります。";
+    if (st.reason === "not_met") desc = "まず通常の外出で「" + npc.displayName + "」と出会ってから、物語に入りましょう。";
+    else if (st.reason === "night_band") desc = storyTimebandNote();
+    const panel = el("section", { class: "panel", "aria-labelledby": "storyOverviewTitle" }, [
+      el("div", { class: "conv-header" }, [el("h1", { id: "storyOverviewTitle", text: "「" + st.title + "」" }), el("span", { class: "species-coach", text: "短編物語・" + ((globalThis.KE_STORY_SMALL_PROMISE || {}).chapterCount || 4) + "章" })]),
+      el("p", { class: "lead", text: (globalThis.KE_STORY_SMALL_PROMISE || {}).subtitle || st.title }),
+      el("p", { class: "conv-context", text: desc }),
+      el("div", { class: "card" }, [
+        el("h3", { text: "章のあらすじ" }),
+        el("ul", { class: "list" }, [
+          el("li", { text: "第1章「話してみたいこと」… 佐藤さんの、散歩会の話を聞く" }),
+          el("li", { text: "第2章「小さなお誘い」… 「参加する／案内文の手伝い」の約束を交わす" }),
+          el("li", { text: "第3章「自分の言葉で」… 約束を、自分の言葉で確かめる" }),
+          el("li", { text: "第4章「それぞれのありがとう」… 約束の先で、ありがとうが交わる" })
+        ])
+      ]),
+      st.canEngage
+        ? el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--primary", text: "第1章をはじめる", onclick: function () {
+          var r = globalThis.KE_STORY.startChapter(globalThis.KE_DB.get(), {});
+          if (!r.ok) { showErrorNotice(r.message || "物語をはじめることができませんでした。"); return; }
+          renderStoryScreen({});
+        } })])
+        : el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--grey", text: st.reason === "not_met" ? "村へ出かける" : "会話クエストへ戻る", onclick: function () {
+          if (globalThis.KE_APP) globalThis.KE_APP.navigate(st.reason === "not_met" ? "pet" : "quest");
+        } })])
+    ]);
+    root.append(panel);
+  }
+
+  /* ---- デモモード（独立した一時データ・4章連続体験・本編に影響なし） ---- */
+
+  function renderStoryDemo() {
+    const root = refs.appRoot;
+    const ST = globalThis.KE_STORY;
+    clear(root);
+    const ds = ST.demoStatus();
+    if (!ds.started) {
+      const panel = el("section", { class: "panel", "aria-labelledby": "demoStoryTitle" }, [
+        el("h1", { id: "demoStoryTitle", text: "短編物語「小さな約束」をデモ体験" }),
+        el("p", { class: "field-hint", text: "デモ専用の独立した一時データで、4章を1回のセッションで続けて体験できます。本編の保存・きずな度・記録には一切影響しません。" }),
+        el("p", { class: "field-hint", text: "(「小さな約束」には手紙機能はありません)" }),
+        el("div", { class: "form-actions" }, [
+          el("button", { type: "button", class: "btn btn--primary", text: "デモをはじめる", onclick: function () { ST.demoBegin(); renderStoryDemo(); } }),
+          el("button", { type: "button", class: "btn btn--grey", text: "会話クエストへ戻る", onclick: function () { if (globalThis.KE_APP) globalThis.KE_APP.navigate("quest"); } })
+        ])
+      ]);
+      root.append(panel);
+      return;
+    }
+    if (ds.done) {
+      const end = ds.ending || {};
+      const panel = el("section", { class: "panel", "aria-labelledby": "demoDoneTitle" }, [
+        el("h1", { id: "demoDoneTitle", text: "デモ：物語は完結しました" }),
+        el("div", { class: "card result-card" }, [
+          el("h3", { text: "結末「" + end.title + "」" }),
+          el("p", { text: ((globalThis.KE_STORY_SMALL_PROMISE && globalThis.KE_STORY_SMALL_PROMISE.endings) || {})[(end.key || "A")].catchline || "" }),
+          el("p", { class: "field-hint", text: "デモはここまでです。本編の保存データには影響していません。" })
+        ]),
+        el("div", { class: "form-actions" }, [
+          el("button", { type: "button", class: "btn btn--primary", text: "デモをもう一度", onclick: function () { ST.demoReset(); ST.demoBegin(); renderStoryDemo(); } }),
+          el("button", { type: "button", class: "btn btn--grey", text: "終了（会話クエストへ）", onclick: function () { ST.demoReset(); if (globalThis.KE_APP) globalThis.KE_APP.navigate("quest"); } })
+        ])
+      ]);
+      root.append(panel);
+      return;
+    }
+    // 章完了直後（デモ）：結果と「次の章へ」
+    if (ds.resolved) {
+      const completedCh = ds.completedChapters[ds.completedChapters.length - 1];
+      renderDemoChapterResult(completedCh);
+      return;
+    }
+    // 進行中：章のターン（デモ）
+    const ts = ST.demoTurnState();
+    const npc = storyNpcOf();
+    const chapter = ts ? ts.chapter : 1;
+    if (!ts) { root.append(el("section", { class: "panel" }, [el("p", { text: "デモ状態を読み込めませんでした。" })])); return; }
+    const sceneLike = {
+      title: "第" + chapter + "章「" + ts.title + "」",
+      npcId: ST.npcIdOf(),
+      background: (globalThis.KE_STORY_SMALL_PROMISE || {}).background || "outdoor",
+      context: ts.intro
+    };
+    const db = globalThis.KE_DB.get();
+    root.append(el("section", { class: "panel conv-panel", "aria-labelledby": "demoChTitle" }, [
+      el("div", { class: "conv-header" }, [el("h1", { id: "demoChTitle", text: sceneLike.title }), el("span", { class: "species-coach", text: "デモ" })]),
+      mountConvScene(db, sceneLike, { npcMotion: "idle" }),
+      el("p", { class: "conv-context", text: ts.intro })
+    ]));
+    const flow = el("div", { class: "conv-flow" });
+    root.append(flow);
+    if (ts.turn === 0) {
+      const round = ts.round0;
+      if (round) {
+        const box = el("div", { class: "conv-box", "aria-live": "polite" }, [el("span", { class: "nameplate", text: npc.displayName }), el("p", { class: "conv-bubble", text: round.npcLine })]);
+        const choices = el("div", { class: "conv-choices" }, [el("p", { class: "field-hint", text: "デモではどの返答でも同じように進みます。" })]);
+        round.answers.forEach(function (a, i) { choices.append(el("button", { type: "button", class: "btn btn--primary conv-choice", text: a.text, onclick: function () { storyChoose(chapter, 0, i, { demo: true }); } })); });
+        flow.append(el("div", { class: "conv-flow" }, [box, choices]));
+      }
+    } else {
+      const prev = ts.round0 && ts.round0.answers[ts.choice.t1];
+      const round = ts.round1;
+      if (round) {
+        const box = el("div", { class: "conv-box", "aria-live": "polite" }, [el("p", { class: "conv-bubble conv-bubble--memo", text: "（前の返答）あなた：「" + (prev ? prev.text : "") + "」" }), el("span", { class: "nameplate", text: npc.displayName }), el("p", { class: "conv-bubble", text: round.npcLine })]);
+        const choices = el("div", { class: "conv-choices" }, [el("p", { class: "field-hint", text: "デモではどの返答でも同じように進みます。" })]);
+        round.answers.forEach(function (a, i) { choices.append(el("button", { type: "button", class: "btn btn--primary conv-choice", text: a.text, onclick: function () { storyChoose(chapter, 1, i, { demo: true }); } })); });
+        flow.append(el("div", { class: "conv-flow" }, [box, choices]));
+      }
+    }
+  }
+
+  /** デモ：章完了のリザルトと「次の章へ」 */
+  function renderDemoChapterResult(chapter) {
+    const root = refs.appRoot;
+    const ST = globalThis.KE_STORY;
+    clear(root);
+    const rb = ST.demoReadback(chapter) || {};
+    const npc = storyNpcOf();
+    const panel = el("section", { class: "panel conv-panel", "aria-labelledby": "demoResultTitle" }, [
+      el("div", { class: "conv-header" }, [el("h1", { id: "demoResultTitle", text: "第" + chapter + "章「" + rb.title + "」を読み終えた" }), el("span", { class: "species-coach", text: "デモ" })]),
+      rb.result && rb.result.text ? el("p", { class: "conv-context", text: rb.result.text }) : null,
+      rb.result && rb.result.advice ? el("div", { class: "card result-card result-advice" }, [
+        el("h3", { text: "ペットの助言" }),
+        el("p", { text: "今回のポイント：" + rb.result.advice.text }),
+        el("p", { class: "field-hint", text: rb.result.advice.example ? "改善例：" + rb.result.advice.example : "" })
+      ]) : null,
+      el("div", { class: "form-actions" }, [
+        el("button", { type: "button", class: "btn btn--primary", text: "次の章へ（デモ）", onclick: function () {
+          const n = globalThis.KE_STORY.demoNextChapter();
+          if (!n.ok) { showErrorNotice(n.message || "次の章を進められませんでした。"); return; }
+          renderStoryDemo();
+        } }),
+        el("button", { type: "button", class: "btn btn--grey btn--sm", text: "第" + chapter + "章を読み返す", onclick: function () { renderStoryReadback(chapter, { demo: true }); } })
+      ])
+    ]);
+    root.append(panel);
+  }
+
   const KE_UI = {
     el: el,
     clear: clear,
@@ -2417,6 +2901,9 @@
     renderMemoriesScreen: renderMemoriesScreen,
     renderNextGenerationScreen: renderNextGenerationScreen,
     renderSettingsScreen: renderSettingsScreen,
+    renderStoryScreen: renderStoryScreen,
+    renderStoryReadback: renderStoryReadback,
+    storyEntrancePanel: storyEntrancePanel,
     install: install
   };
 

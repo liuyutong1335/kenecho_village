@@ -79,6 +79,10 @@
       UI.renderQuestScreen();
       return;
     }
+    if (target === "story") {
+      UI.renderStoryScreen();
+      return;
+    }
     if (target === "notebook") {
       UI.renderNotebookScreen();
       return;
