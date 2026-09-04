@@ -2038,6 +2038,7 @@
     const db = globalThis.KE_DB.get();
     const REL = globalThis.KE_RELATIONSHIP;
     const SPR = globalThis.KE_SPRITE;
+    const NPC_SPR = globalThis.KE_NPC_SPRITE;
     const npcs = globalThis.KE_NPCS || [];
     const panel = el("section", { class: "panel", "aria-labelledby": "bookTitle" }, [
       el("h1", { id: "bookTitle", text: "交流ノート（住民手帳）" }),
@@ -2048,7 +2049,7 @@
       const met = REL.isNpcDiscovered(db, npc.id);
       const state = met ? REL.getNpcState(db, npc.id) : null;
       const cardBody = met ? [
-        SPR.canvasTag(SPR.renderSilhouette("#5a554e", 4), npc.displayName, "sprite-canvas"),
+        NPC_SPR.canvasTag(NPC_SPR.renderNpcFrame(npc.id, "smile", 4), npc.displayName, "sprite-canvas npc-card-icon"),
         el("span", { class: "species-name", text: npc.displayName }),
         el("span", { class: "species-coach", text: npc.role }),
         el("span", { class: "field-hint", text: "きずな度 " + state.bond + "（" + REL.getNpcBondLevelLabel(db, npc.id) + "）" }),
@@ -2074,6 +2075,7 @@
     const overlay = el("div", { class: "overlay", role: "dialog", "aria-modal": "true", "aria-label": npc.displayName });
     overlay.append(el("div", { class: "dialog dialog--wide" }, [
       el("button", { type: "button", class: "dialog-close", "aria-label": "閉じる", text: "×", onclick: function () { overlay.remove(); } }),
+      el("div", { class: "npc-portrait" }, [globalThis.KE_NPC_SPRITE.canvasTag(globalThis.KE_NPC_SPRITE.renderNpcFrame(npc.id, "smile", 4), npc.displayName, "sprite-canvas")]),
       el("h2", { class: "dialog-title", text: npc.displayName + "（" + npc.role + "）" }),
       el("p", { text: "自己紹介：" + npc.intro }),
       el("p", { class: "field-hint", text: "出会った場所：" + npc.metPlace }),
