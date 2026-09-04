@@ -171,6 +171,25 @@
   const SCENE_TAGS = ["work", "daily", "food"];
   const RELATION_LEVELS = ["stranger", "familiar", "connected", "trusted", "partner"];
 
+  /** 改善例（アドバイスの「今回のポイント＋改善例」のうち改善例）の口調・内容。
+   *  内容（ADVICE_EXAMPLE）は全種共通で正しさを担保し、口調（ADVICE_LEAD）だけ種で変える。 */
+  const ADVICE_LEAD = {
+    rabbit: "たとえば、",
+    fox: "例えば、",
+    bearcub: "こうしてみよう。",
+    cat: "試しに、",
+    bird: "ええと、丁寧に言うなら、",
+    tanuki: "おっと、この手もあるドン。"
+  };
+  const ADVICE_EXAMPLE = {
+    good: "相手の言葉からひとつ質問を返すと、話がより続きやすくなるよ。",
+    short: "「はい／いいえ」に、一言だけ自分の状況を添えると伝わりやすくなるよ。",
+    bad: "まず相手の言葉を「そうなんだ」とオウム返ししてから、感想をひとつ添えてみよう。"
+  };
+  function adviceText(speciesId, at) {
+    return (ADVICE_LEAD[speciesId] || "たとえば、") + ADVICE_EXAMPLE[at];
+  }
+
   function build() {
     const out = [];
     const push = function (e) { out.push(e); };
@@ -185,7 +204,7 @@
             petTypes: [speciesId], coachTypes: [v.coachType],
             growthStages: sg.stages, petConditions: [],
             answerType: at, sceneTags: [], relationLevels: [], petRelationLevels: [],
-            purpose: "feedback", text: v.fb[at] + sg.tail, weight: 10
+            purpose: "feedback", text: v.fb[at] + sg.tail, adviceExample: adviceText(speciesId, at), weight: 10
           });
         });
       });
@@ -233,7 +252,7 @@
           id: "coach_coachtype_" + ct + "_" + at, petTypes: [], coachTypes: [ct],
           growthStages: ["child", "growing", "adult", "companion"], petConditions: [],
           answerType: at, sceneTags: [], relationLevels: [], petRelationLevels: [],
-          purpose: "feedback", text: COACH_TYPES[ct], weight: 10
+          purpose: "feedback", text: COACH_TYPES[ct], adviceExample: ADVICE_EXAMPLE[at], weight: 10
         });
       });
     });
@@ -248,7 +267,7 @@
       push({
         id: "coach_common_" + at, petTypes: [], coachTypes: [], growthStages: [], petConditions: [],
         answerType: at, sceneTags: [], relationLevels: [], petRelationLevels: [],
-        purpose: "feedback", text: GENERIC_AT[at], weight: 10
+        purpose: "feedback", text: GENERIC_AT[at], adviceExample: ADVICE_EXAMPLE[at], weight: 10
       });
     });
 

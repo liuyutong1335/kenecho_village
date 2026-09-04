@@ -114,14 +114,16 @@
   /**
    * 重み付き抽選。候補 [{ weight: number, ... }] を渡し、weight に比例して1件返す。
    * total が 0 以下なら最初の要素を返す。
+   * rng は [0,1) を返す関数。テストで必須に固定するために注入できる（既定 = Math.random）。
    */
-  function pickWeighted(candidates) {
+  function pickWeighted(candidates, rng) {
     if (!Array.isArray(candidates) || candidates.length === 0) return null;
+    const rnd = typeof rng === "function" ? rng : Math.random;
     const total = candidates.reduce(function (acc, c) {
       return acc + (Number.isFinite(c.weight) && c.weight > 0 ? c.weight : 0);
     }, 0);
     if (total <= 0) return candidates[0];
-    let r = Math.random() * total;
+    let r = rnd() * total;
     for (let i = 0; i < candidates.length; i++) {
       const w = Number.isFinite(candidates[i].weight) && candidates[i].weight > 0 ? candidates[i].weight : 0;
       r -= w;
