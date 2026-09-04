@@ -31,6 +31,7 @@ const SCRIPT_ORDER = [
   "js/pet-game.js",
   "js/relationship.js",
   "js/npc-memory.js",
+  "js/outings.js",
   "js/dialogue-engine.js",
   "js/conversation-game.js",
   "js/sprite.js",
@@ -72,7 +73,7 @@ test("期待する名前空間が公開されている", () => {
     "KE_PETS", "KE_COACH_SPEECH", "KE_NPCS", "KE_SCENES", "KE_STORY_LINES", "KE_ANIMATION_MANIFEST",
     "KE_DB", "KE_HEALTH", "KE_PET", "KE_RELATIONSHIP", "KE_DIALOGUE", "KE_CONVERSATION",
     "KE_SPRITE", "KE_ANIMATION", "KE_PIXEL_NPCS", "KE_NPC_SPRITE", "KE_NPC_ANIMATION", "KE_CONV_SCENE",
-    "KE_NPC_MEMORY", "KE_UI", "KE_APP"]) {
+    "KE_NPC_MEMORY", "KE_OUTING", "KE_UI", "KE_APP"]) {
     assert.ok(globalThis[key] !== undefined, "namespace未公開: " + key);
   }
 });
