@@ -91,10 +91,13 @@ body {
   font-family: var(--font-base);
 }
 .topbar-logo-mark {
-  width: 24px;
-  height: 24px;
-  background: var(--paper);
-  box-shadow: inset -3px -3px 0 rgba(0,0,0,.12);
+  width: 32px;
+  height: 32px;
+  display: block;
+  flex: 0 0 auto;
+  border: 2px solid var(--wood-dark);
+  box-shadow: 2px 2px 0 rgba(0,0,0,.18);
+  image-rendering: pixelated;
 }
 .topbar-nav {
   display: flex;
