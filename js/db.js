@@ -79,7 +79,8 @@
       petEncyclopedia: {}, // speciesId -> { discovered, discoveredAt }
       relationships: { pet: {}, npcs: {} }, // pet: gen -> {bond, questsCompleted} / npcs: npcId -> {bond, conversations, lastTalkedAt, unlockedEvents}
       conversation: { dailyQuestDate: null, dailyQuestCompleted: false, recentDialogueIds: [], unlockedSceneIds: [], recentStoryIds: [], lastOutingNpcId: null },
-      relationshipHistory: [] // { at, key, delta, from, to, why }
+      relationshipHistory: [], // { at, key, delta, from, to, why }
+      npcMemory: {} // "<profileId>:<npcId>" -> NpcMemory（NPC別の会話記憶・約束・期待。世代を超えて維持）
     };
   }
 
@@ -135,6 +136,7 @@
     out.relationships = data.relationships && typeof data.relationships === "object" ? data.relationships : { pet: {}, npcs: {} };
     out.conversation = data.conversation && typeof data.conversation === "object" ? Object.assign({}, defaultData().conversation, data.conversation) : defaultData().conversation;
     out.relationshipHistory = Array.isArray(data.relationshipHistory) ? data.relationshipHistory : [];
+    out.npcMemory = data.npcMemory && typeof data.npcMemory === "object" && !Array.isArray(data.npcMemory) ? data.npcMemory : {};
     return out;
   }
 
