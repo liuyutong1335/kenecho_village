@@ -27,11 +27,11 @@ const ADVICE = globalThis.KE_COACH_SPEECH;
 
 /* 進行に応じて引き上げるフロア（最終: 20/20/20・60 / 各ペット50 / 助言300） */
 const FLOORS = {
-  totalScenes: 53,
-  byCategory: { daily: 18, work: 18, food: 17 },
+  totalScenes: 60,
+  byCategory: { daily: 20, work: 20, food: 20 },
   storyPerRoleCategory: 2,
   adviceTotal: 164,
-  advicePerSpecies: 22
+  advicePerSpecies: 22 // 助言拡張（feat/dialogue-content-expansion）で 300/各ペット50 を目指す
 };
 
 const CATEGORIES = ["daily", "work", "food"];

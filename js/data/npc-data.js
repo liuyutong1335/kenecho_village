@@ -8,7 +8,7 @@
   const KE_NPCS = [
     {
       id: "npc_sato", displayName: "佐藤さん", role: "職場の先輩",
-      personality: "gentle", speechStyle: "soft", sceneIds: ["scn_001", "scn_002", "scn_028", "scn_030", "scn_038", "scn_049"],
+      personality: "gentle", speechStyle: "soft", sceneIds: ["scn_001", "scn_002", "scn_028", "scn_030", "scn_038", "scn_049", "scn_054"],
       spriteId: "npc_sato", initialBond: 40,
       intro: "穏やかで話しやすい先輩。初心者の質問にも笑顔で答えてくれる。",
       metPlace: "初出勤の日に、エレベーター前で声をかけられた",
@@ -16,7 +16,7 @@
     },
     {
       id: "npc_yamada", displayName: "山田さん", role: "慎重な同僚",
-      personality: "cautious", speechStyle: "considerate", sceneIds: ["scn_005", "scn_006", "scn_027", "scn_037", "scn_040", "scn_048"],
+      personality: "cautious", speechStyle: "considerate", sceneIds: ["scn_005", "scn_006", "scn_027", "scn_037", "scn_040", "scn_048", "scn_057"],
       spriteId: "npc_yamada", initialBond: 40,
       intro: "言葉を選ぶように話す、落ち着いた同期の同僚。",
       metPlace: "入社研修のグループワークで一緒になった",
@@ -24,7 +24,7 @@
     },
     {
       id: "npc_konno", displayName: "今野さん", role: "明るい店員",
-      personality: "bright", speechStyle: "cheerful", sceneIds: ["scn_007", "scn_008", "scn_023", "scn_032", "scn_041", "scn_050"],
+      personality: "bright", speechStyle: "cheerful", sceneIds: ["scn_007", "scn_008", "scn_023", "scn_032", "scn_041", "scn_050", "scn_059"],
       spriteId: "npc_konno", initialBond: 40,
       intro: "いつも元気な声で迎えてくれる、商店街のパン屋さん。",
       metPlace: "通勤路のパン屋で朝のパンを買ったとき",
@@ -40,7 +40,7 @@
     },
     {
       id: "npc_tanaka", displayName: "田中さん", role: "簡潔に話す上司",
-      personality: "concise", speechStyle: "brief", sceneIds: ["scn_003", "scn_004", "scn_022", "scn_029", "scn_039", "scn_047"],
+      personality: "concise", speechStyle: "brief", sceneIds: ["scn_003", "scn_004", "scn_022", "scn_029", "scn_039", "scn_047", "scn_055", "scn_056"],
       spriteId: "npc_tanaka", initialBond: 40,
       intro: "必要なことだけを短く伝える、さっぱりした上司。",
       metPlace: "配属初日の夜に声をかけられた",
@@ -56,7 +56,7 @@
     },
     {
       id: "npc_hanada", displayName: "花田さん", role: "世話好きな食堂スタッフ",
-      personality: "caring", speechStyle: "warm", sceneIds: ["scn_009", "scn_010", "scn_024", "scn_031", "scn_035", "scn_042", "scn_051"],
+      personality: "caring", speechStyle: "warm", sceneIds: ["scn_009", "scn_010", "scn_024", "scn_031", "scn_035", "scn_042", "scn_051", "scn_058"],
       spriteId: "npc_hanada", initialBond: 40,
       intro: "体のことを気づかってくれる、アットホームな食堂のスタッフ。",
       metPlace: "残業帰りに寄った夜食屋台で話した",
@@ -64,7 +64,7 @@
     },
     {
       id: "npc_kato", displayName: "加藤さん", role: "ユーモアのある友人",
-      personality: "humorous", speechStyle: "light", sceneIds: ["scn_011", "scn_017", "scn_018", "scn_025", "scn_033", "scn_036", "scn_046", "scn_052"],
+      personality: "humorous", speechStyle: "light", sceneIds: ["scn_011", "scn_017", "scn_018", "scn_025", "scn_033", "scn_036", "scn_046", "scn_052", "scn_060"],
       spriteId: "npc_kato", initialBond: 40,
       intro: "いつも面白い話を探している、気軽な友人。",
       metPlace: "週末の野球観戦帰りに隣の席になった",
