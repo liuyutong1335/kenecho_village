@@ -500,7 +500,9 @@
   /**
    * 目標タイプ別の推薦目標を算出する（初期設定・未カスタマイズ時の提示用）。
    * profile（体重・身長・年齢・性別）とタイプの係数から、
-   * 摂取カロリー（BMR×比）・蛋白質（体重×係数）・運動・睡眠を返す。
+   * 摂取カロリー（BMR×比＋活動分）・蛋白質（体重×係数）・運動・睡眠を返す。
+   * 基礎代謝（BMR）は安静時の消費で、日々の必要量はさらに活動分が要るため、
+   * CALORIE_ACTIVITY_KCAL（400kcal）を加算する。
    * profileOverride を渡すと DB 未保存の入力値を優先する（初期設定ウィザード途中用）。
    */
   function recommendGoals(db, goalType, profileOverride) {
@@ -508,7 +510,8 @@
     const type = C.HEALTH_GOAL_TYPES[goalType] || C.HEALTH_GOAL_TYPES[C.DEFAULT_GOAL_TYPE];
     const weight = getWeightForCalculation(db, profile);
     const bmr = calcBMR(weight, profile.heightCm, profile.age, profile.gender);
-    const calorieLimitKcal = bmr != null ? Math.round(bmr * type.calorieRatio) : C.HEALTH_GOAL_DEFAULTS.calorieLimitKcal;
+    const activity = C.CALORIE_ACTIVITY_KCAL != null ? Number(C.CALORIE_ACTIVITY_KCAL) : 400;
+    const calorieLimitKcal = bmr != null ? Math.round(bmr * type.calorieRatio) + activity : C.HEALTH_GOAL_DEFAULTS.calorieLimitKcal;
     return {
       goalType: type === C.HEALTH_GOAL_TYPES[goalType] ? goalType : C.DEFAULT_GOAL_TYPE,
       bmr: bmr != null ? bmr : null,
