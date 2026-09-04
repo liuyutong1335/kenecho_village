@@ -190,7 +190,10 @@
         scn_030: ["daytime", "evening"], scn_031: ["daytime"], scn_032: ["daytime", "evening"], scn_033: ["daytime", "evening"],
         scn_034: ["daytime", "evening"], scn_035: ["morning"], scn_036: ["morning", "daytime"],
         scn_037: ["daytime", "evening"], scn_038: ["daytime"], scn_039: ["daytime"], scn_040: ["daytime"],
-        scn_041: ["daytime"], scn_042: ["daytime", "evening"], scn_043: ["daytime"]
+        scn_041: ["daytime"], scn_042: ["daytime", "evening"], scn_043: ["daytime"],
+        scn_044: ["daytime"], scn_045: ["night"], scn_046: ["night"],
+        scn_047: ["daytime"], scn_048: ["daytime"], scn_049: ["daytime", "evening"],
+        scn_050: ["night", "late_night"], scn_051: ["evening"], scn_052: ["evening", "night"], scn_053: ["daytime"]
       },
       /** ストーリー臺詞の天気一致ボーナス（確率の初期案） */
       WEATHER_BONUS: 5

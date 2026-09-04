@@ -27,8 +27,8 @@ const ADVICE = globalThis.KE_COACH_SPEECH;
 
 /* 進行に応じて引き上げるフロア（最終: 20/20/20・60 / 各ペット50 / 助言300） */
 const FLOORS = {
-  totalScenes: 43,
-  byCategory: { daily: 15, work: 15, food: 13 },
+  totalScenes: 53,
+  byCategory: { daily: 18, work: 18, food: 17 },
   storyPerRoleCategory: 2,
   adviceTotal: 164,
   advicePerSpecies: 22
