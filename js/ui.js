@@ -1491,14 +1491,21 @@
   function startOuting() {
     const db = globalThis.KE_DB.get();
     const pet = db.currentPet;
+    const CONV = globalThis.KE_CONVERSATION;
     if (!pet || !pet.speciesRevealed) {
       renderVillageEntrance();
       return;
     }
     // 外へ出る＝外出を伴う遊び。当日の体調不良を回復扱いにする
     globalThis.KE_PET.markRecovered(db);
+    // 未会いのNPCと出会う（発見登録し、今回のクエストのシーン優先に反映）
+    const metNpc = CONV.meetNewNpc(db);
     globalThis.KE_DB.save();
-    showNotice("外で気分転換できました。ペットの調子が少し良くなりました。");
+    if (metNpc) {
+      showNotice("村で「" + metNpc.displayName + "」と出会った！ 早速話しかけてみよう。");
+    } else {
+      showNotice("外で気分転換できました。ペットの調子が少し良くなりました。");
+    }
     if (globalThis.KE_APP) globalThis.KE_APP.navigate("quest");
   }
 
@@ -1659,8 +1666,12 @@
     }
     draw(scene, null);
 
+    let currentRound = null;
+    /** シーンを表示する。クエストの回合はストーリー枠から抽選（直近使用を避けて外出ごとに変化） */
     function draw(sc, result) {
       clear(root);
+      const recents = (db.conversation && db.conversation.recentStoryIds) || [];
+      currentRound = CONV.pickQuestRound(db, sc, recents);
       root.append(buildFrame(sc, result));
     }
 
@@ -1689,7 +1700,8 @@
     }
 
     function buildQuestion(sc) {
-      const round = sc.rounds[0];
+      const round = (currentRound && currentRound.round) || sc.rounds[0];
+      if (!round) return el("p", { class: "field-hint", text: "会話を準備できませんでした。もう一度お試しください。" });
       const box = el("div", { class: "conv-box", "aria-live": "polite" }, [
         el("span", { class: "nameplate", text: CONV.getNpcById(sc.npcId).displayName }),
         el("p", { class: "conv-bubble", text: round.npcLine })
@@ -1697,7 +1709,7 @@
       const choices = el("div", { class: "conv-choices" }, [el("p", { class: "field-hint", text: "あなたの返答を選んでください（分類は表示しません）。" })]);
       round.answers.forEach(function (a, i) {
         choices.append(el("button", { type: "button", class: "btn btn--primary conv-choice", text: a.text, onclick: function () {
-          const r = CONV.completeDailyQuest(DB.get(), sc.id, i, today);
+          const r = CONV.completeDailyQuest(DB.get(), sc.id, i, today, round);
           if (!r.ok) { showErrorNotice(r.message || "クエストを完了できませんでした。"); return; }
           // 会話で遊んだ日は、外に出た扱いで回復
           globalThis.KE_PET.markRecovered(DB.get(), today);

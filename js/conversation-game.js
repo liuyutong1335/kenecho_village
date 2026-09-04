@@ -36,11 +36,30 @@
     return getScenes().filter(function (s) { return discovered.indexOf(s.npcId) >= 0; });
   }
 
-  /** 今日のクエストに使うシーンを選ぶ（利用可能からランダム） */
+  /** 今日のクエストに使うシーンを選ぶ（直近の外出で出会ったNPCを優先し、その中からランダム） */
   function pickQuestScene(db) {
     const list = getAvailableScenes(db);
     if (list.length === 0) return null;
+    const featured = db.conversation && db.conversation.lastOutingNpcId;
+    if (featured) {
+      const sub = list.filter(function (s) { return s.npcId === featured; });
+      if (sub.length > 0) return sub[U.randInt(0, sub.length - 1)];
+    }
     return list[U.randInt(0, list.length - 1)];
+  }
+
+  /** 未発見のNPCを1名ランダムに発見登録し、そのNPCを返す。全員発見済みなら null */
+  function meetNewNpc(db, rng) {
+    const all = globalThis.KE_NPCS || [];
+    const undiscovered = all.filter(function (n) { return !REL.isNpcDiscovered(db, n.id); });
+    const useRnd = typeof rng === "function" ? function (min, max) { return min + Math.floor(rng() * (max - min + 1)); } : null;
+    const idx = useRnd ? useRnd(0, undiscovered.length - 1) : U.randInt(0, undiscovered.length - 1);
+    if (undiscovered.length === 0) return null;
+    const npc = undiscovered[idx];
+    REL.ensureNpc(db, npc.id);
+    if (!db.conversation) db.conversation = {};
+    db.conversation.lastOutingNpcId = npc.id;
+    return npc;
   }
 
   function getQuestStatus(db, today) {
@@ -75,11 +94,11 @@
    * 戻り値: { ok, scene, answer, npc, firstToday, updates, advice }
    *  - firstToday=true のときだけ NPC/ペットのきずな度を更新（1日1回）
    */
-  function completeDailyQuest(db, sceneId, answerIndex, today) {
+  function completeDailyQuest(db, sceneId, answerIndex, today, questRound) {
     const scene = getSceneById(sceneId);
     if (!scene) return { ok: false, reason: "scene_not_found", message: "シーンが見つかりません。" };
-    const round = scene.rounds[0];
-    const answer = round.answers[answerIndex];
+    const round = questRound || scene.rounds[0];
+    const answer = round && round.answers ? round.answers[answerIndex] : undefined;
     if (!answer) return { ok: false, reason: "bad_answer", message: "回答が見つかりません。" };
     if (!isConversationUnlocked(db)) return { ok: false, reason: "locked", message: "種類公開後に会話できます。" };
 
@@ -116,6 +135,11 @@
     const chosen = DIAG.pick(ctx);
     if (db.currentPet && chosen.id) {
       db.currentPet.recentDialogueIds = DIAG.pushRecent(db.currentPet.recentDialogueIds, chosen.id, 10);
+    }
+    // ストーリー回合（id を持つ回合）を使った場合は、連続回避用に直近IDへ記録（外出しても同じ会話にしない）
+    if (round && round.id) {
+      if (!db.conversation) db.conversation = {};
+      db.conversation.recentStoryIds = DIAG.pushRecent(db.conversation.recentStoryIds || [], round.id, (C.STORY && C.STORY.RECENT_KEEP) || 8);
     }
 
     return {
@@ -174,6 +198,32 @@
       fallbackRound: fallback
     });
     return { source: picked.source, round: picked.round, role: roundRole(roundIndex), id: picked.id };
+  }
+
+  /**
+   * クエストに使う回合を選択する（ロール＝オープン）。
+   * 場面・NPC・関係段階に合うストーリー回合を重み付きで抽選し、候補が無ければ正規の rounds[0] へ落とす。
+   * 外出を重ねても毎回同じ会話にならないよう、過去に使ったストーリー回合（recentIds）を避ける。
+   */
+  function pickQuestRound(db, scene, recentIds, rng) {
+    const round0 = scene.rounds[0];
+    if (!round0) return { source: "none", round: null, id: null };
+    const npc = getNpcById(scene.npcId) || {};
+    let relationLevel = null;
+    if (REL.getRelationshipLevelKey) {
+      const bond = REL.getNpcBond(db, scene.npcId);
+      if (bond != null) relationLevel = REL.getRelationshipLevelKey(bond);
+    }
+    return DIAG.pickStoryRound({
+      role: "open",
+      scene: scene,
+      npc: npc,
+      relationLevel: relationLevel,
+      prevFacet: null,
+      recentIds: recentIds || [],
+      rng: rng,
+      fallbackRound: round0
+    });
   }
 
   /* ------------------------------------------------------------------ */
@@ -243,6 +293,8 @@
     isConversationUnlocked,
     getAvailableScenes,
     pickQuestScene,
+    meetNewNpc,
+    pickQuestRound,
     getQuestStatus,
     completeDailyQuest,
     getAnswerMeta,
