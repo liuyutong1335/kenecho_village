@@ -45,16 +45,20 @@
       exerciseMinutes: 30,    // 1日の運動時間目標 (分)
       sleepHours: 7           // 1日の睡眠時間目標 (h)
     },
+    /** 摂取カロリー推薦の「活動分」。基礎代謝だけでは日々の必要量を満たせないため、
+     *  推薦 = 基礎代謝 × 目的係数 ＋ 本値（概ね日々の総消費目安へ近づける）。 */
+    CALORIE_ACTIVITY_KCAL: 400,
 
     /** ---- 健康目標タイプ（初期設定で選択、推薦値を算出）----
-     * calorieDelta: BMRに対する摂取カロリー比（1.0 = 維持）
-     * proteinPerKg: 蛋白質 = 体重kg × 係数
+     * calorieRatio: 基礎代謝に対する摂取カロリー比（1.0 = 維持）
+     * calorieExtraKcal: 活動分とは別にさらに加算するkcal（増量で上乗せ）
+     * proteinPerKg: 蛋白質 = 体重kg × 係数（減量 < 維持 にならないよう維持は減量未満）
      * exerciseMinutes / sleepHours: タイプごとの推奨目標
      */
     HEALTH_GOAL_TYPES: {
-      lose: { label: "減量", calorieRatio: 0.9, proteinPerKg: 1.6, exerciseMinutes: 45, sleepHours: 8, desc: "少し控えめな摂取と運動で、ゆるやかな減量をめざします" },
-      gain: { label: "増量（体づくり）", calorieRatio: 1.1, proteinPerKg: 1.7, exerciseMinutes: 40, sleepHours: 8, desc: "エネルギーとたんぱく質をしっかりとり、からだづくりを応援します" },
-      maintain: { label: "健康維持", calorieRatio: 1.0, proteinPerKg: 1.2, exerciseMinutes: 30, sleepHours: 7, desc: "無理のない範囲で、毎日の健康をキープします" }
+      lose: { label: "減量", calorieRatio: 0.9, calorieExtraKcal: 0, proteinPerKg: 1.6, exerciseMinutes: 30, sleepHours: 8, desc: "少し控えめな摂取と運動で、ゆるやかな減量をめざします" },
+      gain: { label: "増量（体づくり）", calorieRatio: 1.1, calorieExtraKcal: 200, proteinPerKg: 1.8, exerciseMinutes: 30, sleepHours: 8, desc: "エネルギーとたんぱく質をしっかりとり、からだづくりを応援します" },
+      maintain: { label: "健康維持", calorieRatio: 1.0, calorieExtraKcal: 0, proteinPerKg: 1.4, exerciseMinutes: 30, sleepHours: 7, desc: "無理のない範囲で、毎日の健康をキープします" }
     },
     /** 目標タイプ未選択時の既定 */
     DEFAULT_GOAL_TYPE: "maintain",
@@ -126,7 +130,7 @@
     STORY: {
       ROLES: ["open", "develop", "respond", "close"],
       ROLE_LABELS: { open: "導入", develop: "展開", respond: "応答", close: "締め" },
-      WEIGHT_BONUS: { category: 6, personality: 6, relation: 4, facet: 6, topic: 4 },
+      WEIGHT_BONUS: { category: 6, personality: 6, relation: 4, facet: 6, topic: 4, timeBand: 6, memory: 6 },
       DEFAULT_WEIGHT: 10,
       RECENT_KEEP: 8 // ストーリー枠の連続回避に使う直近ID保持数
     },
@@ -183,7 +187,19 @@
         scn_007: ["morning", "daytime"], scn_008: ["morning", "daytime"],
         scn_009: ["daytime", "evening"], scn_010: ["night", "late_night"], scn_011: ["daytime"], scn_012: ["daytime", "evening"],
         scn_013: ["morning", "daytime"], scn_014: ["morning"], scn_015: ["morning", "daytime", "evening"], scn_016: ["morning", "daytime", "evening"],
-        scn_017: ["evening", "night"], scn_018: ["daytime", "evening"], scn_019: ["evening", "night"], scn_020: ["daytime", "evening"]
+        scn_017: ["evening", "night"], scn_018: ["daytime", "evening"], scn_019: ["evening", "night"], scn_020: ["daytime", "evening"],
+        scn_021: ["morning"], scn_022: ["daytime"], scn_023: ["evening", "night"],
+        scn_024: ["daytime", "evening"], scn_025: ["daytime"], scn_026: ["daytime", "evening"],
+        scn_027: ["daytime"], scn_028: ["evening"], scn_029: ["daytime"],
+        scn_030: ["daytime", "evening"], scn_031: ["daytime"], scn_032: ["daytime", "evening"], scn_033: ["daytime", "evening"],
+        scn_034: ["daytime", "evening"], scn_035: ["morning"], scn_036: ["morning", "daytime"],
+        scn_037: ["daytime", "evening"], scn_038: ["daytime"], scn_039: ["daytime"], scn_040: ["daytime"],
+        scn_041: ["daytime"], scn_042: ["daytime", "evening"], scn_043: ["daytime"],
+        scn_044: ["daytime"], scn_045: ["night"], scn_046: ["night"],
+        scn_047: ["daytime"], scn_048: ["daytime"], scn_049: ["daytime", "evening"],
+        scn_050: ["night", "late_night"], scn_051: ["evening"], scn_052: ["evening", "night"], scn_053: ["daytime"],
+        scn_054: ["daytime"], scn_055: ["morning"], scn_056: ["daytime"],
+        scn_057: ["evening"], scn_058: ["morning"], scn_059: ["daytime", "evening"], scn_060: ["daytime"]
       },
       /** ストーリー臺詞の天気一致ボーナス（確率の初期案） */
       WEATHER_BONUS: 5

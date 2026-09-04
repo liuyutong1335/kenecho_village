@@ -39,6 +39,17 @@
     return rest.length > 0 ? rest : blocked;
   }
 
+  /** 助言の選択内容（facet）対応：同じ階層の候補内で、回答のfacetに一致する助言を優先する。
+   *  一致が無ければ階層を変えず、そのまま使う（種類・分類に合った無関係でない助言を保つ）。 */
+  function preferFacet(candidates, ctx) {
+    const facet = ctx && ctx.facet;
+    if (!facet || !Array.isArray(candidates) || candidates.length === 0) return candidates;
+    const hit = candidates.filter(function (e) {
+      return Array.isArray(e.facets) && e.facets.indexOf(facet) >= 0;
+    });
+    return hit.length > 0 ? hit : candidates;
+  }
+
   /**
    * ctx: { petType, coachType, stage, condition, answerType, sceneTag,
    *        npcRelationLevel, petRelationLevel, purpose, recentIds }
@@ -99,6 +110,8 @@
       candidates = pool.filter(function (e) { return e.purpose === "fallback"; });
       tier = 4;
     }
+    // 同じ階層内で、選択したfacet（共感・質問・自己開示等）に合う助言を優先する
+    candidates = preferFacet(candidates, c);
     candidates = applyRecentAvoid(candidates, c.recentIds);
     const chosen = U.pickWeighted(candidates);
     if (!chosen) return { id: null, text: "", tier: 0, example: null };
@@ -127,13 +140,16 @@
    *   scene,                   // 対象シーン（category/tags 参照）
    *   npc,                     // NPC（personality 参照）
    *   relationLevel,           // 関係段階キー or null
+   *   weather,                 // 天気キー or null（e.weather 指定の台詞は一致のみ）
+   *   timeBand,                // 時間帯キー or null（e.timeBands 指定の台詞は一致のみ）
+   *   memoryKinds,             // NPCに現在ある記憶種別 ["topic","promise",...]（e.requiresMemory 指定の台詞のみ）
    *   prevFacet,               // 直前の回答 facet or null
    *   recentIds,               // 連続回避用（KE_STORY_LINES の id）
    *   rng,                     // 抽選用 [0,1) 関数（テストで固定）
    *   fallbackRound            // 候補が無いときの正規回合（scene.rounds[n]）
    * }
    * 戻り値: { source: "story"|"scene"|"none", round, id }
-   *  - 条件に合う候補だけを場面・NPC・関係段階・直前の選択で絞り込み、
+   *  - 条件に合う候補だけを場面・NPC・関係段階・天気・時間帯・記憶・直前の選択で絞り込み、
    *  - 同じ台詞（正規回合と同一）と直近使用IDを避け、
    *  - データ側の weight に条件一致ボーナス（KE_CONFIG.STORY.WEIGHT_BONUS）を加算して抽選する。
    */
@@ -164,6 +180,19 @@
         if (!c.weather || e.weather.indexOf(c.weather) < 0) continue;
         weatherMatched = true;
       }
+      // 時間帯に紐づく台詞（指定があれば一致する場合のみ・一致で重み加算。時間帯不明なら除外）
+      let timeBandMatched = false;
+      if (Array.isArray(e.timeBands) && e.timeBands.length) {
+        if (c.timeBand == null || e.timeBands.indexOf(c.timeBand) < 0) continue;
+        timeBandMatched = true;
+      }
+      // 記憶に紐づく台詞（指定した種別の記憶が無ければ出さない・あれば重み加算）
+      let memoryMatched = false;
+      if (Array.isArray(e.requiresMemory) && e.requiresMemory.length) {
+        const kinds = Array.isArray(c.memoryKinds) ? c.memoryKinds : [];
+        if (!e.requiresMemory.some(function (k) { return kinds.indexOf(k) >= 0; })) continue;
+        memoryMatched = true;
+      }
       // 直前の選択に依存する台詞（前の選択が無い、またはfacet不一致なら除外）
       if (e.requiresPrev && c.prevFacet == null) continue;
       if (Array.isArray(e.prevFacets) && e.prevFacets.length > 0 && e.prevFacets.indexOf(c.prevFacet) < 0) continue;
@@ -178,6 +207,8 @@
       if (Array.isArray(e.prevFacets) && e.prevFacets.indexOf(c.prevFacet) >= 0) w += bonus.facet;
       if (tagOverlap(e.tags, scene.tags)) w += bonus.topic;
       if (weatherMatched) w += (C.OUTING && C.OUTING.WEATHER_BONUS) || 5;
+      if (timeBandMatched) w += bonus.timeBand || 6;
+      if (memoryMatched) w += bonus.memory || 6;
       scored.push({ entry: e, weight: w, e: e });
     }
 

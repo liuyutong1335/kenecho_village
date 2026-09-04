@@ -140,7 +140,7 @@
   /** 初期設定ウィザード（1画面1質問・10枚） */
   function renderSetup(onComplete) {
     const root = refs.appRoot;
-    const state = { step: 1, values: {} };
+    const state = { step: 1, values: {}, prefilledGoalType: null };
     const maxStep = 10;
 
     const stepRadio = [
@@ -284,10 +284,18 @@
       return { value: k, label: t.label, note: t.desc };
     });
 
-    /** 選択中の目標タイプが持つ推奨目標 */
+    /** 選択中の目標タイプが持つ推奨目標
+     *  ウィザード途中は DB にプロフィールが未保存のため、入力値（身長・体重・年齢・性別）を
+     *  プロフィール上書きとして渡し、その人の身体データから BMR×目的係数で算出させる。 */
     function recommendedTargets() {
       const H9 = globalThis.KE_HEALTH;
-      return H9.recommendGoals(globalThis.KE_DB.get(), state.values.goalType);
+      const v = state.values;
+      const profile = {};
+      if (v.heightCm != null && v.heightCm !== "") profile.heightCm = Number(v.heightCm);
+      if (v.weightKg != null && v.weightKg !== "") profile.weightKg = Number(v.weightKg);
+      if (v.age != null && v.age !== "") profile.age = Number(v.age);
+      if (v.gender) profile.gender = v.gender;
+      return H9.recommendGoals(globalThis.KE_DB.get(), state.values.goalType, profile);
     }
 
     function step8Content(errors) {
@@ -301,10 +309,13 @@
 
     function step9Content(errors) {
       const rec = recommendedTargets();
-      // 初回表示時は推奨値を初期値に（ユーザー変更は保持）
-      if (state.values.calorieLimitKcal == null) state.values.calorieLimitKcal = rec.calorieLimitKcal;
-      if (state.values.proteinGoalG == null) state.values.proteinGoalG = rec.proteinGoalG;
-      if (state.values.exerciseMinutes == null) state.values.exerciseMinutes = rec.exerciseMinutes;
+      // 目標タイプごとの推奨値を初期値に。手動編集は保持し、目標タイプを変えたときだけ当該タイプの推奨で更新する
+      const goalTypeChanged = state.prefilledGoalType !== state.values.goalType;
+      if (state.values.calorieLimitKcal == null || goalTypeChanged) state.values.calorieLimitKcal = rec.calorieLimitKcal;
+      if (state.values.proteinGoalG == null || goalTypeChanged) state.values.proteinGoalG = rec.proteinGoalG;
+      if (state.values.exerciseMinutes == null || goalTypeChanged) state.values.exerciseMinutes = rec.exerciseMinutes;
+      if (goalTypeChanged) state.values.sleepHours = rec.sleepHours;
+      state.prefilledGoalType = state.values.goalType;
 
       const cal = el("input", {
         type: "number", min: "500", max: "10000", step: "10",
@@ -326,9 +337,9 @@
         el("p", { class: "field-hint", text: "「" + C.HEALTH_GOAL_TYPES[state.values.goalType].label + "」向けに、あなたの身体データからおすすめを算出しました。" }),
         el("p", { class: "field-hint", text: bmrText }),
         el("div", { class: "form-grid" }, [
-          fieldWrap("1日の摂取カロリー上限（kcal）", cal, "calorieLimitKcal", errors, { id: "fld_cal", hint: "＝基礎代謝 × 目標タイプ係数（0.9/1.0/1.1）" }),
-          fieldWrap("蛋白質目標（g）", pro, "proteinGoalG", errors, { id: "fld_pro", hint: "＝体重 × 目標タイプ係数（1.2〜1.7）" }),
-          fieldWrap("運動時間目標（分）", ex, "exerciseMinutes", errors, { id: "fld_ex", hint: "目標タイプごとの推奨（30〜45分）" })
+          fieldWrap("1日の摂取カロリー上限（kcal）", cal, "calorieLimitKcal", errors, { id: "fld_cal", hint: "＝（基礎代謝 × 係数 0.9/1.0/1.1）＋ 活動分 約" + (C.CALORIE_ACTIVITY_KCAL || 400) + "kcal" + (((C.HEALTH_GOAL_TYPES[state.values.goalType] || {}).calorieExtraKcal) ? " ＋ 増量ボーナス 200kcal" : "") }),
+          fieldWrap("蛋白質目標（g）", pro, "proteinGoalG", errors, { id: "fld_pro", hint: "＝体重 × タイプ別係数（減量1.6／維持1.4／増量1.8）" }),
+          fieldWrap("運動時間目標（分）", ex, "exerciseMinutes", errors, { id: "fld_ex", hint: "3つのモードとも1日30分が目安" })
         ])
       ];
     }
@@ -1448,7 +1459,7 @@
       ["体重", weight, weight ? "記録あり" : "未記録"]
     ];
     const bulletin = el("div", { class: "bulletin" }, [
-      el("h3", { text: "今日の記録状況（木製掲示板）" }),
+      el("h3", { text: "今日の記録状況" }),
       el("ul", { class: "checklist" }, bulletItems.map(function (row) {
         return el("li", { class: row[1] ? "check--done" : "check--todo", text: (row[1] ? "✓ " : "… ") + row[0] + "：" + row[2] });
       })),
@@ -1716,7 +1727,13 @@
       stopSceneAnimations(root);
       clear(root);
       const recents = (db.conversation && db.conversation.recentStoryIds) || [];
-      currentRound = CONV.pickQuestRound(db, sc, recents, undefined, outingMeta ? outingMeta.weather : null);
+      const MEM2 = globalThis.KE_NPC_MEMORY;
+      currentRound = CONV.pickQuestRound(
+        db, sc, recents, undefined,
+        outingMeta ? outingMeta.weather : null,
+        outingMeta ? outingMeta.timeBand : null,
+        MEM2 ? MEM2.getMemoryKinds(db, sc.npcId) : null
+      );
       root.append(buildFrame(sc, result));
     }
 
@@ -1724,9 +1741,11 @@
       const npc = CONV.getNpcById(sc.npcId) || { displayName: sc.npcId };
       const status = CONV.getQuestStatus(db, today);
       return el("section", { class: "panel conv-panel", "aria-labelledby": "questTitle" }, [
-        el("h1", { id: "questTitle", text: "今日の会話クエスト：" + sc.title }),
+        el("div", { class: "conv-header" }, [
+          el("h1", { id: "questTitle", text: "今日の会話クエスト：" + sc.title }),
+          el("button", { type: "button", class: "btn btn--ghost btn--sm conv-practice-btn", text: "会話練習モードへ", onclick: renderPracticeScreen })
+        ]),
         el("p", { class: "field-hint", text: (status.done ? "今日のきずな度は更新済みです。再プレイでは更新されません。" : "今日のクエストです（導入・1ターン）。きずな度が更新されます。") + (outingMeta ? "　（時間帯：" + outingMeta.timeBandLabel + "／天気：" + outingMeta.weatherLabel + "）" : "") }),
-        el("div", { class: "form-actions" }, [el("button", { type: "button", class: "btn btn--ghost btn--sm", text: "会話練習モードへ", onclick: renderPracticeScreen })]),
         mountConvScene(db, sc, { npcMotion: result ? globalThis.KE_NPC_ANIMATION.motionForAnswerType(result.answer.type) : "idle" }),
         el("p", { class: "conv-context", text: sc.context }),
         result ? buildResult(sc, npc, result) : buildQuestion(sc)
@@ -1806,6 +1825,8 @@
     const st = { phase: "select", scene: null, idx: 0, goodCount: 0, bonusRound: null, bonusPlayed: false, last: null, resolved: [], prevFacet: null };
     clear(root);
     const db = DB.get();
+    const today = U.todayStr();
+    const outingMeta = globalThis.KE_OUTING ? globalThis.KE_OUTING.getOutingMeta(db, today) : null;
 
     if (!CONV.isConversationUnlocked(db)) {
       root.append(el("section", { class: "panel" }, [
@@ -1840,7 +1861,14 @@
     /** 現在ターンに使う回合を解決する（ストーリー枠の抽選、無ければ正規回合へフォールバック済み） */
     function currentTurn() {
       if (st.bonusRound && st.idx >= 4) return { source: "bonus", round: st.bonusRound, role: "close", id: null };
-      const res = st.resolved[st.idx] || CONV.resolveRound(st.scene, st.idx, { db: DB.get(), prevFacet: st.prevFacet });
+      const MEM3 = globalThis.KE_NPC_MEMORY;
+      const res = st.resolved[st.idx] || CONV.resolveRound(st.scene, st.idx, {
+        db: DB.get(),
+        prevFacet: st.prevFacet,
+        weather: outingMeta ? outingMeta.weather : null,
+        timeBand: outingMeta ? outingMeta.timeBand : null,
+        memoryKinds: st.scene ? (MEM3 ? MEM3.getMemoryKinds(DB.get(), st.scene.npcId) : null) : null
+      });
       st.resolved[st.idx] = res;
       return res;
     }
@@ -1935,7 +1963,7 @@
         petType: pet.speciesId || null,
         coachType: pet.speciesId ? (globalThis.KE_PETS.find((p) => p.id === pet.speciesId) || {}).coachType : null,
         stage: pet.stage, condition: globalThis.KE_PET.getCondition(db),
-        answerType: ev.meta.type, sceneTag: st.scene.category, purpose: "feedback", recentIds: []
+        answerType: ev.meta.type, facet: ev.meta.facet || null, sceneTag: st.scene.category, purpose: "feedback", recentIds: []
       });
       return el("div", { class: "conv-flow" }, [
         el("div", { class: "conv-box" }, [
@@ -2041,7 +2069,7 @@
     const NPC_SPR = globalThis.KE_NPC_SPRITE;
     const npcs = globalThis.KE_NPCS || [];
     const panel = el("section", { class: "panel", "aria-labelledby": "bookTitle" }, [
-      el("h1", { id: "bookTitle", text: "交流ノート（住民手帳）" }),
+      el("h1", { id: "bookTitle", text: "交流ノート" }),
       el("p", { class: "field-hint", text: "村のNPCとの関係を確認できます。出会った人は顔と情報が載ります。" })
     ]);
     const grid = el("div", { class: "species-grid" });
@@ -2119,7 +2147,7 @@
     const SPR = globalThis.KE_SPRITE;
     const species = globalThis.KE_PETS || [];
     const panel = el("section", { class: "panel", "aria-labelledby": "encyTitle" }, [
-      el("h1", { id: "encyTitle", text: "村の生き物図鑑" }),
+      el("h1", { id: "encyTitle", text: "生き物図鑑" }),
       el("p", { class: "field-hint", text: "種類が決まったペットだけが図鑑に登録されます。初めて見つけた日を記録します。" })
     ]);
     const grid = el("div", { class: "species-grid" });

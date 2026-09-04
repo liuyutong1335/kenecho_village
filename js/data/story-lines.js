@@ -339,6 +339,56 @@
         { text: "ありがとうございました。", type: "short", facet: "natural_close", npcReply: "はい、また。", npcExpression: "smile", explanation: "感謝だけで自然に締められる。", nextHint: "一言添えると温かい。", weight: 10 },
         { text: "はい、また今度。", type: "short", facet: "natural_close", npcReply: "また今度。", npcExpression: "smile", explanation: "短いが、良い別れ。", nextHint: "日時を絞ると実現しやすい。", weight: 10 }
       ]
+    },
+
+    /* ============ 拡張バッチ1：時間帯・天気・記憶の条件付き候補 ============ */
+    {
+      id: "story_open_morning_walk_001", role: "open",
+      sceneCategories: ["daily"], tags: ["walk"], personalities: [], relationLevels: [],
+      timeBands: ["morning"], weather: null, requiresMemory: null, requiresPrev: false,
+      weight: 8,
+      npcLine: "おはようございます。朝のこの道、空気が違いますね。", npcExpression: "smile",
+      answers: [
+        { text: "おはようございます。ほんとにいいですね、書き出しにしてます。", type: "good", facet: "self_disclose", npcReply: "朝の空気を味わう余裕、いいですね。", npcExpression: "happy", explanation: "感じたことを言葉にすると、朝の会話が温かくなる。", nextHint: "散歩の習慣をひとつ話すと続く。", weight: 10 },
+        { text: "おはようございます。", type: "short", facet: "onward", npcReply: "おはようございます。気をつけて。", npcExpression: "smile", explanation: "短い挨拶でも、朝の清々しさを与え合える。", nextHint: "天気の一言を添えると続く。", weight: 10 },
+        { text: "…すみません、急いでて。", type: "short", facet: "natural_close", npcReply: "あ、どうぞどうぞ。お仕事、頑張って。", npcExpression: "neutral", explanation: "急いでいる事情を伝えると、失礼にならない。", nextHint: "「また今度」を添えるとまた会える。", weight: 10 }
+      ]
+    },
+    {
+      id: "story_open_rain_daily_001", role: "open",
+      sceneCategories: ["daily"], tags: [], personalities: [], relationLevels: [],
+      timeBands: null, weather: ["rain"], requiresMemory: null, requiresPrev: false,
+      weight: 8,
+      npcLine: "しとしと降ってきましたね。雨の日は、このあたりも静かで。", npcExpression: "soft",
+      answers: [
+        { text: "雨音を聞きながら歩くのが好きです。", type: "good", facet: "self_disclose", npcReply: "わかります。どこか落ち着きますよね。", npcExpression: "smile", explanation: "雨への感じ方を共有すると、共感が生まれやすい。", nextHint: "「あなたはどう？」と返すと続く。", weight: 10 },
+        { text: "そうですね。", type: "short", facet: "onward", npcReply: "ですね。お互い、気をつけて。", npcExpression: "smile", explanation: "短い相づちでも、雨の日は安心を与える。", nextHint: "ひとこと気遣いを返すと温かい。", weight: 10 },
+        { text: "（傘を傾けて足早に通り過ぎる）", type: "short", facet: "natural_close", npcReply: "あら、お気をつけて。", npcExpression: "neutral", explanation: "雨の足取りでは、短く済ませても失礼ではない。", nextHint: "「ありがとう」だけでも好印象。", weight: 10 }
+      ]
+    },
+    {
+      id: "story_open_night_food_001", role: "open",
+      sceneCategories: ["food"], tags: ["dinner"], personalities: [], relationLevels: [],
+      timeBands: ["evening", "night"], weather: null, requiresMemory: null, requiresPrev: false,
+      weight: 8,
+      npcLine: "夜のお店も、また違っていいですよね。何か召し上がりますか？", npcExpression: "smile",
+      answers: [
+        { text: "今日は一日がんばったので、特別に目玉焼きのせにします。", type: "good", facet: "self_disclose", npcReply: "特別な夜、いいですね。おつくりしますよ。", npcExpression: "happy", explanation: "気分を具体的に伝えると、店員もふれ合いやすくなる。", nextHint: "「何がおすすめ？」と返すと弾む。", weight: 10 },
+        { text: "おすすめで。", type: "short", facet: "onward", npcReply: "かしこまりました。一品、お楽しみに。", npcExpression: "smile", explanation: "短いが、夜の店では十分通じる。", nextHint: "「楽しみにしてます」を添えると好印象。", weight: 10 },
+        { text: "今日は軽めで。", type: "short", facet: "polite_decline", npcReply: "頷きました。よかったら汁物はどうですか？", npcExpression: "smile", explanation: "提案を断る代わりに好みを伝えると、選びやすい。", nextHint: "選んでもらったら感謝を添えよう。", weight: 10 }
+      ]
+    },
+    {
+      id: "story_develop_promise_001", role: "develop",
+      sceneCategories: [], tags: [], personalities: [], relationLevels: [],
+      timeBands: null, weather: null, requiresMemory: ["promise"], requiresPrev: false,
+      weight: 8,
+      npcLine: "そういえば、この前の約束の件、どうなった？ 気になってたんだ。", npcExpression: "smile",
+      answers: [
+        { text: "ちゃんと果たせました！ そのための準備も終わりました。", type: "good", facet: "promise", npcReply: "よかった。約束を守ると、信頼になるね。", npcExpression: "happy", explanation: "約束の結果まで伝えると、記憶とのつながりが信頼に変わる。", nextHint: "次にまた会う約束をすると続く。", weight: 10 },
+        { text: "まだですが、今度の週末には。", type: "short", facet: "promise", npcReply: "無理しないでね。そのうち、で十分だよ。", npcExpression: "neutral", explanation: "未達でも期限を伝えると、相手は安心する。", nextHint: "「終わったら教えます」を添えると良い。", weight: 10 },
+        { text: "すっかり忘れてました…。", type: "short", facet: "self_disclose", npcReply: "あらら、じゃあ改めて、そのときに。", npcExpression: "soft", explanation: "忘れたことも正直に言うと、修復がしやすい。", nextHint: "新しい約束を立て直すと関係は続く。", weight: 10 }
+      ]
     }
   ];
 

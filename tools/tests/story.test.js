@@ -80,7 +80,7 @@ test("全シーンの全回答に有効な facet が付与されている（20�
       });
     });
   });
-  assert.equal(count, 20 * 4 * 3);
+  assert.equal(count, SCENES.length * 4 * 3, "全シーンの全回合3択すべてに有効なfacetが付与される");
 });
 
 test("丁寧な断り（polite_decline）は type を bad にしない（断罪しない）", () => {
@@ -179,12 +179,18 @@ test("アドバイスは「今回のポイント＋改善例」を持ち、種�
   assert.ok(r.advice.text && r.advice.text.length > 0, "ポイント（text）がある");
   assert.ok(r.advice.example && r.advice.example.length > 0, "改善例（example）がある");
 
-  // 種が違っても「改善例」の核（オウム返し→共感）は変わらない（口調のみ変化）
+  // 種ごとの助言は「今回のポイント」が異なり、改善例は空でない（口調は種で変化）
   const aRabbit = DIAG.pick({ petType: "rabbit", coachType: "gentle", stage: "child", answerType: "bad" });
   const aTanuki = DIAG.pick({ petType: "tanuki", coachType: "playful", stage: "child", answerType: "bad" });
   assert.ok(aRabbit.id !== aTanuki.id, "口調（point）が種で区別される");
-  assert.ok(aRabbit.example.indexOf("オウム返し") >= 0);
-  assert.ok(aTanuki.example.indexOf("オウム返し") >= 0);
+  assert.ok(aRabbit.example && aRabbit.example.length > 0);
+  assert.ok(aTanuki.example && aTanuki.example.length > 0);
+  // 生成ループ産の「改善例」は種の口調（形容）のみ変わり、内容の核（オウム返し）は共通
+  const hasInvariant = (sp) => globalThis.KE_COACH_SPEECH.some((e) =>
+    e.petTypes && e.petTypes[0] === sp && e.answerType === "bad" &&
+    e.adviceExample && e.adviceExample.indexOf("オウム返し") >= 0);
+  assert.ok(hasInvariant("rabbit"), "うさぎの生成例に核がある");
+  assert.ok(hasInvariant("tanuki"), "たぬきの生成例に核がある");
 });
 
 test("練習モード（ストーリー回合含む）で記憶・きずな度・クエスト日付は変化しない", () => {
@@ -212,3 +218,80 @@ function dbRevealed() {
   d.currentPet = { generationId: "gen_001", name: "モモ", speciesId: "rabbit", speciesRevealed: true, stage: "child", recentDialogueIds: [], lastQuestDate: null, cumulativeExp: 0, questDays: 0, petBond: 20 };
   return d;
 }
+
+/* ==================================================================== */
+/* エンジン拡張：時間帯条件・記憶条件・facet助言                          */
+/* ==================================================================== */
+
+/** 一時的に KE_STORY_LINES を差し替えて pickQuestRound(open) を検証する */
+function qrWithPool(d, scene, pool, ctxExtras, rng) {
+  const prev = globalThis.KE_STORY_LINES;
+  globalThis.KE_STORY_LINES = pool;
+  try {
+    return CONV.pickQuestRound(d, scene, [], rng || (() => 0), ctxExtras.weather || "clear", ctxExtras.timeBand || null, ctxExtras.memoryKinds || null);
+  } finally {
+    globalThis.KE_STORY_LINES = prev;
+  }
+}
+
+test("ストーリー枠の時間帯条件：朝限定の台詞は朝のみ候補になる（夜は選ばない）", () => {
+  const d = KE_DB.defaultData();
+  const scene = SCENES.find((s) => s.category === "daily");
+  globalThis.KE_RELATIONSHIP.ensureNpc(d, scene.npcId);
+  const line = {
+    id: "zz_test_time_001", role: "open", sceneCategories: [scene.category], timeBands: ["morning"],
+    tags: [], personalities: [], relationLevels: [], requiresPrev: false, weather: null, weight: 10,
+    npcLine: "朝の散歩、気持ちいいね。", npcExpression: "smile",
+    answers: [{ text: "おはようございます！", type: "good", facet: "onward", npcReply: "おはよう！", npcExpression: "happy", explanation: "朝の挨拶を返すと自然に会話が始まる。", nextHint: "さわやかさを一言添えると良い。", weight: 10 }]
+  };
+  const morning = qrWithPool(d, scene, [line], { timeBand: "morning" }, () => 0);
+  assert.equal(morning.source, "story");
+  assert.equal(morning.id, line.id);
+  const night = qrWithPool(d, scene, [line], { timeBand: "night" }, () => 0);
+  assert.equal(night.source, "scene", "朝以外の時間帯には朝限定の台詞を選ばず正規回合へフォールバック");
+  assert.equal(night.round.npcLine, scene.rounds[0].npcLine);
+});
+
+test("ストーリー枠の記憶条件：約束の記憶があるときだけ再訪台詞が出る", () => {
+  const d = KE_DB.defaultData();
+  const scene = SCENES.find((s) => s.id === "scn_001");
+  globalThis.KE_RELATIONSHIP.ensureNpc(d, scene.npcId);
+  const line = {
+    id: "zz_test_mem_001", role: "open", sceneCategories: [scene.category], requiresMemory: ["promise"],
+    tags: ["work"], personalities: [], relationLevels: [], requiresPrev: false, timeBands: null, weather: null, weight: 10,
+    npcLine: "そういえば、この前の約束、覚えてる？", npcExpression: "smile",
+    answers: [{ text: "覚えてますよ！", type: "good", facet: "promise", npcReply: "よかった！", npcExpression: "happy", explanation: "約束を覚えていると伝えると信頼が深まる。", nextHint: "守る日を言うと良い。", weight: 10 }]
+  };
+  const withPromise = qrWithPool(d, scene, [line], { timeBand: "daytime", memoryKinds: ["promise"] }, () => 0);
+  assert.equal(withPromise.source, "story");
+  const withoutPromise = qrWithPool(d, scene, [line], { timeBand: "daytime", memoryKinds: [] }, () => 0);
+  assert.equal(withoutPromise.source, "scene", "約束の記憶が無ければ再訪台詞を出さない");
+});
+
+test("NPC記憶の種別（getMemoryKinds）が記録内容に応じて出る", () => {
+  const { KE_NPC_MEMORY } = require(path.join(root, "npc-memory.js"));
+  const d = KE_DB.defaultData();
+  assert.deepEqual(KE_NPC_MEMORY.getMemoryKinds(d, "npc_sato"), []);
+  const scene = SCENES.find((s) => s.npcId === "npc_sato");
+  const ans = { text: "約束します", type: "good", facet: "promise", promiseNote: "明日、コーヒーを飲む" };
+  KE_NPC_MEMORY.recordFromQuest(d, "npc_sato", scene, ans, "2026-09-05");
+  const kinds = KE_NPC_MEMORY.getMemoryKinds(d, "npc_sato");
+  assert.ok(kinds.indexOf("topic") >= 0, "話題タグが記録される（" + JSON.stringify(kinds) + "）");
+  assert.ok(kinds.indexOf("promise") >= 0, "約束の pending が記憶される");
+});
+
+test("コーチ助言が選択facet一致を優先する（無関係な助言を出さない・階層は下げない）", () => {
+  const prev = globalThis.KE_COACH_SPEECH;
+  globalThis.KE_COACH_SPEECH = [
+    { id: "zz_adv_self", petTypes: ["rabbit"], coachTypes: [], growthStages: [], petConditions: [], answerType: "good", sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "自己開示の助言", facets: ["self_disclose"], weight: 10 },
+    { id: "zz_adv_generic", petTypes: ["rabbit"], coachTypes: [], growthStages: [], petConditions: [], answerType: "good", sceneTags: [], relationLevels: [], petRelationLevels: [], purpose: "feedback", text: "汎用の助言", weight: 10 }
+  ];
+  try {
+    const withSelf = DIAG.pick({ petType: "rabbit", answerType: "good", facet: "self_disclose", purpose: "feedback", recentIds: [] });
+    assert.equal(withSelf.id, "zz_adv_self", "facet一致の助言を優先する");
+    const withOther = DIAG.pick({ petType: "rabbit", answerType: "good", facet: "question", purpose: "feedback", recentIds: [] });
+    assert.ok(withOther.id === "zz_adv_self" || withOther.id === "zz_adv_generic", "facet非一致でも同階層の候補から選ぶ（無関係な下位階層へは落とさない）");
+  } finally {
+    globalThis.KE_COACH_SPEECH = prev;
+  }
+});

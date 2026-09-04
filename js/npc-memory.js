@@ -130,12 +130,25 @@
     return m;
   }
 
+  /** 記憶条件の抽選に使う、現在ある記憶の種別一覧（["topic","promise","expectation","misunderstanding"]） */
+  function getMemoryKinds(db, npcId) {
+    const m = getMemory(db, npcId);
+    if (!m) return [];
+    const out = [];
+    if ((m.topics || []).length) out.push("topic");
+    if ((m.promises || []).some(function (p) { return p.status === "pending"; })) out.push("promise");
+    if ((m.expectations || []).length) out.push("expectation");
+    if ((m.misunderstandings || []).some(function (x) { return !x.resolved; })) out.push("misunderstanding");
+    return out;
+  }
+
   const KE_NPC_MEMORY = {
     getMemory: getMemory,
     recordFromQuest: recordFromQuest,
     getNextGreeting: getNextGreeting,
     getMemorySummary: getMemorySummary,
-    resolvePromises: resolvePromises
+    resolvePromises: resolvePromises,
+    getMemoryKinds: getMemoryKinds
   };
 
   if (globalThis) globalThis.KE_NPC_MEMORY = KE_NPC_MEMORY;
