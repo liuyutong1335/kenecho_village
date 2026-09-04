@@ -1664,9 +1664,10 @@
       ]));
       return;
     }
+    // draw() が currentRound へ代入するため、宣言を先に置く（TDZでの ReferenceError 防止）
+    let currentRound = null;
     draw(scene, null);
 
-    let currentRound = null;
     /** シーンを表示する。クエストの回合はストーリー枠から抽選（直近使用を避けて外出ごとに変化） */
     function draw(sc, result) {
       clear(root);
