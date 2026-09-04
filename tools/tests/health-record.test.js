@@ -169,7 +169,8 @@ test("recommendGoals が目的別（減量/増量/維持）と体格別に値を
   assert.equal(gain.calorieLimitKcal, 2363); // 1603 × 1.1 ＋ 400 ＋ 増量ボーナス200
   assert.equal(lose.proteinGoalG, 104);      // 65 × 1.6
   assert.equal(gain.proteinGoalG, 117);      // 65 × 1.8
-  assert.equal(lose.exerciseMinutes, 45);
+  // 運動時間は3モードとも30分に統一
+  ["lose", "maintain", "gain"].forEach((g2) => assert.equal(H.recommendGoals(dry, g2, body).exerciseMinutes, 30, g2 + " の運動30分"));
   assert.equal(gain.sleepHours, 8);
   // 維持の蛋白質は減量を超えない（1.4 < 1.6）
   assert.ok(H.recommendGoals(dry, "maintain", body).proteinGoalG < H.recommendGoals(dry, "lose", body).proteinGoalG, "維持 < 減量（蛋白質）");

@@ -339,7 +339,7 @@
         el("div", { class: "form-grid" }, [
           fieldWrap("1日の摂取カロリー上限（kcal）", cal, "calorieLimitKcal", errors, { id: "fld_cal", hint: "＝（基礎代謝 × 係数 0.9/1.0/1.1）＋ 活動分 約" + (C.CALORIE_ACTIVITY_KCAL || 400) + "kcal" + (((C.HEALTH_GOAL_TYPES[state.values.goalType] || {}).calorieExtraKcal) ? " ＋ 増量ボーナス 200kcal" : "") }),
           fieldWrap("蛋白質目標（g）", pro, "proteinGoalG", errors, { id: "fld_pro", hint: "＝体重 × タイプ別係数（減量1.6／維持1.4／増量1.8）" }),
-          fieldWrap("運動時間目標（分）", ex, "exerciseMinutes", errors, { id: "fld_ex", hint: "目標タイプごとの推奨（30〜45分）" })
+          fieldWrap("運動時間目標（分）", ex, "exerciseMinutes", errors, { id: "fld_ex", hint: "3つのモードとも1日30分が目安" })
         ])
       ];
     }
