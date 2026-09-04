@@ -23,6 +23,7 @@ const SCRIPT_ORDER = [
   "js/data/npc-data.js",
   "js/data/conversation-scenes.js",
   "js/data/story-lines.js",
+  "js/data/story-small-promise.js",
   "js/data/animation-manifest.js",
   "js/data/pixel-art/pets.js",
   "js/data/pixel-art/npcs.js",
@@ -34,6 +35,7 @@ const SCRIPT_ORDER = [
   "js/outings.js",
   "js/dialogue-engine.js",
   "js/conversation-game.js",
+  "js/story-small-promise.js",
   "js/sprite.js",
   "js/animation.js",
   "js/npc-sprite.js",
@@ -70,8 +72,8 @@ test("全モジュールを依存順に require できる（構文・読込エ�
 
 test("期待する名前空間が公開されている", () => {
   for (const key of ["KE_UTIL", "KE_CONFIG", "KE_RELATIONSHIP_RULES", "KE_FOODS", "KE_EXERCISES",
-    "KE_PETS", "KE_COACH_SPEECH", "KE_NPCS", "KE_SCENES", "KE_STORY_LINES", "KE_ANIMATION_MANIFEST",
-    "KE_DB", "KE_HEALTH", "KE_PET", "KE_RELATIONSHIP", "KE_DIALOGUE", "KE_CONVERSATION",
+    "KE_PETS", "KE_COACH_SPEECH", "KE_NPCS", "KE_SCENES", "KE_STORY_LINES", "KE_STORY_SMALL_PROMISE", "KE_ANIMATION_MANIFEST",
+    "KE_DB", "KE_HEALTH", "KE_PET", "KE_RELATIONSHIP", "KE_DIALOGUE", "KE_CONVERSATION", "KE_STORY",
     "KE_SPRITE", "KE_ANIMATION", "KE_PIXEL_NPCS", "KE_NPC_SPRITE", "KE_NPC_ANIMATION", "KE_CONV_SCENE",
     "KE_NPC_MEMORY", "KE_OUTING", "KE_UI", "KE_APP"]) {
     assert.ok(globalThis[key] !== undefined, "namespace未公開: " + key);

@@ -144,6 +144,8 @@
 
   const KE_NPC_MEMORY = {
     getMemory: getMemory,
+    ensureMemory: ensureMemory,
+    pushRecent: pushRecent,
     recordFromQuest: recordFromQuest,
     getNextGreeting: getNextGreeting,
     getMemorySummary: getMemorySummary,
