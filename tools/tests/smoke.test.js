@@ -22,6 +22,7 @@ const SCRIPT_ORDER = [
   "js/data/pet-coach-speech.js",
   "js/data/npc-data.js",
   "js/data/conversation-scenes.js",
+  "js/data/story-lines.js",
   "js/data/animation-manifest.js",
   "js/data/pixel-art/pets.js",
   "js/db.js",
@@ -63,7 +64,7 @@ test("全モジュールを依存順に require できる（構文・読込エ�
 
 test("期待する名前空間が公開されている", () => {
   for (const key of ["KE_UTIL", "KE_CONFIG", "KE_RELATIONSHIP_RULES", "KE_FOODS", "KE_EXERCISES",
-    "KE_PETS", "KE_COACH_SPEECH", "KE_NPCS", "KE_SCENES", "KE_ANIMATION_MANIFEST",
+    "KE_PETS", "KE_COACH_SPEECH", "KE_NPCS", "KE_SCENES", "KE_STORY_LINES", "KE_ANIMATION_MANIFEST",
     "KE_DB", "KE_HEALTH", "KE_PET", "KE_RELATIONSHIP", "KE_DIALOGUE", "KE_CONVERSATION",
     "KE_SPRITE", "KE_ANIMATION", "KE_UI", "KE_APP"]) {
     assert.ok(globalThis[key] !== undefined, "namespace未公開: " + key);
