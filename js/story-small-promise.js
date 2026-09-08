@@ -625,7 +625,8 @@
 
   function demoTurnState() {
     if (!demo) return null;
-    return getTurnState(demo.p, demo.p.chapter);
+    // getTurnState の第1引数は db（getProgress が db.storyProgress を見る）ため包む
+    return getTurnState({ storyProgress: demo.p }, demo.p.chapter);
   }
 
   function demoNextChapter() {
@@ -692,6 +693,7 @@
     getRound: getRound,
     chapterData: chapterData,
     topicOf: topicOf,
+    npcIdOf: npcIdOf,
     demoBegin: demoBegin,
     demoStatus: demoStatus,
     demoChoose: demoChoose,
