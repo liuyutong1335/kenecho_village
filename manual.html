@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>kenecho Village ガイドブック</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+JP:wght@400;500;700&display=swap" />
+<style>
+:root {
+  --ground: #F3F1E7;
+  --surface: #FBFAF3;
+  --ink: #2E3524;
+  --muted: #6B7358;
+  --accent: #56733E;
+  --accent-soft: #E4ECD9;
+  --sun: #E9B949;
+  --sky: #A9D6D2;
+  --bark: #5B3A29;
+  --line: #D8D6C4;
+  --frame: #2E3524;
+  --shadow: rgba(46, 53, 36, 0.18);
+}
+:root:not([data-theme="light"]) { color-scheme: light dark; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #20261B;
+    --surface: #2A3222;
+    --ink: #E9EADC;
+    --muted: #A3AC93;
+    --accent: #9DBE7A;
+    --accent-soft: #37432C;
+    --sun: #E9B949;
+    --sky: #6FA8A4;
+    --bark: #C9965B;
+    --line: #3D4632;
+    --frame: #E9EADC;
+    --shadow: rgba(0, 0, 0, 0.45);
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #20261B;
+  --surface: #2A3222;
+  --ink: #E9EADC;
+  --muted: #A3AC93;
+  --accent: #9DBE7A;
+  --accent-soft: #37432C;
+  --sun: #E9B949;
+  --sky: #6FA8A4;
+  --bark: #C9965B;
+  --line: #3D4632;
+  --frame: #E9EADC;
+  --shadow: rgba(0, 0, 0, 0.45);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  font-size: 16px;
+  line-height: 1.75;
+}
+.wrap { max-width: 960px; margin: 0 auto; padding: 0 20px 80px; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+
+/* ── ヘッダー ─────────────────────────── */
+.masthead { padding: 40px 0 8px; }
+.brandline { display: flex; align-items: center; gap: 14px; }
+.brandline svg { width: 44px; height: 44px; image-rendering: pixelated; flex: none; }
+h1.title {
+  font-family: "DotGothic16", "Noto Sans JP", sans-serif;
+  font-size: clamp(26px, 5vw, 38px);
+  line-height: 1.25;
+  margin: 0;
+  text-wrap: balance;
+}
+.sub { color: var(--muted); margin: 10px 0 0; }
+.badge {
+  display: inline-block;
+  font-family: "DotGothic16", "Noto Sans JP", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  background: var(--sun);
+  color: #3A2E10;
+  padding: 3px 10px;
+  margin-top: 14px;
+}
+.stitch {
+  height: 8px;
+  margin: 26px 0 0;
+  background:
+    repeating-linear-gradient(90deg,
+      var(--accent) 0 8px, transparent 8px 16px);
+  border-top: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+
+/* ── 目次 ─────────────────────────────── */
+nav.toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 24px 0 4px;
+}
+nav.toc a {
+  font-family: "DotGothic16", "Noto Sans JP", sans-serif;
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--surface);
+  border: 2px solid var(--line);
+  padding: 4px 10px;
+}
+nav.toc a:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── セクション ───────────────────────── */
+section { margin-top: 56px; }
+h2 {
+  font-family: "DotGothic16", "Noto Sans JP", sans-serif;
+  font-size: 24px;
+  margin: 0 0 4px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  text-wrap: balance;
+}
+h2 .no {
+  font-size: 16px;
+  color: var(--ground);
+  background: var(--accent);
+  padding: 1px 8px;
+  flex: none;
+}
+.lede { color: var(--muted); margin: 0 0 20px; }
+h3 {
+  font-family: "DotGothic16", "Noto Sans JP", sans-serif;
+  font-size: 18px;
+  margin: 32px 0 8px;
+}
+p { margin: 0 0 14px; }
+.note {
+  border-left: 6px solid var(--sun);
+  background: var(--surface);
+  padding: 10px 16px;
+  margin: 16px 0;
+  font-size: 15px;
+}
+.steps { padding-left: 0; list-style: none; counter-reset: step; margin: 0 0 16px; }
+.steps li { counter-increment: step; position: relative; padding-left: 44px; margin-bottom: 10px; }
+.steps li::before {
+  content: counter(step);
+  position: absolute; left: 0; top: 3px;
+  width: 28px; height: 28px;
+  display: grid; place-items: center;
+  font-family: "DotGothic16", sans-serif;
+  background: var(--sun); color: #3A2E10;
+}
+
+/* ── スクリーンショット枠 ─────────────── */
+figure.shot { margin: 28px 0; }
+figure.shot .window {
+  border: 3px solid var(--frame);
+  box-shadow: 8px 8px 0 var(--shadow);
+  background: var(--surface);
+}
+figure.shot .bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 3px solid var(--frame);
+  font-family: "DotGothic16", sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+}
+figure.shot .bar i {
+  width: 8px; height: 8px; flex: none;
+  background: var(--sky);
+}
+figure.shot img {
+  display: block; width: 100%; height: auto;
+  max-width: 100%;
+}
+figure.shot figcaption {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin-top: 10px;
+  line-height: 1.6;
+}
+
+/* ── テーブル ─────────────────────────── */
+.tablebox { overflow-x: auto; margin: 16px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+th, td { border: 2px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+th { background: var(--accent-soft); font-weight: 700; }
+
+/* ── 用語チップ ───────────────────────── */
+.kw {
+  font-family: "DotGothic16", "Noto Sans JP", sans-serif;
+  font-size: 12px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+footer { margin-top: 72px; color: var(--muted); font-size: 13px; border-top: 2px solid var(--line); padding-top: 20px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <div class="brandline">
+    <svg viewBox="0 0 32 32" aria-hidden="true" shape-rendering="crispEdges">
+      <rect width="32" height="32" fill="#A9D6D2" />
+      <rect x="24" y="0" width="8" height="8" fill="#E9B949" />
+      <rect y="20" width="32" height="12" fill="#7FA650" />
+      <rect y="24" width="32" height="8" fill="#56733E" />
+      <rect x="2" y="16" width="4" height="8" fill="#5B3A29" />
+      <rect x="0" y="8" width="8" height="8" fill="#56733E" />
+      <rect x="12" y="4" width="8" height="4" fill="#5B3A29" />
+      <rect x="10" y="8" width="12" height="4" fill="#5B3A29" />
+      <rect x="10" y="12" width="12" height="8" fill="#9A6642" />
+      <rect x="14" y="16" width="4" height="4" fill="#C9965B" />
+    </svg>
+    <h1 class="title">kenecho Village ガイドブック</h1>
+  </div>
+  <p class="sub">健康と会話で育てるピクセルペット ― Playwright 実機キャプチャ付きの操作マニュアル</p>
+  <span class="badge">研修用・本番利用不可</span>
+  <div class="stitch" role="presentation"></div>
+</header>
+
+<nav class="toc" aria-label="目次">
+  <a href="#about">概要</a>
+  <a href="#start">はじめかた</a>
+  <a href="#record">健康記録</a>
+  <a href="#pet">ペット育成</a>
+  <a href="#outing">外出と会話クエスト</a>
+  <a href="#practice">会話練習モード</a>
+  <a href="#story">短編物語</a>
+  <a href="#village">村の機能</a>
+  <a href="#settings">設定</a>
+  <a href="#data">データと仕組み</a>
+</nav>
+
+<!-- ─────────── 概要 ─────────── -->
+<section id="about">
+  <h2><span class="no">0</span>このアプリについて</h2>
+  <p class="lede">食事・運動・睡眠・体重の健康記録が、ペットの成長と村の住人との会話に変わる、ローカル動作のWebアプリです。</p>
+  <p>健康記録は<span class="kw">健康EXP</span>になり、ペットが育ちます。記録を終えたらペットを連れて<span class="kw">外出</span>し、村で出会った架空のNPCと<span class="kw">会話クエスト</span>（3択）を行うのが1日の本番です。この結果がきずな度やペットの経験値に反映されます。外出で出た題材を<span class="kw">会話練習モード</span>で何度でも反復できる、毎日の小さなループが設計の中心です。</p>
+  <div class="note">本アプリは研修・学習用の教材です。医療・栄養・心理・人格を診断するものではなく、表示値は健康管理と会話練習の参考情報です。<strong>サーバーへデータを送信せず、すべての記録はお使いのブラウザ（localStorage）にのみ保存されます。</strong></div>
+</section>
+
+<!-- ─────────── はじめかた ─────────── -->
+<section id="start">
+  <h2><span class="no">1</span>はじめかた ― 起動と初期設定</h2>
+  <p class="lede">インストール不要。HTMLファイルをダブルクリックするだけで起動します。</p>
+  <ul class="steps">
+    <li><code>kenecho-village.html</code> を Chrome または Edge（最新版）で開きます。サーバー起動は不要です。</li>
+    <li>初回のみ「初期設定（10ステップ）」が始まります。表示名・年齢・性別・身長・体重を入力します（架空の値を推奨）。</li>
+    <li>ペットの名前を決め、種類の決め方（自分で選ぶ／おまかせ）を選びます。</li>
+    <li>健康目標（減量／増量／健康維持）を選ぶと、身体データから食事・運動・睡眠の目標が自動算出されます。</li>
+  </ul>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>初期設定 ― ステップ1/10</div><img src="shots/01-initial-setup.png" alt="初期設定の表示名入力画面" /></div>
+    <figcaption>▲ 起動すると最初に表示名を入力します。入力欄の下にエラーメッセージが表示される親切設計です。</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>初期設定 ― ステップ9/10</div><img src="shots/02-setup-goals.png" alt="基礎代謝から目標カロリーが自動算出される画面" /></div>
+    <figcaption>▲ 基礎代謝（約1548kcal/日）から摂取カロリー上限・蛋白質目標・運動時間目標が自動で提案されます。数値は変更可能です。</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>初回ガイド</div><img src="shots/03-welcome-modal.png" alt="ようこそモーダル" /></div>
+    <figcaption>▲ 設定完了後、3枚の使い方ガイドが表示されます。スキップもできます。</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>ホーム</div><img src="shots/04-home.png" alt="ホーム画面" /></div>
+    <figcaption>▲ ホームにはペットの様子・今日の記録状況・次にやることがまとまっています。最初は卵のまま ― 「外へ出て卵をかえそう」が最初のミッションです。</figcaption>
+  </figure>
+</section>
+
+<!-- ─────────── 健康記録 ─────────── -->
+<section id="record">
+  <h2><span class="no">2</span>健康記録 ― 毎日の4つの記録</h2>
+  <p class="lede">上部メニュー「記録」から、食事・運動・睡眠・体重を日付付きで記録します。</p>
+  <div class="tablebox">
+  <table>
+    <tr><th>分類</th><th>入力内容</th><th>ポイント</th></tr>
+    <tr><td>食事</td><td>プリセット食品50種から検索＋実摂取量（g）＋分類（朝昼夕間食）</td><td>カロリー・P/F/Cは基準分量から按分して自動計算。カスタム食品も登録可能</td></tr>
+    <tr><td>運動</td><td>プリセット運動20種＋時間（分）</td><td>METs値から消費カロリーを自動計算（直接入力も可）</td></tr>
+    <tr><td>睡眠</td><td>入眠時刻・起床時刻</td><td>起床日基準で記録。睡眠時間を自動表示</td></tr>
+    <tr><td>体重</td><td>体重（kg）</td><td>1日1件。直近30日のトレンドグラフ付き</td></tr>
+  </table>
+  </div>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>記録 ― 食事タブ</div><img src="shots/07-record-meal.png" alt="食事記録画面" /></div>
+    <figcaption>▲ 食品は検索または「一覧」から選択。「ごはん（茶碗1杯）150g」を追加すると栄養値が自動集計されます。</figcaption>
+  </figure>
+
+  <h3>評価タブで1日を確定する</h3>
+  <p>4つの記録が終わったら「評価」タブで日次評価を確定します。食事・運動・睡眠が各0〜2点の計0〜6点で採点され、点数に応じた<span class="kw">健康EXP</span>を1日1回受け取れます。</p>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>記録 ― 評価タブ</div><img src="shots/08-record-evaluation.png" alt="日次健康報告とEXP確定" /></div>
+    <figcaption>▲ 目標と実績が並べて表示され、合計5点 → EXP +85 として確定できました。</figcaption>
+  </figure>
+</section>
+
+<!-- ─────────── ペット育成 ─────────── -->
+<section id="pet">
+  <h2><span class="no">3</span>ペット育成 ― 卵から旅立ちへ</h2>
+  <p class="lede">健康EXPがたまるとペットが育ちます。種類は6種、成長段階は卵→幼体→成長体→成体→伴侶→旅立ちです。</p>
+  <p>ペット小屋の「外へ出る」で村に出ると、初回は卵がかかります。孵化の瞬間に種類が決まり、図鑑に登録されます。うさぎ／きつね／こぐま／ねこ／ことり／たぬきの6種で、それぞれコーチの性格（優しい型・冷静型など）が異なります。</p>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>村の入口 ― 孵化</div><img src="shots/05-egg-hatch.png" alt="卵をもって村の入口に立つ場面" /></div>
+    <figcaption>▲ 卵がぴくぴく動いています…。種類はここで初めて決まります。</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>孵化 ― うさぎの誕生</div><img src="shots/06-hatched.png" alt="孵化してうさぎと判明する場面" /></div>
+    <figcaption>▲ 今回は「うさぎ（優しい型）」でした。最初のNPC・佐藤さんとも出会えます。</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>ペット小屋</div><img src="shots/09-pet-hut.png" alt="ペット小屋の様子" /></div>
+    <figcaption>▲ ペットはCanvasに描かれるピクセルアートで、健康状態が「ご機嫌」など表情つきで表示されます。記録がない日は「少し寂しそう」に。累計EXP・きずな度・記録日数もここで見えます。</figcaption>
+  </figure>
+</section>
+
+<!-- ─────────── 外出と会話クエスト ─────────── -->
+<section id="outing">
+  <h2><span class="no">4</span>外出と会話クエスト ― 1日の本番</h2>
+  <p class="lede">ペットを連れて村へ<span class="kw">外出</span>し、出会ったNPCと<span class="kw">会話クエスト</span>を行う ― ここが毎日の本番です。結果はきずな度とペットの経験値に反映されます。</p>
+  <p>ペット小屋の「外へ出る」を押すと、その日の時間帯・天気に合わせた場面で村を歩き、NPCに出会えます。時間帯（朝・昼・夕方・夜）で出会える相手や話せる物語が変わり、深夜帯は出会いのない時間に設計されています。出会えたらそのまま今日の会話クエストへ進みます。</p>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>外出 ― 出会いとクエスト</div><img src="shots/24-outing-encounter.png" alt="外出して山田さんに出会った画面" /></div>
+    <figcaption>▲ 今回は「朝／雨」に山田さんと出会いました。画面に時間帯・天気が出て、NPCのセリフにもその日の天気が反映されます。</figcaption>
+  </figure>
+
+  <p>会話クエストは1日1回の1ターン対話です。返答は3択で、分類は答えるまで表示されません。回答後に出てくる解説では、<span class="kw">good</span>（会話が続きやすい）／<span class="kw">short</span>（短いが自然）／<span class="kw">bad</span>（会話が続きにくい）の分類と、ペットのアドバイスが表示されます。初回の回答だけがきずな度に反映され、NPCとの関係・ペットのきずな度が上がります。</p>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>クエスト ― 出題</div><img src="shots/10-quest.png" alt="会話クエストの出題画面" /></div>
+    <figcaption>▲ NPCのセリフに対して3択を選びます。</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>クエスト ― 結果と解説</div><img src="shots/11-quest-result.png" alt="会話クエストの結果画面" /></div>
+    <figcaption>▲ 解説・きずな度の変化・ペットのアドバイスが表示されます。この結果が関係を育てます。</figcaption>
+  </figure>
+</section>
+
+<!-- ─────────── 会話練習モード ─────────── -->
+<section id="practice">
+  <h2><span class="no">5</span>会話練習モード ― 外出の模擬問題集</h2>
+  <p class="lede">外出で出会う場面の題材を選んで反復できる、練習専用モードです。きずな度やEXPは増減しません（何度でも練習できます）。</p>
+  <p>外出の本番は1日1回なので、その間に練習モードで会話の型を体に覚え込ませます。基本4ターン（導入→展開→応答→締め）を通しで会話し、最後まで良い返答を続けると<span class="kw">ボーナスターン</span>が登場します。毎ターン解説とペットのアドバイスが出るので、本番の外出前に答えの型を確認できます。</p>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>練習 ― シーン選択</div><img src="shots/12-practice-select.png" alt="会話練習モードのシーン選択画面" /></div>
+    <figcaption>▲ 外出で出会う場面と同じ題材（職場・飲食・日常など）から選べます。「ランダムに始める」も可能。</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>練習 ― 4ターンの会話</div><img src="shots/13-practice-play.png" alt="会話練習の進行画面" /></div>
+    <figcaption>▲ 1〜4ターンで導入から締めまで通しで会話します。</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>練習 ― 解説とアドバイス</div><img src="shots/14-practice-feedback.png" alt="練習の解説画面" /></div>
+    <figcaption>▲ 毎ターン「解説（分類を公開）」とペットのアドバイスが出ます。</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>練習 ― サマリー</div><img src="shots/15-practice-summary.png" alt="練習の結果サマリー" /></div>
+    <figcaption>▲ 「会話が続きやすい」を選んだ回数とボーナスの有無をサマリーで確認できます。</figcaption>
+  </figure>
+</section>
+
+<!-- ─────────── 短編物語 ─────────── -->
+<section id="story">
+  <h2><span class="no">6</span>短編物語「小さな約束」― 4章完結のミニストーリー</h2>
+  <p class="lede">佐藤さんと交わす小さな約束を描く、全4章・1日1章の読み物型コンテンツです。</p>
+  <p>会話クエストの画面から進めます。各章は3択2ターン構成で、第2章以降の選択によって<span class="kw">約束ルート</span>（参加する／手伝う）が分かれ、結末AまたはBが変化します。完了した章は「読み返す」ことができ、物語を完結させると記念カードが「思い出」に残ります。</p>
+  <div class="note">1日1章まで（会話クエストを先に完了した日は翌日から）。すぐ通しで試したいときは、<strong>設定 → 研修デモツール →「短編「小さな約束」をデモ体験」</strong>を使うと、保存・報酬に影響なく4章連続で体験できます。</div>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>物語デモ ― 第1章</div><img src="shots/20-story-demo-ch1.png" alt="短編物語デモの第1章" /></div>
+    <figcaption>▲ 物語はペット同行で進みます。会話シーンは背景＋人物が1枚のピクセルアートで描画されます。</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>物語デモ ― 章の読み終わり</div><img src="shots/21-story-demo-ch1-result.png" alt="第1章の結果画面" /></div>
+    <figcaption>▲ 章の終わりにはペットの助言が付き、「次の章へ」に進めます。</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>物語デモ ― 結末</div><img src="shots/22-story-demo-ending.png" alt="物語デモの結末画面" /></div>
+    <figcaption>▲ 4章を終えると結末が表示されます。本編は同じ進行で、記念カードが残ります。</figcaption>
+  </figure>
+</section>
+
+<!-- ─────────── 村の機能 ─────────── -->
+<section id="village">
+  <h2><span class="no">7</span>村の機能 ― 交流ノート・図鑑・思い出</h2>
+  <p class="lede">NPCとの関係・ペットの発見記録・旅立ちの思い出を振り返れる画面です。</p>
+
+  <h3>交流ノート</h3>
+  <p>出会った8名の住人が顔とプロフィール付きで並びます。未遭遇の住人は「??？」のシルエットです。</p>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>交流ノート ― 一覧</div><img src="shots/16-notebook.png" alt="交流ノートの一覧" /></div>
+    <figcaption>▲ きずな度と関係段階（初対面→心が通い始めた→…→パートナー）が見えます。</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>交流ノート ― 詳細</div><img src="shots/17-notebook-detail.png" alt="NPC詳細ダイアログ" /></div>
+    <figcaption>▲ 「次の会話のヒント」も表示されます。会話の記憶は世代を越えて維持されます。</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>生き物図鑑</div><img src="shots/18-encyclopedia.png" alt="生き物図鑑" /></div>
+    <figcaption>▲ 孵化して種類が判明したペットだけが登録されます。</figcaption>
+  </figure>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>思い出</div><img src="shots/23-memories.png" alt="思い出アルバム" /></div>
+    <figcaption>▲ 「生まれた！」の記録や、物語完結の記念カードが残ります。</figcaption>
+  </figure>
+</section>
+
+<!-- ─────────── 設定 ─────────── -->
+<section id="settings">
+  <h2><span class="no">8</span>設定 ― 目標変更と研修デモツール</h2>
+  <p class="lede">プロフィール・健康目標の変更、研修用デモ操作、データ初期化をここで行います。</p>
+  <ul class="steps">
+    <li>表示名の変更と、BMI・基礎代謝などの参考値の確認ができます。</li>
+    <li>健康目標（減量／増量／健康維持）はいつでも再設定できます。</li>
+    <li><strong>研修デモツール</strong>：EXPの付与・孵化日変更・旅立ち強制など、講師が進行を飛ばして確認するための操作をまとめています（本番利用外）。</li>
+    <li>データ初期化は全データを消去して初期状態に戻します（元に戻せません）。</li>
+  </ul>
+
+  <figure class="shot">
+    <div class="window"><div class="bar"><i></i>設定</div><img src="shots/19-settings.png" alt="設定画面" /></div>
+    <figcaption>▲ 研修デモツールには「短編「小さな約束」をデモ体験（4章連続・保存なし）」もあります。</figcaption>
+  </figure>
+</section>
+
+<!-- ─────────── データと仕組み ─────────── -->
+<section id="data">
+  <h2><span class="no">9</span>データと仕組み ― 安心して使うために</h2>
+  <p class="lede">技術的な性質を知っておくと、研修での説明にも役立ちます。</p>
+  <div class="tablebox">
+  <table>
+    <tr><th>項目</th><th>内容</th></tr>
+    <tr><td>動作環境</td><td>PC版 Chrome / Edge の最新版。<code>kenecho-village.html</code> を file:// で直接開いて動作（サーバー不要）</td></tr>
+    <tr><td>データの保存先</td><td>ブラウザの localStorage のみ。サーバーへの送信・外部API・CDN・外部画像・外部フォントは不使用</td></tr>
+    <tr><td>データの隔離</td><td>プロフィール単位で記録が分かれるため、同じPCで複数人での試用も想定</td></tr>
+    <tr><td>消す方法</td><td>設定 →「すべてのデータを初期化」。またはブラウザのサイトデータ削除</td></tr>
+    <tr><td>ピクセル素材</td><td>PNGファイルを持たず、配色マス配列の定義から実行時にCanvas描画（拡大は整数倍率）</td></tr>
+    <tr><td>アクセシビリティ</td><td>本文16px以上・ボタン高さ48px以上・aria-live による会話結果通知・prefers-reduced-motion 対応</td></tr>
+  </table>
+  </div>
+  <div class="note">マニュアル内のキャプチャは、実機操作を Playwright で自動化して撮影したものです。人物・記録はすべて架空データです。</div>
+</section>
+
+<footer>
+  kenecho Village ガイドブック ― 研修用・本番利用不可 ／ 本作品は医療・栄養・心理・人格を診断するものではありません
+</footer>
+
+</div>
+</body>
+</html>
